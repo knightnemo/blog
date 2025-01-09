@@ -4,7 +4,20 @@ title: Nemo's Blog
 theme: PaperMod
 
 params:
-  defaultTheme: auto
+  env: production
+  defaultTheme: dark
+  ShowReadingTime: true
+  ShowShareButtons: true
+  # disableSpecial1stPost: true
+  displayFullLangName: true
+  ShowPostNavLinks: true
+  ShowBreadCrumbs: true
+  ShowCodeCopyButtons: true
+  ShowRssButtonInSectionTermList: true
+  ShowAllPagesInArchive: true
+  ShowPageNums: true
+  ShowToc: true
+  author: ["Nemo"]
 
   homeInfoParams:
     Title: "\U0001F44B Welcome to Nemo's Blog"
@@ -21,7 +34,25 @@ params:
       url: 'mailto:huang-sq23@mails.tsinghua.edu.cn'
     - name: twitter
       url: https://x.com/knightnemo_
-    
+  math: true
+  katex: true
+  markup:
+    goldmark:
+      extensions:
+        passthrough:
+          delimiters:
+            block:
+            - - \[
+              - \]
+            - - $$
+              - $$
+            inline:
+            - - \(
+              - \)
+            - - $
+              - $
+          enable: true
+  
 
 
 menu:
@@ -36,3 +67,4 @@ menu:
     weight: 20
   - identifier: 
 favicon: icon.png
+
