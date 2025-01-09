@@ -6,17 +6,15 @@
     <description>Recent content in Posts on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 01 Jan 1970 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 15 Oct 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>My first blog post</title>
+      <title>复变笔记及其在静电场的应用</title>
       <link>http://localhost:1313/blog/posts/blogpost/</link>
-      <pubDate>Thu, 01 Jan 1970 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/posts/blogpost/</guid>
-      <description>&lt;h2 id=&#34;复变笔记及其在静电场的应用&#34;&gt;复变笔记及其在静电场的应用&lt;/h2&gt;
-&lt;p&gt;呃呃嗯啊，之前忘记传复变的笔记了。现在补一下，链接如下：
-&lt;code&gt;https://cloud.tsinghua.edu.cn/f/0e002cc2dca948b7824d/&lt;/code&gt;
-Credits: Lectures by 姚国武，24春季学期。&lt;/p&gt;
+      <description>&lt;p&gt;之前忘记传复变的笔记了。现在补一下，链接如下：&lt;code&gt;https://cloud.tsinghua.edu.cn/f/0e002cc2dca948b7824d/&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Credits: Lectures by 姚国武，24春季学期。&lt;/p&gt;
 &lt;p&gt;至于为什么突然想到了，主要是因为General Physics讲到了复势，然后讲的可以说是不敢恭维，遂补充之。&lt;/p&gt;
 &lt;h2 id=&#34;动机&#34;&gt;动机&lt;/h2&gt;
 &lt;p&gt;首先，引入复变函数来描述电场和电势的动机是单纯的。 &lt;strong&gt;在我们已知电荷分布的情况下，通过电荷的积分就可以获得空间每一良定义的点的电势和电场&lt;/strong&gt; ：

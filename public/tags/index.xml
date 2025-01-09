@@ -6,6 +6,28 @@
     <description>Recent content in Tags on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
+    <lastBuildDate>Tue, 15 Oct 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Complex-Analysis</title>
+      <link>http://localhost:1313/blog/tags/complex-analysis/</link>
+      <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/complex-analysis/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Math</title>
+      <link>http://localhost:1313/blog/tags/math/</link>
+      <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/math/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Physics</title>
+      <link>http://localhost:1313/blog/tags/physics/</link>
+      <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/physics/</guid>
+      <description></description>
+    </item>
   </channel>
 </rss>

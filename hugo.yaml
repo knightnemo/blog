@@ -60,11 +60,19 @@ menu:
   - identifier: home
     name: Home
     url: /
-    weight: 10
+    weight: 1
   - identifier: posts
     name: Blog
     url: /posts/
-    weight: 20
-  - identifier: 
+    weight: 2
+  - identifier: tags
+    name: Tags
+    url: tags/
+    weight: 1000
+  - identifier: wiki
+    name: About Me
+    url: https://knightnemo.github.io
+    weight: 114514
+
 favicon: icon.png
 

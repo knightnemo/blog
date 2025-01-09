@@ -1,13 +1,15 @@
 ---
-title: "My first blog post"
-date: 1970-01-01
+title: "复变笔记及其在静电场的应用"
+date: 2024-10-15
 draft: false
 ShowToc: true
+tags: ["physics","math","complex-analysis"]
+
 ---
-复变笔记及其在静电场的应用
--
-呃呃嗯啊，之前忘记传复变的笔记了。现在补一下，链接如下：
-`https://cloud.tsinghua.edu.cn/f/0e002cc2dca948b7824d/`
+
+
+之前忘记传复变的笔记了。现在补一下，链接如下：`https://cloud.tsinghua.edu.cn/f/0e002cc2dca948b7824d/`
+
 Credits: Lectures by 姚国武，24春季学期。
 
 至于为什么突然想到了，主要是因为General Physics讲到了复势，然后讲的可以说是不敢恭维，遂补充之。
@@ -53,9 +55,8 @@ ok，插播一点复变知识：
 $$f: \mathbb{C}\rightarrow\mathbb{C}$$
 $$z=x+yi, f(z)=u+vi$$
 复变函数是一个从复数域到复数域的映射(或者理解成$\mathbb{R}^2$到$\mathbb{R}^2$，运算有Hermite性的映射)。
-### 1. 导数与解析函数
 
-#### 1. 导数
+### 1. 导数
 
 **定义**：设 $w = f(z)$ 在 $D$ 上有定义，$z_0 = x + iy \in D$，若
 
@@ -67,7 +68,7 @@ $$
 
 则 $f(z)$ 在 $z_0$ 可导，$A$ 称为 $f(z)$ 在 $z_0$ 处的导数，即 $A = f'(z_0) = \frac{df}{dz}\bigg|_{z=z_0}$。
 
-#### 2. 可微与微分
+### 2. 可微与微分
 
 **定义**：若 $f(z)$ 在 $z_0 = x_0 + iy_0$ 可微，且 $f(z)$ 在 $z_0$ 的某个邻域 $B_\rho(z_0)$ 内有表达式
 
@@ -105,9 +106,7 @@ $$
 = \alpha \Delta x - \beta \Delta y + \rho_1 \Delta x - \rho_2 \Delta y
 $$
 
-$$
-+ i (\beta \Delta x + \alpha \Delta y + \rho_2 \Delta x + \rho_1 \Delta y)
-$$
+$$+ i (\beta \Delta x + \alpha \Delta y + \rho_2 \Delta x + \rho_1 \Delta y)$$
 
 因此：
 
@@ -124,18 +123,16 @@ $$
 u, v \text{在} (x, y) \text{上可微}
 $$
 - II. Cauchy-Riemann 方程
-$$
-II. 
-\begin{cases}
-\frac{\partial u}{\partial x} = \frac{\partial v}{\partial y} \\
-\frac{\partial u}{\partial y} = -\frac{\partial v}{\partial x}
-\end{cases}
-$$
+
+$$\frac{\partial u}{\partial x} = \frac{\partial v}{\partial y} $$
+$$\frac{\partial u}{\partial y} = -\frac{\partial v}{\partial x}$$
+
 - III.导数公式
 $$
 \quad f'(z) = \alpha + i\beta = \frac{\partial u}{\partial x} - i\frac{\partial u}{\partial y}
 =\frac{\partial u}{\partial x} + i\frac{\partial v}{\partial x} = \frac{\partial v}{\partial y} + i\frac{\partial v}{\partial x} = \frac{\partial v}{\partial y} - i\frac{\partial u}{\partial y}
 $$
+
 __Remark:
 注意到C-R方程蕴含$\nabla^2u=\nabla^2v=0$,即$u,v$满足Laplace方程__
 
@@ -149,7 +146,7 @@ __Remark:
 
 若 $w = f(z) = u + iv$ 在 $D$ 上解析的充要条件是 $u, v$ 在 $D$ 上可微且处处满足 Cauchy-Riemann 方程。
 
-#### 5. 形式导数
+### 5. 形式导数
 $z=x+iy, \bar{z}=x-iy$
 $x,y\rightarrow z,\bar{z}$是一组换基的线性变换，注意到：
 
@@ -168,6 +165,8 @@ Plug it in
 $$
 \nabla U \cdot \nabla V = 0$$
 __也就是说这两组线是正交的。所以，在实际问题中，可以一组线是电场线，一组线是等势线。__
+
+![flux-line](../img/physics1/image6.png)
 
 比如说 $V$ 代表电势
 
@@ -213,7 +212,9 @@ $$
 举个栗子
 -
 最后看几个例子吧
-#### 1. POC: 无穷长直导线
+### 1. POC: 无穷长直导线
+![flux-line](../img/physics1/image5.png)
+
 对于具有线电荷密度$\lambda$的无限长直线，
 
 $$
@@ -251,9 +252,13 @@ $$
 $$
 V = - \frac{\lambda}{2 \pi \varepsilon_0} \ln r \quad \text{(Potential line)}
 $$
-#### 2. 更多美丽的图
+![flux-line](../img/physics1/image.png)
+### 2. 更多美丽的图
+![flux-line](../img/physics1/image2.png)
+![flux-line](../img/physics1/image3.png)
+![flux-line](../img/physics1/image4.png)
 
-#### References:
+### References:
 
 [1] The Feynman Lectures on Physics Vol.2 
 
@@ -261,6 +266,6 @@ $$
 
 [3] Slides from General Physics Prof. Luyan Sun
 
-注：笔者在之前的文章中曾说大抵是拿不到复变的4.0的，最后托老师的仁慈（应是调分幅度不小）还是拿到了。天下还是好人多呐🐶。
+*注：笔者在之前的文章中曾说大抵是拿不到复变的4.0的，最后托老师的仁慈（应是调分幅度不小）还是拿到了。天下还是好人多呐🐶。
 
 有时会去想，姚班的课程中没有设置概率论、复变函数的课程，在讲到相关的内容是又往往会出现 a. 默认大家都会 b.默认大家都不会重新讲的情况(比如back-propogation已经在4门课中听过了)。或许，课业学习中的速度与系统性，类似于RL中的exploration-exploitation, Generalization Theory中的inductive bias-function complexity，铸定是一种tradeoff吧。

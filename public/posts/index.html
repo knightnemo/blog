@@ -120,8 +120,19 @@ document.addEventListener("DOMContentLoaded", function() {
                 </a>
             </li>
             <li>
-                <a href="http://localhost:1313/blog/" title="">
-                    <span></span>
+                <a href="http://localhost:1313/blog/tags/" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://knightnemo.github.io" title="About Me">
+                    <span>About Me</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
                 </a>
             </li>
         </ul>
@@ -144,11 +155,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
 <article class="post-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">My first blog post
+    <h2 class="entry-hint-parent">复变笔记及其在静电场的应用
     </h2>
   </header>
   <div class="entry-content">
-    <p>复变笔记及其在静电场的应用 呃呃嗯啊，之前忘记传复变的笔记了。现在补一下，链接如下： https://cloud.tsinghua.edu.cn/f/0e002cc2dca948b7824d/ Credits: Lectures by 姚国武，24春季学期。
+    <p>之前忘记传复变的笔记了。现在补一下，链接如下：https://cloud.tsinghua.edu.cn/f/0e002cc2dca948b7824d/
+Credits: Lectures by 姚国武，24春季学期。
 至于为什么突然想到了，主要是因为General Physics讲到了复势，然后讲的可以说是不敢恭维，遂补充之。
 动机 首先，引入复变函数来描述电场和电势的动机是单纯的。 在我们已知电荷分布的情况下，通过电荷的积分就可以获得空间每一良定义的点的电势和电场 ： $$ \phi(1)=\int_{all space}\frac{\rho(2) dV_2}{4\pi \epsilon_0 r_{12}} $$ $$E=-\nabla \phi$$ 或者写成多级展开的形式： $$\phi(\mathbf{r}) = \frac{1}{4\pi \epsilon_0} \sum_{n=0}^{\infty} \frac{1}{r^{n&#43;1}} \int (r’)^n P_n(\cos\alpha) \rho(r’) , d\tau&#39; $$ 但问题是很多时候我们不知道全空间明确的电荷分布 ，比如有导体或者insulator的情况，我们不直接知道电荷在其中的分布，但是会有一些边界条件(Boundary Condition)，比如说导体构成一个等势体之类的。
 Uniqueness Theorem
@@ -159,8 +171,8 @@ Uniqueness Theorem
 Poisson方程 $$\nabla^2 \phi=-\frac{\rho}{\epsilon_0}$$ 边界条件 e.g. $$\phi|_S=0$$ 在一维,这是个ODE,很容易。 从二维开始,这变成了一个PDE，不好找解析解，很多时候只能求助于数值方法。 所以，有性质好的函数满足这样的方程，无疑是一件好事。复变函数（准确来说全纯函数）就是这样一种特殊情况： 二维情况下Poisson方程取$\nabla^2 \phi=0$。
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='1970-01-01 00:00:00 +0000 UTC'>January 1, 1970</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;Nemo</footer>
-  <a class="entry-link" aria-label="post link to My first blog post" href="http://localhost:1313/blog/posts/blogpost/"></a>
+  <footer class="entry-footer"><span title='2024-10-15 00:00:00 +0000 UTC'>October 15, 2024</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;Nemo</footer>
+  <a class="entry-link" aria-label="post link to 复变笔记及其在静电场的应用" href="http://localhost:1313/blog/posts/blogpost/"></a>
 </article>
     </main>
     
