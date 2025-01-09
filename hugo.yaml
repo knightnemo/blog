@@ -6,12 +6,21 @@ theme: PaperMod
 params:
   defaultTheme: auto
   homeInfoParams:
-    Title: "Hi there \U0001F44B"
+    Title: "\U0001F44B Welcome to Nemo's Blog"
     Content: >-
-      Welcome to my website.      
+      - **Hi, this is Nemo speaking.** I'm a second-year undergraduate student at _IIIS(Yao Class), Tsinghua University_, persuing a B.S. in Computer Science. 
+      
+      - **My goal is to share a piece of my mind here.** Topics may include but not limited to: _Computer Science_ (especially _AI-related subjects_, e.g. _Machine Learning, Reinforcement Learning, Generative Models,etc._), _Mathematics_, _Physics_, and _Simply Thoughts on Life_. Enjoy!    
   socialIcons:
+    - name: other
+      url: https://knightnemo.github.io
+    - name: github
+      url: https://github.com/knightnemo
     - name: email
-      url: 'mailto:some@emailadres.com'
+      url: 'mailto:huang-sq23@mails.tsinghua.edu.cn'
+    - name: twitter
+      url: https://x.com/knightnemo_
+    
 
 
 menu:
