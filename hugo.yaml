@@ -5,6 +5,7 @@ theme: PaperMod
 
 params:
   defaultTheme: auto
+
   homeInfoParams:
     Title: "\U0001F44B Welcome to Nemo's Blog"
     Content: >-
@@ -33,5 +34,5 @@ menu:
     name: Blog
     url: /posts/
     weight: 20
-
+  - identifier: 
 favicon: icon.png
