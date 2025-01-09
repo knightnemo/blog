@@ -1,0 +1,28 @@
+baseURL: https://example.org/
+languageCode: en-us
+title: Nemo's Blog
+theme: PaperMod
+
+params:
+  defaultTheme: auto
+  homeInfoParams:
+    Title: "Hi there \U0001F44B"
+    Content: >-
+      Welcome to my website.      
+  socialIcons:
+    - name: email
+      url: 'mailto:some@emailadres.com'
+
+
+menu:
+  main:
+  - identifier: home
+    name: Home
+    url: /
+    weight: 10
+  - identifier: posts
+    name: Blog
+    url: /posts/
+    weight: 20
+
+favicon: icon.png
