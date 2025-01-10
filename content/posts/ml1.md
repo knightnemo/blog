@@ -878,7 +878,7 @@ $s.t.$L_D(h^\*)=0$
 $$
 b_0 := \sup \{x \mid (x, 1) \in S\}, \quad b_1 := \inf \{x \mid (x, 0) \in S\}
 $$
-![](https://files.mdnice.com/user/76269/0fbaaa80-ab1d-4ba4-823c-b0f4992048a4.png)
+![](../img/ml1/image11.png)
 注意到
 $$
 \Pr \left[ L_D(h) > \epsilon \right] \leq \Pr \left[ b_0 < a_0 \right] + \Pr \left[ b_1 > a_1 \right]
@@ -981,7 +981,7 @@ $$
 前者我们的loss function很好design，比如说Mean Square Loss，但是后者的loss就不是特别好design。一种自然的想法是$f(x)=sign(w^Tx)$,但是问题就是这个loss不可导，下面是一种利用这种函数但是不需要导数的远古算法。
 ## 3.1 Perceptron
 ### Algorithm
-![](https://files.mdnice.com/user/76269/683d70bf-cdcd-4f75-bee2-773ed254ed5c.png)
+![](../img/ml1/image10.png)
 ### Convergence 
 > Thm. 
 > 
@@ -1013,7 +1013,7 @@ $$
 为了解决不可导的问题，更为现代的想法是通过sigmoid函数把$w^Tx$压缩到$(0,1)$之间的概率，即$$f(x)=\frac{1}{1+e^{-w^Tx}}.$$
 衡量两个概率之间的差异，可以用l1-norm或者cross-entropy loss。
 
-![](https://files.mdnice.com/user/76269/d6f62fbf-024b-41d7-abeb-9cde21ece557.png)
+![](../img/ml1/image9.png)
 > **熵 (Entropy)**<br>
 对于离散概率分布 $(p_1, p_2, \cdots, p_n)$，定义它的熵为$$
 H(p) = \sum_{i=1}^{n} p_i \log \frac{1}{p_i}$$
@@ -1039,17 +1039,17 @@ $$w_{t+1}=(1-\eta \lambda)\tilde{w}_t$$
 ### Lasso Regression
 有时候我们想要获得sparse的解，因此我们把loss function改为$$l(w)+\lambda||w||_1^2$$
 这个直觉在于用diamond和凸集的交集更有可能是sparse的
-![](https://files.mdnice.com/user/76269/4a5e1b5c-1932-4da2-bc71-2d9ec95e9a16.png)
+![](../img/ml1/image8.png)
 ## 3.4 Compressed Sensing
 > **Nyquist theorem**: <br>for a signal with frequency 𝑓, we need 2𝑓 sampling rate to fully reconstruct the signal
 
 这个是一个通用的定理，但是大部分情况下，我们的信号其实是存在一组基下的稀疏表示，所以我们会去想能不能通过更少的采样，来重构出信号，这就是compressed sensing的背景。
 
-![](https://files.mdnice.com/user/76269/0513baff-62f5-4054-beb1-e722bdb413a2.png)
+![](../img/ml1/image7.png)
 
 在Compressed Sensing中，和supervised learning不同的是我们可以自己选择自己的measurement matrix，即训练集，在下图中也就是说我们可以自由选定$A$的每一行，然后获得对应的$y$，最终我们希望通过$y$还原出$x$。
 
-![](https://files.mdnice.com/user/76269/2403d36b-1146-4521-8425-b4f259f82cf3.png)
+![](../img/ml1/image6.png)
 最后的得到的主要结论，用自然语言去描述，是如下三条:
 1. 如果一个稀疏信号通过 $x \mapsto Wx$ 进行了压缩，其中 $W$ 是满足$(\epsilon, s)$-RIP 的矩阵，那么可以完全重构任何稀疏信号。满足此性质的矩阵保证了任何稀疏可表示向量的范数distortion较小。
 
@@ -1272,7 +1272,7 @@ Basic results and self contained proofs*](https://www.cs.huji.ac.il/~shais/compr
 > “The people who are crazy enough to think they can change the world, are the ones who do.”
 
 期中之前的内容大概是这些。在写作的过程中，我发现我往往会忽略一些我不那么感兴趣的部分而只是去写自认为有趣的部分，这一点亦如我的复习，其中植入了太多的个人理解而忽视掉了老师或者学界主流想让人关注的框架，形成的Map of Machine Learning World自然也会是不同的。这大抵也能解释考试为什么会寄的一部分原因吧。后半学期争取让自己学会的东西的分布和课上的分布接近一些，或者搞一个generative model,从自己的分布里采样，经过一些变换能够接近他的分布吧。
-![](https://files.mdnice.com/user/76269/b5415afb-0725-41a4-8357-04deddf19c50.png)
+![](../img/ml1/image5.png)
 
 
 
