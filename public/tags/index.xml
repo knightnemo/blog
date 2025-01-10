@@ -2,59 +2,59 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Tags on Nemo&#39;s Blog</title>
-    <link>http://localhost:1313/blog/tags/</link>
+    <link>http://localhost:65304/blog/tags/</link>
     <description>Recent content in Tags on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 09 Nov 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/blog/tags/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:65304/blog/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Artificial-Intelligence</title>
-      <link>http://localhost:1313/blog/tags/artificial-intelligence/</link>
+      <link>http://localhost:65304/blog/tags/artificial-intelligence/</link>
       <pubDate>Sat, 09 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/artificial-intelligence/</guid>
+      <guid>http://localhost:65304/blog/tags/artificial-intelligence/</guid>
       <description></description>
     </item>
     <item>
       <title>Computer-Science</title>
-      <link>http://localhost:1313/blog/tags/computer-science/</link>
+      <link>http://localhost:65304/blog/tags/computer-science/</link>
       <pubDate>Sat, 09 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/computer-science/</guid>
+      <guid>http://localhost:65304/blog/tags/computer-science/</guid>
       <description></description>
     </item>
     <item>
       <title>Machine-Learning</title>
-      <link>http://localhost:1313/blog/tags/machine-learning/</link>
+      <link>http://localhost:65304/blog/tags/machine-learning/</link>
       <pubDate>Sat, 09 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/machine-learning/</guid>
+      <guid>http://localhost:65304/blog/tags/machine-learning/</guid>
       <description></description>
     </item>
     <item>
       <title>Math</title>
-      <link>http://localhost:1313/blog/tags/math/</link>
+      <link>http://localhost:65304/blog/tags/math/</link>
       <pubDate>Sat, 09 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/math/</guid>
+      <guid>http://localhost:65304/blog/tags/math/</guid>
       <description></description>
     </item>
     <item>
       <title>Optimization</title>
-      <link>http://localhost:1313/blog/tags/optimization/</link>
+      <link>http://localhost:65304/blog/tags/optimization/</link>
       <pubDate>Sat, 09 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/optimization/</guid>
+      <guid>http://localhost:65304/blog/tags/optimization/</guid>
       <description></description>
     </item>
     <item>
       <title>Complex-Analysis</title>
-      <link>http://localhost:1313/blog/tags/complex-analysis/</link>
+      <link>http://localhost:65304/blog/tags/complex-analysis/</link>
       <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/complex-analysis/</guid>
+      <guid>http://localhost:65304/blog/tags/complex-analysis/</guid>
       <description></description>
     </item>
     <item>
       <title>Physics</title>
-      <link>http://localhost:1313/blog/tags/physics/</link>
+      <link>http://localhost:65304/blog/tags/physics/</link>
       <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/physics/</guid>
+      <guid>http://localhost:65304/blog/tags/physics/</guid>
       <description></description>
     </item>
   </channel>
