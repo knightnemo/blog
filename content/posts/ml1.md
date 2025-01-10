@@ -711,24 +711,18 @@ $$
 我们接下来证明:
 
 $$
-\max_{i \in [T]} \mathbb{E}_{S \sim \mathcal{D}_i^m}[ L_{\mathcal{D}_i}(A(S)) ] \geq \frac{1}{4}
+\max_{i \in [T]} \mathbb{E}_{S \sim \mathcal{D}_i^m} [ L_{\mathcal{D}_i}(A(S)) ] \geq \frac{1}{4}
 $$
 
 ---
 
 记一共有$k$个可能的从$C$中取样出的$m$个数据点$x_i$序列:
-有$
-k = (2m)^m
-$，记
-$
-S_j = (x_1, \ldots, x_m)
-$
+有$k = (2m)^m$，记
+$S_j = (x_1, \ldots, x_m)$
 ，记
-$
-S_j^i = \left( (x_1, f_i(x_1)), \ldots, (x_m, f_i(x_m)) \right)
-$。
+$S_j^i = \left( (x_1, f_i(x_1)), \ldots, (x_m, f_i(x_m)) \right)$。
 
-我们只需要取出一个$i \in [T]$能够让$\mathbb{E}_{S \sim \mathcal{D}_i^m}\left[ L_{\mathcal{D}_i}(A(S)) \right]\geq \frac{1}{4}$,那么对应的$\mathcal{D}_i$便是我们在NFL中所希望找到的$D$。
+我们只需要取出一个$i \in [T]$能够让$\mathbb{E}_{S \sim \mathcal{D}_i^m} \left[ L_{\mathcal{D}_i}(A(S)) \right]\geq \frac{1}{4}$,那么对应的$\mathcal{D}_i$便是我们在NFL中所希望找到的$D$。
 $$
 \max_{i \in [T]} \mathbb{E}_{S \sim \mathcal{D}_i^m} \left[ L_{\mathcal{D}_i}(A(S)) \right]
 $$
@@ -785,7 +779,9 @@ $$
 $$
 \max_{i \in [T]} \mathbb{E}_{S \sim \mathcal{D}_i^m} \left[ L_{\mathcal{D}_i}(A(S)) \right] \geq \frac{1}{4}
 $$
+
 ---
+
 令$\mathcal{D} = \mathcal{D}_i$:
 
 如果
@@ -987,23 +983,25 @@ $$
 ### Algorithm
 ![](https://files.mdnice.com/user/76269/683d70bf-cdcd-4f75-bee2-773ed254ed5c.png)
 ### Convergence 
-> Thm. <br>合适缩放使得 $\|\mathbf{x}_i\| \leq 1$。假设存在 $\mathbf{w}_*$ 满足 $\|\mathbf{w}_*\| = 1$ 且 $y_i \mathbf{w}^T \mathbf{x}_i > \gamma$（存在过原点的划分平面，安全距离为 $\gamma$）。该算法收敛前最多触发 $\frac{1}{\gamma^2}$ 次预测错误。
+> Thm. 
+> 
+> 合适缩放使得 $||x_i|| \leq 1$ 。假设存在 $w_\*$ 满足 $||w_\*|| = 1$ 且 $y_i w_\*^T x_i > \gamma$（存在过原点的划分平面，安全距离为 $\gamma$）。该算法收敛前最多触发 $\frac{1}{\gamma^2}$ 次预测错误。
 
 **Pf.**
 假设算法第 $t$ 次犯错是 $(x_t, y_t)$，这会使得
+
+$${w}_{t+1} = {w}_t + y_t x_t$$
+
+且此时 $\langle {w}^T, y_t x_t \rangle < 0$（锐角）。这说明
 $$
-\mathbf{w}_{t+1} = \mathbf{w}_t + y_t x_t
-$$
-且此时 $\langle \mathbf{w}^T, y_t x_t \rangle < 0$（锐角）。这说明
-$$
-\|\mathbf{w}_{t+1}\|^2 \leq \|\mathbf{w}_t\|^2 + \|y_t x_t\|^2 = \|\mathbf{w}_t\|^2 + 1 \\
-\|\mathbf{w}_t\|^2 \leq t
+||w_{t+1}||^2 \leq ||w_t||^2 + ||y_t x_t||^2 = ||w_t||^2 + 1 \\
+||w_t||^2 \leq t
 $$
 
 另一方面
 $$
-\|\mathbf{w}_{t+1}\| \geq \langle \mathbf{w}_{t+1}, \mathbf{w}_\* \rangle \geq \langle \mathbf{w}_t, \mathbf{w}_\* \rangle + \gamma \\
-\|\mathbf{w}_t\| \geq \gamma t
+||w_{t+1}|| \geq \langle w_{t+1}, w_\* \rangle \geq \langle w_t, w_\* \rangle + \gamma \\
+||w_t|| \geq \gamma t
 $$
 
 综上
@@ -1034,8 +1032,8 @@ KL(p, q) = XE(p, q) - H(p)$$
 ## 3.3 Regularization
 当我们想要限制$f$的表达能力时，经典的看法就是通过在$||·||_2$或$||·||_1$意义下限制$w$的可能取值区间。
 ### Ridge Regression
-把loss function改为$$l(w)+\lambda||w||_2^2$$
-这相当于每一步先GD，之后再进行了一次 
+把loss function改为$$l(w)+\lambda||w||^2$$
+这里是2-norm, 这相当于每一步先GD，之后再进行了一次 
 $$w_{t+1}=(1-\eta \lambda)\tilde{w}_t$$
 这被称为weight decay。
 ### Lasso Regression
@@ -1053,7 +1051,7 @@ $$w_{t+1}=(1-\eta \lambda)\tilde{w}_t$$
 
 ![](https://files.mdnice.com/user/76269/2403d36b-1146-4521-8425-b4f259f82cf3.png)
 最后的得到的主要结论，用自然语言去描述，是如下三条:
-1. 如果一个稀疏信号通过 $x \mapsto Wx$ 进行了压缩，其中 $W$ 是满足$(\epsilon, s)$-RIP 的矩阵，那么可以完全重构任何稀疏信号。满足此性质的矩阵保证了任何稀疏可表示向量的范数distrtion较小。
+1. 如果一个稀疏信号通过 $x \mapsto Wx$ 进行了压缩，其中 $W$ 是满足$(\epsilon, s)$-RIP 的矩阵，那么可以完全重构任何稀疏信号。满足此性质的矩阵保证了任何稀疏可表示向量的范数distortion较小。
 
 2. 通过求解线性规划，重构可以在多项式时间内计算。
 
@@ -1061,13 +1059,15 @@ $$w_{t+1}=(1-\eta \lambda)\tilde{w}_t$$
 
 接下来让我formally用数学的语言build up都以上的结论。
 ### RIP-Condition
-一个矩阵 $W \in \mathbb{R}^{n,d}$ 是 $(\epsilon, s)$-RIP 的当且仅当对于所有 $x \neq 0$ 且满足 $\|x\|_0 \leq s$ 的 $x$，我们有
+一个矩阵 $W \in \mathbb{R}^{n,d}$ 是 $(\epsilon, s)$-RIP 的当且仅当对于所有 $x \neq 0$ 且满足 $||x||_{0}\leq s$ 的 $x$，我们有
 $$
-\left| \frac{\|Wx\|_2^2}{\|x\|_2^2} - 1 \right| \leq \epsilon.
+\left| \frac{||Wx||_2^2}{||x||_2^2} - 1 \right| \leq \epsilon.
 $$
 ### Thm.1
-> **Thm.1** 设 $\epsilon < 1$，并且设 $W$ 为 $(\epsilon, 2s)$-RIP 矩阵。设 $x$ 为一个满足 $\|x\|_0 \leq s$ 的向量，令 $y = Wx$ 为 $x$ 的压缩结果，并且令 
-> $$\tilde{x} \in \arg \min_{\mathbf{v}: W\mathbf{v}=y} ||\mathbf{v}||_0$$ 为重构向量。那么，$\tilde{x} = x$。
+> **Thm.1** 设 $\epsilon < 1$，并且设 $W$ 为 $(\epsilon, 2s)$-RIP 矩阵。设 $x$ 为一个满足 ${||x||}_0\leq s$ 的向量，
+> 
+> 令 $y = Wx$ 为 $x$ 的压缩结果，并且令 
+> $$\tilde{x} \in \arg \min_{{v}: W{v}=y} ||{v}||_0$$ 为重构向量。那么，$\tilde{x} = x$。
 
 这个定理告诉我们对于RIP的矩阵，如果我们能够通过找到符合$Wv=y$的$v$的l0-norm最小的向量，我们就能够成功的(无损)重建出$x$。
 
@@ -1094,30 +1094,29 @@ $$
 
 但问题是，我们没有一个polytime求解l0-norm最小值的算法，所以这个定理在实际应用中没有意义，我们在实际应用中尝试吧l0-norm relax到 l1-norm，下面的thm2和3便是l1-norm下重建结果相似性的保证。
 ### Thm.2
-> **Thm.2** <br>假设 $W$ 为 $(\epsilon, 2s)$-RIP 矩阵。$x$ 为一个满足 $\|x\|_0 \leq s$ 的向量，令 $y = Wx$ 为 $x$ 的压缩结果，并且 $\epsilon < \frac{1}{1 + \sqrt{2}}$，那么，
-> $$
-x = \arg \min_{v: Wv = y} \|v\|_0 = \arg \min_{v: Wv = y} \|v\|_1.
-$$
+> **Thm.2** 假设 $W$ 为 $(\epsilon, 2s)$-RIP 矩阵。$x$ 为一个满足 $\|x\|_0 \leq s$ 的向量，
+>
+> 令 $y = Wx$ 为 $x$ 的压缩结果，并且 $\epsilon < \frac{1}{1 + \sqrt{2}}$，那么,
+> 
+> $$x=\arg\min_{v: Wv = y}||v||_0=\arg\min_{v:Wv = y}||v||_1$$
 
 这个定理说明在s-sparse的情况下，Relax 到l1-norm也可以重构出一样的向量。
 
 事实上，我们将证明一个更强的结果，该结果即使在 $x$ 不是一个稀疏向量的情况下也成立，即Thm.3。
 ### Thm.3
 > **Thm.3** 设 $\epsilon < \frac{1}{1 + \sqrt{2}}$ 并且 $W$ 是一个 $(\epsilon, 2s)$-RIP 矩阵。设 $x$ 是任意向量，并定义
-> $$
-x_s \in \arg \min_{v: \|v\|_0 \leq s} \|x - v\|_1。$$也就是说，$x_s$ 是一个在 $x$ 的 $s$ 个最大元素处等于 $x$ 并在其他地方等于 $0$ 的向量。设 $y = Wx$ ，并令
+> $$x_s \in \arg \min_{v\: ||v||_0 \leq s} ||x - v||_1$$
+> 也就是说，$x_s$ 是一个在 $x$ 的 $s$ 个最大元素处等于 $x$ 并在其他地方等于 $0$ 的向量。设 $y = Wx$ ，并令
 > $$x^* \in \arg \min_{v: Wv = y} \|v\|_1$$
 > 为重构的向量。那么，
-> $$
-\|x^* - x\|_2 \leq 2 \frac{1 + \rho}{1 - \rho} s^{-1/2} \|x - x_s\|_1,$$
+> $$\|x^* - x\|_2 \leq 2 \frac{1 + \rho}{1 - \rho} s^{-1/2} \|x - x_s\|_1,$$
 > 其中 $\rho = \sqrt{2\epsilon}/(1 - \epsilon)$。
 
 **Pf.**
 
 这个定理的证明相对比较复杂，主要是证明以下两个Claim:
 > **Claim 1：** 
-> $$
-\|h_{T_{0,1}}\|_2 \leq \|h_{T_0}\|_2 + 2s^{-1/2}\|x - x_s\|_1。$$
+> $$\|h_{T_{0,1}}\|_2 \leq \|h_{T_0}\|_2 + 2s^{-1/2}\|x - x_s\|_1$$
 
 > **Claim 2：** 
 > $$
@@ -1130,19 +1129,19 @@ $$
 **Pf of Claim 1**，我们不使用RIP条件，仅仅使用$x^*$最小化$\ell_1$范数这一事实。设$j > 1$。对于每个$i \in T_j$和$i' \in T_{j-1}$，我们有$|h_i| \leq |h_{i'}|$。因此，$\|h_{T_j}\|_\infty \leq \|h_{T_{j-1}}\|_1/s$。由此可以得到：
 
 $$
-\|h_{T_j}\|_2 \leq s^{-1/2} \|h_{T_{j-1}}\|_1。
+||h_{T_j}||_2 \leq s^{-1/2} ||h_{T_{j-1}}||_1
 $$
 
 对$j = 2, 3, \ldots$求和，并使用三角不等式，可以得到：
 
 $$
-\|h_{T_{0,1}^c}\|_2 \leq \sum_{j \geq 2} \|h_{T_j}\|_2 \leq s^{-1/2} \|h_{T_{0,1}^c}\|_1。
+||h_{T_{0,1}^c}||_2 \leq \sum_{j \geq 2} ||h_{T_j}||_2 \leq s^{-1/2} ||h_{T_{0,1}^c}||_1
 $$
 
 接下来，我们证明$\|h_{T_0}\|_1$不能太大。实际上，由于$x^* = x + h$具有最小的$\ell_1$范数，并且$x$满足$x^*$的定义中的约束条件，我们有$\|x\|_1 \geq \|x + h\|_1$。因此，利用三角不等式我们可以得到：
 
 $$
-\|x\|_1 \geq \sum_{i \in T_0} |x_i + h_i| + \sum_{i \in T_{0,1}^c} |x_i + h_i| \geq \|x_{T_0}\|_1 - \|h_{T_0}\|_1 + \|x_{T_{0,1}^c}\|_1 - \|h_{T_{0,1}^c}\|_1。
+||x||_1 \geq \sum_{i \in T_0} |x_i + h_i| + \sum_{i \in T_{0,1}^c} |x_i + h_i| \geq ||x_{T_0}||_1 - ||h_{T_0}||_1 + ||x_{T_{0,1}^c}||_1 - ||h_{T_{0,1}^c}||_1
 $$
 
 由于$\|x_{T_{0,1}^c}\|_1 = \|x - x_s\|_1 = \|x\|_1 - \|x_{T_0}\|_1$，我们得到：
@@ -1156,11 +1155,12 @@ $$
 $$
 \|h_{T_{0,1}^c}\|_2 \leq s^{-1/2} (\|h_{T_0}\|_1 + 2\|x_{T_{0,1}^c}\|_1)。\blacksquare
 $$
+
 **Pf of Claim 2**
 
-对于2s-稀疏的向量$h_{T_{0,1}$，我们有：
+对于2s-稀疏的向量$h_{T_{0,1}}$，我们有：
 
-$$(1 - \epsilon) \|h_{T_{0,1}}\|_2^2 \leq \|Wh_{T_{0,1}}\|_2^2$$
+$$(1 - \epsilon) ||h_{T_{0,1}}||_2^2 \leq ||Wh_{T_{0,1}}||_2^2$$
 
 而
 
@@ -1168,7 +1168,7 @@ $$Wh_{T_{0,1}} = Wh - \sum_{j \geq 2} Wh_{T_j} = -\sum_{j \geq 2} Wh_{T_j}$$
 
 因此
 
-$$\|Wh_{T_{0,1}}\|_2^2 = -\sum_{j \geq 2} \langle Wh_{T_{0,1}}, Wh_{T_j} \rangle$$
+$$||Wh_{T_{0,1}}||_2^2 = -\sum_{j \geq 2} \langle Wh_{T_{0,1}}, Wh_{T_j} \rangle$$
 
 > **Lemma**：如果$W$是$(\epsilon, 2s)$-RIP矩阵，对于任意不相交的$I, J$集合，若$|I| \leq s, |J| \leq s$，则
 > $$
@@ -1196,13 +1196,10 @@ $$
 
 原式代入Lemma，我们有：
 
-$$
-\|Wh_{T_{0,1}}\|_2^2 \leq \epsilon (\|h_{T_0}\|_2 + \|h_{T_{1}}\|_2) \cdot \sum_{j \geq 2} \|h_{T_j}\|_2
+$$||Wh_{T_{0,1}}||_2^2 \leq \epsilon (||h_{T_0}||_2 + ||h_{T_{1}}||_2) \cdot \sum_{j \geq 2} ||h_{T_j}||_2
 $$
 利用$2(a^2 + b^2) \geq (a + b)^2$:
-$$
-\|h_{T_0}\|_2 + \|h_{T_1}\|_2 \leq \sqrt{2} \|h_{T_{0,1}}\|_2
-$$
+$$||h_{T_0}||_2 + ||h_{T_1}||_2 \leq \sqrt{2} ||h_{T_{0,1}}||_2$$
 
 所以
 
@@ -1225,17 +1222,17 @@ $$
 $$
 
 $$
-\leq \rho \|h_{T_0}\|_2 + 2 \rho s^{-1/2} \|x_{T_0^C}\|_1
+\leq \rho ||h_{T_{0}}||_{2} + 2 \rho s^{-1/2} ||x_{T_{0}^{C}}||_{1}
 $$
+
 由于
-$$
-\|h_{T_1}\|_2 \leq \|h_{T_{0,1}}\|_2
-$$
+
+$$||h_{T_{1}}||_2 \leq ||h_{T_{0,1}}||_2$$
 
 因此
 
 $$
-\|h_{T_{0,1}}\|_2 \leq \frac{2 \rho}{1 - \rho} s^{-1/2} \|x - x_s\|_1\blacksquare
+||h_{T_{0,1}}||_2 \leq \frac{2 \rho}{1 - \rho} s^{-1/2} ||x - x_s||_1\blacksquare
 $$
 
 回到*Thm.3*的证明:

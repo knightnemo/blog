@@ -36,9 +36,10 @@ params:
     - name: twitter
       url: https://x.com/knightnemo_
   math: true
-  katex: true
+  # katex: true
   markup:
     goldmark:
+      unsafe: true
       extensions:
         passthrough:
           delimiters:
