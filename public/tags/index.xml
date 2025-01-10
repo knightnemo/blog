@@ -9,6 +9,13 @@
     <lastBuildDate>Tue, 15 Oct 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Artificial-Intelligence</title>
+      <link>http://localhost:1313/blog/tags/artificial-intelligence/</link>
+      <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/artificial-intelligence/</guid>
+      <description></description>
+    </item>
+    <item>
       <title>Complex-Analysis</title>
       <link>http://localhost:1313/blog/tags/complex-analysis/</link>
       <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
@@ -16,10 +23,31 @@
       <description></description>
     </item>
     <item>
+      <title>Computer-Science</title>
+      <link>http://localhost:1313/blog/tags/computer-science/</link>
+      <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/computer-science/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Machine-Learning</title>
+      <link>http://localhost:1313/blog/tags/machine-learning/</link>
+      <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/machine-learning/</guid>
+      <description></description>
+    </item>
+    <item>
       <title>Math</title>
       <link>http://localhost:1313/blog/tags/math/</link>
       <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/math/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Optimization</title>
+      <link>http://localhost:1313/blog/tags/optimization/</link>
+      <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/optimization/</guid>
       <description></description>
     </item>
     <item>

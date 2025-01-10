@@ -22,7 +22,7 @@ params:
 
   homeInfoParams:
     Title: "\U0001F44B Welcome to Nemo's Blog"
-    Content: >-
+    Content: >
       - **Hi, this is Nemo speaking.** I'm a second-year undergraduate student at _IIIS(Yao Class), Tsinghua University_, persuing a B.S. in Computer Science. 
       
       - **My goal is to share a piece of my mind here.** Topics may include but not limited to: _Computer Science_ (especially _AI-related subjects_, e.g. _Machine Learning, Reinforcement Learning, Generative Models,etc._), _Mathematics_, _Physics_, and _Simply Thoughts on Life_. Enjoy!    

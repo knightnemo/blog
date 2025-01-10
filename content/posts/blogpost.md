@@ -3,8 +3,8 @@ title: "复变笔记及其在静电场的应用"
 date: 2024-10-15
 draft: false
 ShowToc: true
+TocOpen: true
 tags: ["physics","math","complex-analysis"]
-
 ---
 
 
