@@ -1,11 +1,12 @@
 baseURL: https://knightnemo.github.io/blog
 languageCode: en-us
 title: Nemo's Blog
-theme: PaperMod
+theme: ["PaperMod"]
 
 params:
   env: production
-  defaultTheme: dark
+  defaultTheme: auto
+  disableThemeToggle: false
   ShowReadingTime: true
   ShowShareButtons: true
   # disableSpecial1stPost: true
