@@ -1,5 +1,5 @@
 ---
-title: "Machine Learning Series 1: Optimization, Generalization and Supervised Learning"
+title: "Machine Learning Series: 1.Optimization, Generalization and Supervised Learning"
 date: 2024-11-09
 draft: false
 ShowToc: true
