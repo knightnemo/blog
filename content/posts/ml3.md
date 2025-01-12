@@ -1,6 +1,6 @@
 ---
 title: "Machine Learning Series: 3.Unsupervised Learning(II)"
-date: 2025-01-02
+date: 2025-01-03
 draft: false
 ShowToc: true
 tags: ["machine-learning", "computer-science", "algebra", "math", "artificial-intelligence", "algorithm"]
@@ -427,4 +427,4 @@ $$p_ {i j}=\frac{(1+||y_ i-y_ j||^2)^{-1}}{\sum_ {k\neq l}(1+||y_ l-y_ k||^2)^{-
 没了，感觉这一部分大量参考了[这篇文献](https://jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf)。
 
 ### A side note:
-If you are interested in clustering, you can also check out [this website](https://leo1oel.github.io/clustering/), which contains a survey of clustering algorithms(the pdf file link is in the website). It's a project done by me and [Yiming Liu](https://leo1oel.github.io/)
+If you are interested in clustering, you can also check out [this website](https://leo1oel.github.io/clustering/), which contains a survey of clustering algorithms(the pdf file link is in the website). It's a project done by me and [Yiming Liu](https://leo1oel.github.io/).
