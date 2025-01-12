@@ -3,36 +3,36 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>http://localhost:1313/blog/tags/algebra/</loc>
-    <lastmod>2025-01-02T00:00:00+00:00</lastmod>
+    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/algorithm/</loc>
-    <lastmod>2025-01-02T00:00:00+00:00</lastmod>
+    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/artificial-intelligence/</loc>
-    <lastmod>2025-01-02T00:00:00+00:00</lastmod>
+    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/computer-science/</loc>
-    <lastmod>2025-01-02T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/posts/ml2/</loc>
-    <lastmod>2025-01-02T00:00:00+00:00</lastmod>
+    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/posts/ml3/</loc>
-    <lastmod>2025-01-02T00:00:00+00:00</lastmod>
+    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/machine-learning/</loc>
-    <lastmod>2025-01-02T00:00:00+00:00</lastmod>
+    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/math/</loc>
-    <lastmod>2025-01-02T00:00:00+00:00</lastmod>
+    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/</loc>
-    <lastmod>2025-01-02T00:00:00+00:00</lastmod>
+    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/posts/</loc>
-    <lastmod>2025-01-02T00:00:00+00:00</lastmod>
+    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/</loc>
+    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/posts/ml2/</loc>
     <lastmod>2025-01-02T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/posts/ml1/</loc>
@@ -51,5 +51,7 @@
     <lastmod>2024-10-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/categories/</loc>
+  </url><url>
+    <loc>http://localhost:1313/blog/search/</loc>
   </url>
 </urlset>

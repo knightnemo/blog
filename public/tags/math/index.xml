@@ -6,21 +6,21 @@
     <description>Recent content in Math on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 02 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 03 Jan 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/tags/math/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Machine Learning Series: 3.Unsupervised Learning(II)</title>
+      <link>http://localhost:1313/blog/posts/ml3/</link>
+      <pubDate>Fri, 03 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/posts/ml3/</guid>
+      <description>This is the third article in the Machine Learning Series. It covers the second part of unsupervised learning, including topics like Clustering, Spectral Graph Clustering, SimCLR, SNE and t-SNE.</description>
+    </item>
     <item>
       <title>Machine Learning Series: 2.Unsupervised Learning(I)</title>
       <link>http://localhost:1313/blog/posts/ml2/</link>
       <pubDate>Thu, 02 Jan 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/posts/ml2/</guid>
       <description>This is the second article in the Machine Learning Series. It covers the first part of unsupervised learning, including topics like Dimension Reduction, PCA, k-NN, LSH and Metric Learning.</description>
-    </item>
-    <item>
-      <title>Machine Learning Series: 3.Unsupervised Learning(II)</title>
-      <link>http://localhost:1313/blog/posts/ml3/</link>
-      <pubDate>Thu, 02 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/posts/ml3/</guid>
-      <description>This is the third article in the Machine Learning Series. It covers the second part of unsupervised learning, including topics like Clustering, Spectral Graph Clustering, SimCLR, SNE and t-SNE.</description>
     </item>
     <item>
       <title>Machine Learning Series: 1.Optimization, Generalization and Supervised Learning</title>
