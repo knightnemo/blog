@@ -74,7 +74,11 @@ menu:
   - identifier: search
     name: Search
     url: search/
-    weight: 1001
+    weight: 100
+  - identifier: archives
+    name: Archive
+    url: archives/
+    weight: 10
   - identifier: wiki
     name: About Me
     url: https://knightnemo.github.io
