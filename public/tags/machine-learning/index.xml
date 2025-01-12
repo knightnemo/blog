@@ -2,17 +2,24 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Machine-Learning on Nemo&#39;s Blog</title>
-    <link>http://localhost:65304/blog/tags/machine-learning/</link>
+    <link>http://localhost:1313/blog/tags/machine-learning/</link>
     <description>Recent content in Machine-Learning on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 09 Nov 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:65304/blog/tags/machine-learning/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 02 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/blog/tags/machine-learning/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Machine Learning Series 1: Optimization, Generalization and Supervised Learning</title>
-      <link>http://localhost:65304/blog/posts/ml1/</link>
+      <title>Machine Learning Series: 2.Unsupervised Learning(I)</title>
+      <link>http://localhost:1313/blog/posts/ml2/</link>
+      <pubDate>Thu, 02 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/posts/ml2/</guid>
+      <description>This is the second article in the Machine Learning Series. It covers the first part of unsupervised learning, including topics like Dimension Reduction, PCA, k-NN, LSH and Metric Learning.</description>
+    </item>
+    <item>
+      <title>Machine Learning Series: 1.Optimization, Generalization and Supervised Learning</title>
+      <link>http://localhost:1313/blog/posts/ml1/</link>
       <pubDate>Sat, 09 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:65304/blog/posts/ml1/</guid>
+      <guid>http://localhost:1313/blog/posts/ml1/</guid>
       <description>This is the first article in the Machine Learning Series. It covers the basics of optimization(GD,SGD,SVRG,Mirror Descent,Linear Coupling), generalization(No Free Lunch, PAC Learning, VC Dimension), and supervised learning(Linear Regression, Logistic Regression, Compressed Sensing).</description>
     </item>
   </channel>

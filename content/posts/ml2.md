@@ -182,7 +182,8 @@ $$Pr[h(p)=h(q)]=\frac{ ||p-q||_ 1 }{d} $$
   P_ 2^k = \frac{1}{n}
   $$
 这对每个 $g_ i$ 都成立。
-所以说$$\mathbb{E}[ \text{# } g_ i \text{ wrong points in }P']\leq 1$$
+所以说 
+$$\mathbb{E}[ \text{number of } g_ i \text{ wrong points in }P']\leq 1$$
 所以$$\mathbb{E}[\text{total wrong points}]\leq L$$
 接下来用Markov不等式，有:
 $$\Pr[\text{total wrong points}\geq 2L]\leq \frac{1}{2}$$

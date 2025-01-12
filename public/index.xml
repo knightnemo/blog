@@ -6,10 +6,17 @@
     <description>Recent content on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 09 Nov 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 02 Jan 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Machine Learning Series 1: Optimization, Generalization and Supervised Learning</title>
+      <title>Machine Learning Series: 2.Unsupervised Learning(I)</title>
+      <link>http://localhost:1313/blog/posts/ml2/</link>
+      <pubDate>Thu, 02 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/posts/ml2/</guid>
+      <description>This is the second article in the Machine Learning Series. It covers the first part of unsupervised learning, including topics like Dimension Reduction, PCA, k-NN, LSH and Metric Learning.</description>
+    </item>
+    <item>
+      <title>Machine Learning Series: 1.Optimization, Generalization and Supervised Learning</title>
       <link>http://localhost:1313/blog/posts/ml1/</link>
       <pubDate>Sat, 09 Nov 2024 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/posts/ml1/</guid>
@@ -49,13 +56,6 @@ $$\nabla^2 \phi=-\frac{\rho}{\epsilon_0}$$&lt;/li&gt;
 e.g. $$\phi|_S=0$$&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;在一维,这是个ODE,很容易。 &lt;strong&gt;从二维开始,这变成了一个PDE，不好找解析解，很多时候只能求助于数值方法。&lt;/strong&gt; 所以，有性质好的函数满足这样的方程，无疑是一件好事。复变函数（准确来说全纯函数）就是这样一种特殊情况： &lt;strong&gt;二维情况下Poisson方程取$\nabla^2 \phi=0$。&lt;/strong&gt;&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title></title>
-      <link>http://localhost:1313/blog/posts/ml2/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/posts/ml2/</guid>
-      <description></description>
     </item>
   </channel>
 </rss>
