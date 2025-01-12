@@ -4,7 +4,7 @@ date: 2025-01-02
 draft: false
 ShowToc: true
 tags: ["machine-learning", "computer-science", "algebra", "math", "artificial-intelligence", "algorithm"]
-summary: "This is the second article in the Machine Learning Series. It covers the basics of unsupervised learning(PCA, k-NN, LSH, Metric Learning)."
+summary: "This is the second article in the Machine Learning Series. It covers the first part of unsupervised learning, including topics like Dimension Reduction, PCA, k-NN, LSH and Metric Learning."
 ---
 # Machine Learning: Unsupervised Learning I
 
@@ -37,7 +37,7 @@ $$\frac{1}{n}\sum_ {i=1}^n(v^T x_ i)^2=\frac{1}{n}v^T X X^T v$$
 由于勾股定理，这里还有另一种理解方法：
 
 
-![](https://files.mdnice.com/user/76269/87523ab9-37cb-41d0-9ea2-bd065268d776.png)
+![](../img/ml2/image.png#center)
 
 就是原来的$||x||$长度不变，你在最大化投影距离: $\max||v^T x \cdot v||$，那么由于勾股定理，你同时就在最小化$||x-(v^T x)\cdot v||$
 
@@ -87,7 +87,7 @@ $$b_ t=\sum_ i \lambda_ i^t \alpha_ i v_ i$$
 
   Find $p\in P$ s.t. $||p-q||<R $
 
-![](https://files.mdnice.com/user/76269/11c431e0-f0a9-4b6f-a480-cf027a42b9df.png)
+![](../img/ml2/image2.png)
 
 这两个问题的等价性并不难证明:
 
@@ -145,7 +145,7 @@ $$Pr[h(p)=h(q)]=\frac{ ||p-q||_ 1 }{d} $$
     
       计算 $g_ i(p_ j)\in \{0,1\}^k$（这里不妨假设每一个hash function的输出都是0或1），放入对应桶中
 
-![](https://files.mdnice.com/user/76269/ab62bb72-1c6d-4dd3-bf7c-da2aac0615de.png)
+![](../img/ml2/image3.png)
 
 这里需要的内存是$O(n \cdot L)$.
 #### Query Algorithm for Point $q$
@@ -226,7 +226,7 @@ $$h_ {r,b}=\lfloor \frac{\langle r,x \rangle+b}{w}\rfloor$$
   P(c) = \Pr[h_ {r,b}(p) = h_ {r,b}(q)] = 2 \int_ 0^1 f_ p(t)(1 - t) \, dt
   $$
 
-![](https://files.mdnice.com/user/76269/7af6dd4b-a330-49b8-ac57-acd95796dab2.png)
+![](../img/ml2/image4.png)
 
 解释：
 - 当 $\langle r, p - q \rangle = t$ 时，$p, q$ 在一个桶中的概率为 $1 - t$。
