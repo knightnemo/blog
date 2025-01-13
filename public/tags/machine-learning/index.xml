@@ -6,8 +6,15 @@
     <description>Recent content in Machine-Learning on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 29 Dec 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 01 Jan 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/tags/machine-learning/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Machine Learning Series: 5.Hyperparameter Selection</title>
+      <link>http://localhost:1313/blog/posts/ml5/</link>
+      <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/posts/ml5/</guid>
+      <description>This is the fifth article in the Machine Learning Series. It covers classic approaches to Hyperparameter Selection, including Bayesian Optimization, Gradient Optimization, Random Search, Multi-Arm Bandits and Neural Architecture Search.</description>
+    </item>
     <item>
       <title>Machine Learning Series: 4.Robust Machine Learning</title>
       <link>http://localhost:1313/blog/posts/ml4/</link>

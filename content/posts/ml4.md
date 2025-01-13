@@ -6,7 +6,6 @@ ShowToc: true
 tags: ["machine-learning", "computer-science", "optimization", "math", "artificial-intelligence", "algorithm"]
 summary: "This is the fourth article in the Machine Learning Series. It covers classic approaches to Robust Machine Learning, including Adversial Attacks, Adversial Training, Robust Features, Obfuscated Gradients and Provable Robust Certificates."
 ---
-# Robust Machine Learning
 ## 动机
 鲁棒的机器学习的动机来自于对于模型而言，在输入中加入一点点微小的修改，就可以让模型的输出大不相同，这样的现象可以被别有用心者利用，比如让摄像头识别不出来人，或者引诱自动驾驶汽车认为前面有障碍物，从而干扰后续的decision making.
 ![](../img/ml4/image.png#center)

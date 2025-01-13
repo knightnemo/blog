@@ -6,48 +6,62 @@
     <description>Recent content in Tags on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 29 Dec 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 01 Jan 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Algorithm</title>
       <link>http://localhost:1313/blog/tags/algorithm/</link>
-      <pubDate>Sun, 29 Dec 2024 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/algorithm/</guid>
       <description></description>
     </item>
     <item>
       <title>Artificial-Intelligence</title>
       <link>http://localhost:1313/blog/tags/artificial-intelligence/</link>
-      <pubDate>Sun, 29 Dec 2024 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/artificial-intelligence/</guid>
       <description></description>
     </item>
     <item>
       <title>Computer-Science</title>
       <link>http://localhost:1313/blog/tags/computer-science/</link>
-      <pubDate>Sun, 29 Dec 2024 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/computer-science/</guid>
       <description></description>
     </item>
     <item>
       <title>Machine-Learning</title>
       <link>http://localhost:1313/blog/tags/machine-learning/</link>
-      <pubDate>Sun, 29 Dec 2024 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/machine-learning/</guid>
       <description></description>
     </item>
     <item>
       <title>Math</title>
       <link>http://localhost:1313/blog/tags/math/</link>
-      <pubDate>Sun, 29 Dec 2024 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/math/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Multi-Arm-Bandit</title>
+      <link>http://localhost:1313/blog/tags/multi-arm-bandit/</link>
+      <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/multi-arm-bandit/</guid>
       <description></description>
     </item>
     <item>
       <title>Optimization</title>
       <link>http://localhost:1313/blog/tags/optimization/</link>
-      <pubDate>Sun, 29 Dec 2024 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/optimization/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Random-Process</title>
+      <link>http://localhost:1313/blog/tags/random-process/</link>
+      <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/random-process/</guid>
       <description></description>
     </item>
     <item>
