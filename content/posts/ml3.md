@@ -1,6 +1,10 @@
 ---
 title: "Machine Learning Series: 3.Unsupervised Learning(II)"
+<<<<<<< HEAD
 date: 2025-01-02
+=======
+date: 2025-01-03
+>>>>>>> 1ba52e2aa69c1338025fa58e9bb35071595dcb64
 draft: false
 ShowToc: true
 tags: ["machine-learning", "computer-science", "algebra", "math", "artificial-intelligence", "algorithm"]
@@ -21,6 +25,7 @@ $$\arg\min_ S \sum_ {i=1}^k \sum_ {x\in S_ i} ||x-\mu_ i||^2$$
 
 这个问题是NP-Hard的，但是有一些Heuristic的算法，下面介绍Lloyd Algorithm:
 
+<<<<<<< HEAD
 ![](https://files.mdnice.com/user/76269/d7068170-c461-43a5-9a26-e3fb8e412932.png)
 
 ![](https://files.mdnice.com/user/76269/441ad4fd-4040-4db2-b60e-18cdd2830f00.png)
@@ -32,6 +37,19 @@ $$\arg\min_ S \sum_ {i=1}^k \sum_ {x\in S_ i} ||x-\mu_ i||^2$$
 
 
 ![](https://files.mdnice.com/user/76269/8bb32f35-db48-469b-8441-3b6119462bb6.png)
+=======
+![](../img/ml3/image.png#center)
+
+![](../img/ml3/image2.png#center)
+
+![](../img/ml3/image3.png#center)
+
+
+![](../img/ml3/image4.png#center)
+
+
+![](../img/ml3/image5.png#center)
+>>>>>>> 1ba52e2aa69c1338025fa58e9bb35071595dcb64
 > **Lloyd's Method:**
 > 1. Decide $k$
 > 2. Randomly pick $k$ centers
@@ -48,7 +66,11 @@ Lloyd算法是保证终止的，因为每一次都会发生聚类的变化，然
 
 对于有的图，p-范数并不能够做到很好的聚类，比如下面这张:
 
+<<<<<<< HEAD
 ![](https://files.mdnice.com/user/76269/53b41ecb-a20f-4a46-b83f-0d1180fd53db.png)
+=======
+![](../img/ml3/image7.png#center)
+>>>>>>> 1ba52e2aa69c1338025fa58e9bb35071595dcb64
 
 这个时候，我们就引入一种思想，对于两个点之间引入一种**相似性**的衡量，假如说两个点之间的相似性超过一个threshold,那么我们用边把他们连接起来，边权$$w_ {i,j}=\text{Similarity}(i,j)$$
 
@@ -149,8 +171,12 @@ L=\begin{pmatrix}L_ 1 & 0 & 0 & 0 \\
    
 看一个理想情况的例子:
 
+<<<<<<< HEAD
 ![](https://files.mdnice.com/user/76269/a31bfc82-6074-4b71-9848-7b92cfc904f9.png)
 
+=======
+![](../img/ml3/image6.png#center)
+>>>>>>> 1ba52e2aa69c1338025fa58e9bb35071595dcb64
 这就很漂亮，但是现实情况下一般图是联通的，所以没那么好的事～
 
 最后解决一个technical problem,我们怎么去找最小的特征值、特征向量对呢？其实很简单，比如说$A$是半正定的，我们取 
@@ -243,11 +269,18 @@ $$
 
 首先讲讲什么是SimCLR。这个是对比学习的一个算法，比如说给一个被查询的样本$q$，同时还有一个正样本$p_ 1$,对应$N-1$个负样本$\{p_ i\}_ {i=2}^N$。
 
+<<<<<<< HEAD
 ![](https://files.mdnice.com/user/76269/2827f873-cf40-499c-a563-dda8be7e9ea6.png)
 
 一个现实的例子是我们对于所有输入的图片生成两个augmented图片，那么以其中一个图片作为查询样本，另一个就是正样本，别的图片augment之后的结果就是负样本。
 
 ![](https://files.mdnice.com/user/76269/1b0120da-9680-4746-811a-840dc05e7c52.png)
+=======
+![](../img/ml3/image8.png#center)
+一个现实的例子是我们对于所有输入的图片生成两个augmented图片，那么以其中一个图片作为查询样本，另一个就是正样本，别的图片augment之后的结果就是负样本。
+
+![](../img/ml3/image9.png#center)
+>>>>>>> 1ba52e2aa69c1338025fa58e9bb35071595dcb64
 
 这里的$q,p_ 1$可以在pixel space上差距极大，但是我们希望他们在我们学到的semantic space上距离接近。我们的优化目标是**InfoNCELoss**:
 
@@ -267,7 +300,11 @@ $$k(Z_ i,Z_ j)=\langle \phi(Z_ i),\phi(Z_ j)\rangle_ H$$
 
 这里的$H$就是Hilbert space,而$k$Rreproducing Kernel。
 
+<<<<<<< HEAD
 ![](https://files.mdnice.com/user/76269/fb0e27a0-d763-4802-a8df-6e3351cd97a2.png)
+=======
+![](../img/ml3/image10.png#center)
+>>>>>>> 1ba52e2aa69c1338025fa58e9bb35071595dcb64
 
 因为我们关心的只是样本之间的相似性，所以我们不用真的知道或者能算$\phi(Z_ i)$,我们只需要算样本之间的$k$就ok了。
 
@@ -289,7 +326,11 @@ $$\Omega(w)=\prod_ i \mathbb{1}[\sum_ jW_ {ij}=1]$$
 $$P(W;K_ z)\propto \Omega(W)\cdot \prod_ {\{i,j\}\in [n]^2}k(Z_ i,Z_ j)^{W_ {i,j}}  $$
 
 
+<<<<<<< HEAD
 ![](https://files.mdnice.com/user/76269/3a37f4cc-947a-418b-aad0-2629e29f1be7.png)
+=======
+![](../img/ml3/image11.png#center)
+>>>>>>> 1ba52e2aa69c1338025fa58e9bb35071595dcb64
 
 ### InfoNCE and Spectral Clustering
 
@@ -310,7 +351,11 @@ $$H_ \pi^k(Z)=-\mathbb{E}_ {W_ X\sim P[\cdot;\pi]}\log P[W_ Z=W_ X;K_ z]$$
 接下来用一个原论文中的重要结论: 对于Unitary out-deg $\Omega(w)$, 
 $$W_ i\sim M(1, \frac{\pi_ i}{\sum_ j \pi_ {i,j}})$$
 也就是我们按照$\frac{\pi_ i}{\sum_ j \pi_ {i,j}}$取样一个one-hot vector。
+<<<<<<< HEAD
 ![](https://files.mdnice.com/user/76269/c987d380-c213-438c-929a-ef78dcd0d06a.png)
+=======
+![](../img/ml3/image12.png#center)
+>>>>>>> 1ba52e2aa69c1338025fa58e9bb35071595dcb64
 因为每一行是独立的，所以我们有:
 $$H_ \pi^k(Z)=-\sum_ i\mathbb{E}_ {W_ {X,i}}\log P[W_ {Z,i}=W_ {X,i};K_ z]$$
 这里$W_ {X,i}$代表$W_ X$的第$i$行(one-hot 向量)。
@@ -404,7 +449,11 @@ SNE很经典，但是有如下两个缺点的
 
 2. **拥挤问题(crowding problem)**
 
+<<<<<<< HEAD
 ![](https://files.mdnice.com/user/76269/bea490d6-5209-4e58-a50b-56e964de53c1.png)
+=======
+![](../img/ml3/image13.png#center)
+>>>>>>> 1ba52e2aa69c1338025fa58e9bb35071595dcb64
 比如说考虑一个$\{0,1\}^d$的grid,对于$r=10$的情况有$2^{10}$个可以放的位置，但是投影到$r=2$上就只有$2^2$个了，全挤到一块分不开了。
 
 **为了解决第一个问题**，t-SNE的做法是，把所有的距离放一起做运算，捏成一个概率分布，优化一个
@@ -429,4 +478,8 @@ $$p_ {i j}=\frac{(1+||y_ i-y_ j||^2)^{-1}}{\sum_ {k\neq l}(1+||y_ l-y_ k||^2)^{-
 没了，感觉这一部分大量参考了[这篇文献](https://jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf)。
 
 ### A side note:
+<<<<<<< HEAD
 If you are interested in clustering, you can also check out [this website](https://leo1oel.github.io/clustering/), which contains a survey of clustering algorithms(the pdf file link is in the website). It's a project done by me and [Yiming Liu](https://leo1oel.github.io/)
+=======
+If you are interested in clustering, you can also check out [this website](https://leo1oel.github.io/clustering/), which contains a survey of clustering algorithms(the pdf file link is in the website). It's a project done by me and my friend [Yiming Liu](https://leo1oel.github.io/).
+>>>>>>> 1ba52e2aa69c1338025fa58e9bb35071595dcb64

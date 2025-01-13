@@ -71,10 +71,24 @@ menu:
     name: Tags
     url: tags/
     weight: 1000
+  - identifier: search
+    name: Search
+    url: search/
+    weight: 100
+  - identifier: archives
+    name: Archive
+    url: archives/
+    weight: 10
   - identifier: wiki
     name: About Me
     url: https://knightnemo.github.io
     weight: 114514
 
 favicon: icon.png
+
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON # necessary for search
 

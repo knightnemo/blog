@@ -6,8 +6,6 @@ ShowToc: true
 tags: ["machine-learning", "computer-science", "algebra", "math", "artificial-intelligence", "algorithm"]
 summary: "This is the second article in the Machine Learning Series. It covers the first part of unsupervised learning, including topics like Dimension Reduction, PCA, k-NN, LSH and Metric Learning."
 ---
-# Machine Learning: Unsupervised Learning I
-
 ## Dimension Reduction
 
 对于输入的一系列点: $x_ 1,...,x_ n\in \mathbb{R}^d$,我们想要在一个更低维度的空间研究他们，一种常见的方法就是Random Projection。
