@@ -1,6 +1,6 @@
 ---
 title: "Machine Learning Series: 2.Unsupervised Learning(I)"
-date: 2025-01-02
+date: 2024-12-02
 draft: false
 ShowToc: true
 tags: ["machine-learning", "computer-science", "algebra", "math", "artificial-intelligence", "algorithm"]

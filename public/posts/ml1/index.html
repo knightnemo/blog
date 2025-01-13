@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/blog/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=blog/livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Machine Learning Series: 1.Optimization, Generalization and Supervised Learning | Nemo&#39;s Blog</title>
+<meta name="keywords" content="machine-learning, computer-science, optimization, math, artificial-intelligence">
+<meta name="description" content="This is the first article in the Machine Learning Series. It covers the basics of optimization(GD,SGD,SVRG,Mirror Descent,Linear Coupling), generalization(No Free Lunch, PAC Learning, VC Dimension), and supervised learning(Linear Regression, Logistic Regression, Compressed Sensing).">
+<meta name="author" content="Nemo">
+<link rel="canonical" href="http://localhost:1313/blog/posts/ml1/">
+<link crossorigin="anonymous" href="/blog/assets/css/stylesheet.45e028aa8ce0961349adf411b013ee39406be2c0bc80d4ea3fc04555f7f4611a.css" integrity="sha256-ReAoqozglhNJrfQRsBPuOUBr4sC8gNTqP8BFVff0YRo=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/blog/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/blog/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/blog/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/blog/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/blog/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/blog/posts/ml1/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY" crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "$", right: "$", display: false}
+        ]
+    });
+});
+</script>
+
+
+<meta property="og:url" content="http://localhost:1313/blog/posts/ml1/">
+  <meta property="og:site_name" content="Nemo&#39;s Blog">
+  <meta property="og:title" content="Machine Learning Series: 1.Optimization, Generalization and Supervised Learning">
+  <meta property="og:description" content="This is the first article in the Machine Learning Series. It covers the basics of optimization(GD,SGD,SVRG,Mirror Descent,Linear Coupling), generalization(No Free Lunch, PAC Learning, VC Dimension), and supervised learning(Linear Regression, Logistic Regression, Compressed Sensing).">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-11-09T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-11-09T00:00:00+00:00">
+    <meta property="article:tag" content="Machine-Learning">
+    <meta property="article:tag" content="Computer-Science">
+    <meta property="article:tag" content="Optimization">
+    <meta property="article:tag" content="Math">
+    <meta property="article:tag" content="Artificial-Intelligence">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Machine Learning Series: 1.Optimization, Generalization and Supervised Learning">
+<meta name="twitter:description" content="This is the first article in the Machine Learning Series. It covers the basics of optimization(GD,SGD,SVRG,Mirror Descent,Linear Coupling), generalization(No Free Lunch, PAC Learning, VC Dimension), and supervised learning(Linear Regression, Logistic Regression, Compressed Sensing).">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "http://localhost:1313/blog/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Machine Learning Series: 1.Optimization, Generalization and Supervised Learning",
+      "item": "http://localhost:1313/blog/posts/ml1/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Machine Learning Series: 1.Optimization, Generalization and Supervised Learning",
+  "name": "Machine Learning Series: 1.Optimization, Generalization and Supervised Learning",
+  "description": "This is the first article in the Machine Learning Series. It covers the basics of optimization(GD,SGD,SVRG,Mirror Descent,Linear Coupling), generalization(No Free Lunch, PAC Learning, VC Dimension), and supervised learning(Linear Regression, Logistic Regression, Compressed Sensing).",
+  "keywords": [
+    "machine-learning", "computer-science", "optimization", "math", "artificial-intelligence"
+  ],
+  "articleBody": "0.饭后甜品，你不能指望跟正餐一起 Everything should be made as simple as possible, but not simpler. Albert Einstein.\n记得高三的时候写过一篇作文，文章的立意大概是 “整顿旗鼓再出发” 。是啊，多少次，我们奋力狂奔，迎接着狂风骤雨的敲打，却不愿意放慢脚步，从对未来不确定性的焦虑之中跳脱出来，看看自己的来时路，看看昨日之我、今日之我。在忙忙叨叨之中时光便流逝掉了，有时不妨做点 reflection,整理一下杂乱的思绪和没想明白的问题。\n另一个落在实处的动机是我发现我学东西有个特点，就是忘东西很快。如果不留下点东西呢，会忘，然后忘了没有笔记又很难捡起来。 所以我想，为什么不在自己对这个领域的内容认识最深刻的时候留下点记忆，寄希望于未来的自己或者或许对机器学习有兴趣的读者能够通过今日的一篇文章了解一些今日之我所思所想的一些内容呢，于是就诞生了这篇文章。\n但这件事怎么看都还是很呆，都考完了，然后在写的过程中肯定又能学到点东西。一位朋友跟我说 “饭后甜品，你不能指望跟正餐一起” ，于是本着一个品味甜品的食客的心态，我决定将这篇文章尽量写的轻量化一点、故事性强一点，穿起一个思考的主线。\n1. Optimization 优化问题自然而然地出现在许多应用领域中。无论人们做什么，在某些时候，他们都会产生一种想要以最佳方式组织事物的渴望。这种意图，当被转换成数学形式时，就会变成某种类型的优化问题。下面介绍几种优化算法，包括：Gradient Descent, Stochastic Gradient Descent, SVRG, Mirror Desent, Linear Coupling.\n1.1 L-Smooth \u0026 Convex 在优化函数的时候，我们往往需要一些有关函数性质的保障，才能够确保他有好的收敛率。\nL-smooth 以下三条等价：\n$f(x) \\leq f(x_0) + \\langle \\nabla f(x_0), x-x_0 \\rangle + \\frac{L}{2}||x-x_0||^2$\n$|\\lambda_{\\nabla^2 f(x)}| \\leq L$\n$||\\nabla f(x) - \\nabla f(y)|| \\leq L||x-y||$\n注意到L-smooth其实告诉我们的是梯度变化不会太快，另外一个有趣的看法是：\nUpper Bound: $f(x) \\leq f(x_0) + \\langle \\nabla f(x_0), x-x_0 \\rangle + \\frac{L}{2}||x-x_0||^2$ Lower Bound: $f(x) \\geq f(x_0) + \\langle \\nabla f(x_0), x-x_0 \\rangle - \\frac{L}{2}||x-x_0||^2$ 也就是说给定一个点$f(x_0)$的零阶和一阶信息，我们就可以获得别的点的函数值的一个二次型的上下界。 Convex 以下四条等价：\n$ f(x) \\geq f(x_0) + \\langle \\nabla f(x_0), x - x_0 \\rangle $ $ f(x) \\leq f(x_0) + \\langle \\nabla f(x), x - x_0 \\rangle $ $ \\lambda_{\\min}(\\nabla^2 f(x)) \\geq 0 $ $ \\frac{1}{T} \\sum_{i=1}^{T} f(x_i) \\geq f(\\bar{x}), \\quad \\bar{x} = \\frac{1}{T} \\sum_{i=1}^{T} x_i $ $\\mu$-strongly Convex 以下三条等价：\n$ f(x) \\geq f(x_0) + \\langle \\nabla f(x_0), x - x_0 \\rangle + \\frac{\\mu}{2} |x - x_0|^2 $ $ \\lambda_{\\min}(\\nabla^2 f(x)) \\geq \\mu $ $ |\\nabla f(x) - \\nabla f(y)| \\geq \\mu |x - y| $ Convex \u0026 L-Smooth: 在一个函数又convex又L-Smooth的情况下，我们会有一些更好的性质：\nThm.1 $$ f(y) - f(x) - \\langle \\nabla f(x), y - x \\rangle \\geq \\frac{1}{2L} |\\nabla f(x) - \\nabla f(y)|^2 $$\n证明如下:\n令 $h(y) = f(y) - f(x) - \\langle \\nabla f(x), y - x \\rangle$\n注意到 $$ \\nabla h(y) = \\nabla f(y) - \\nabla f(x) $$ $$ \\nabla^2 h(y) = \\nabla^2 f(y) $$ 所以说$h(y)$也是convex且L-smooth的，而且最小值点在$y=x$处取的。 所以,\n$$ h(x) \\leq h(y - \\frac{1}{L} \\nabla h(y))\\ $$ $$\\leq h(y) - \\frac{1}{L} |\\nabla h(y)|^2 + \\frac{1}{2L} |\\nabla h(y)|^2 $$ $$ =h(y) - \\frac{1}{2L} |\\nabla h(y)|^2 $$\n因此,\n$$ f(y) - f(x) - \\langle \\nabla f(x), y - x \\rangle \\geq \\frac{1}{2L} |\\nabla f(y)-\\nabla f(x)|^2 $$\nThm.2 $$ \\langle \\nabla f(x) - \\nabla f(y), x - y \\rangle \\geq \\frac{1}{L} |\\nabla f(x) - \\nabla f(y)|^2$$\n这个的证明可以由Thm.1交换$x,y$次序之后相加得到。\n1.2 Gradient Descent GD的update rule如下: $$x_{t+1}=x_{t}-\\eta \\nabla f(x_t)$$ 在以下三种情况下，分别有不同的收敛率：\nConvex, L-Smooth $$ x_{t+1} = x_t - \\eta \\nabla f(x_t) $$\n$$ f(x_{t+1}) \\leq f(x_t) + \\langle \\nabla f(x_t), x_{t+1} - x_t \\rangle + \\frac{L}{2} |x_{t+1} - x_t|^2 $$\n$$ = f(x_t) - \\eta |\\nabla f(x_t)|^2 - \\frac{L \\eta^2}{2} |\\nabla f(x_t)|^2 $$\n取$\\eta \\leq \\frac{1}{L}$:\n$$ f(x_{t+1}) \\leq f(x_t) - \\frac{\\eta}{2} |\\nabla f(x_t)|^2 $$\n由convexity:\n$$ f(x_{t+1}) \\leq f(x^*) + \\langle \\nabla f(x_t), x_t - x^* \\rangle - \\frac{\\eta}{2} |\\nabla f(x_t)|^2 $$\n$$ = f(x^*) - \\frac{1}{\\eta} \\langle x_{t+1} - x_t, x_t - x^* \\rangle - \\frac{1}{2\\eta} |x_{t+1} - x_t|^2 $$\n$$ = f(x^*) - \\frac{1}{2\\eta} |x_{t+1} - x^*|^2 + \\frac{1}{2\\eta} |x_t - x^*|^2 $$\n接下来我们做telescope:\n$$ \\sum_{t=0}^{T-1} (f(x_{t+1}) - f(x^*)) \\leq \\frac{1}{2\\eta} (|x_0 - x^*|^2 - |x_T - x^*|^2) $$\n因为$f(x_t)$是单调递减的(convex保证)\n$$ f(x_T) - f(x^*) \\leq \\frac{1}{2\\eta T} |x_0 - x^*|^2 = \\epsilon $$ 所以说 $$ T = \\frac{|x_0 - x^*|^2}{2\\eta \\epsilon} = O\\left(\\frac{L}{\\epsilon}\\right) $$ 在这种情况下需要迭代$O(\\frac{1}{\\epsilon})$次，收敛率为$O(\\frac{1}{T})$.\n$\\mu$-strongly Convex \u0026 L-smooth 这里起手式我们卡$||x-x^*||$: $$ |x_{t+1} - x^*|^2 = |x_t - \\eta \\nabla f(x_t) - x^*|^2 $$\n$$ = |x_t - x^*|^2 - 2\\eta \\langle \\nabla f(x_t), x_t - x^* \\rangle + \\eta^2 |\\nabla f(x_t)|^2 $$ 因为强凸性： $$ f(y) \\geq f(x) + \\langle \\nabla f(x), y - x \\rangle + \\frac{\\mu}{2} |y - x|^2 $$\n代入 $x = x_t$, $y = x^*$:\n$$ f(x^*) \\geq f(x_t) + \\langle \\nabla f(x_t), x^* - x_t \\rangle + \\frac{\\mu}{2} |x_t - x^*|^2 $$\n$$ \\langle \\nabla f(x_t), x_t - x^* \\rangle \\geq f(x_t) - f(x^*) + \\frac{\\mu}{2} |x_t - x^*|^2 $$ 所以 $$ |x_{t+1} - x^*|^2 \\leq |x_t - x^*|^2 - 2\\eta (f(x_t) - f(x^*) + \\frac{\\mu}{2} |x_t - x^*|^2） + \\eta^2 |\\nabla f(x_t)|^2 $$ 根据之前的Thm.1: $$ \\frac{1}{2L} |\\nabla f(x_t)|^2 \\leq f(x_t) - f(x^*) $$ 所以 $$ |x_{t+1} - x^*|^2 \\leq (1 - \\eta \\mu) |x_t - x^*|^2 + (2\\eta^2 L - 2\\eta )(f(x_t) - f(x^*)) $$\n取 $\\eta = \\frac{1}{L}$:\n$$ |x_{t+1} - x^*|^2 \\leq (1 - \\frac{\\mu}{L}) |x_t - x^*|^2 $$ 所以说Linear Convergence, 反映在$f(x)$上: $$f(x_T)\\leq f(x^*)+\\frac{L}{2}||x_T-x^*||^2$$ $$\\leq f(x^*)+\\frac{L}{2}(1 - \\frac{\\mu}{L})^T||x_0-x^*||^2$$ 也就是说需要迭代次数$O(log(\\frac{1}{\\epsilon}))$, 收敛率为Linear Convergence.\nRemark: 对于$\\mu$-strongly Convex \u0026 L-smooth的函数有如下性质：$ \\frac{\\mu}{2} | \\mathbf{x}^* - \\mathbf{x} |^2 \\leq f(\\mathbf{x}) - f^* \\leq \\frac{L}{2} | \\mathbf{x}^* - \\mathbf{x} |^2 $ $ \\frac{1}{2L} | \\nabla f(\\mathbf{x}) |^2 \\leq f(\\mathbf{x}) - f^* \\leq \\frac{1}{2\\mu} | \\nabla f(\\mathbf{x}) |^2 $根据这些性质有一个更为简洁的证明。\nL-Smooth 根据第一种情况下的分析： $$ f(x_{t+1}) - f(x_t) \\leq -\\frac{\\eta}{2} |\\nabla f(x_t)|^2 $$\n然后做Telescope:\n$$ \\min_{k \\in [T]} |\\nabla f(x_t)|^2 \\leq \\frac{2L(f(x_0) - f(x^*))}{T} = \\epsilon^2 $$ 所以说当我们想获得$|\\nabla f(x_t)|^2\u003c\\epsilon$，我们需要 $ T = O\\left(\\frac{1}{\\epsilon^2}\\right) $的迭代次数，收敛率为 $ O\\left(\\frac{1}{\\sqrt{T}}\\right) $。\nRecap: 总结起来大概是: 1.3 Stochastic Gradient Descent Why SGD GD看起来不错，但是有两个问题:\n计算一次full gradient很贵 GD会在local maximum和saddle point（鞍点）卡住 于是我们就会去想，能不能少算几个数据点对应的loss function，同时又能有一些convergence guarantee呢，SGD便是这样的一种算法。\nAlgorithm SGD的update rule如下所示: $$ x_{t+1} = x_t - \\eta G_t, $$ 其中$G_t$满足: $$ \\mathbb{E}[G_t] = \\nabla f(x_t), \\quad \\text{Var}(G_t) \\leq \\sigma^2 $$\nConvergence 下面我们证明SGD在L-Smooth, Convex, $\\text{Var}(G_t) \\leq \\sigma^2$的条件下的收敛率:\n因为L-smooth: $$ \\mathbb{E}[f(x_{t+1})] \\leq f(x_t) + \\mathbb{E}[\\langle \\nabla f(x_t), x_{t+1} - x_t \\rangle] + \\frac{L}{2} \\mathbb{E}[|x_{t+1} - x_t|^2] $$\n$$ \\mathbb{E}[f(x_{t+1})] \\leq f(x_t) - \\eta |\\nabla f(x_t)|^2 + \\frac{L \\eta^2}{2} \\mathbb{E}[|G_t|^2] $$\n根据方差的定义： $$\\mathbb{E}[ ||G_t||^2 ] = \\text{Var}(G_t) + ||\\mathbb{E}[G_t]||^2 \\leq \\sigma^2 + |\\nabla f(x_t)|^2$$ 所以有 $$ \\mathbb{E}[f(x_{t+1})] \\leq f(x_t) + \\left(\\frac{L \\eta^2}{2} - \\eta\\right) |\\nabla f(x_t)|^2 + \\frac{L \\eta^2}{2} \\sigma^2 $$\n取 $\\eta = \\frac{1}{L}$:\n$$ \\mathbb{E}[f(x_{t+1})] \\leq f(x_t) - \\frac{\\eta}{2} |\\nabla f(x_t)|^2 + \\frac{\\eta}{2} \\sigma^2 $$\n根据convexity:\n$$ f(x_t) \\leq f(x^*) + \\langle \\nabla f(x_t), x_t - x^* \\rangle $$\n$$ \\mathbb{E}[f(x_{t+1})] \\leq f(x^*) + \\mathbb{E}[\\langle G_t, x_t - x^* \\rangle] - \\frac{\\eta}{2} |\\nabla f(x_t)|^2 + \\frac{\\eta}{2} \\sigma^2 $$ 又因为 $$ |\\nabla f(x_t)|^2 = \\mathbb{E}[|G_t|^2] - \\text{Var}(G_t) \\geq \\mathbb{E}[|G_t|^2] - \\sigma^2 $$\n所以 $$ \\mathbb{E}[f(x_{t+1})] \\leq f(x^*) + \\mathbb{E}[\\langle G_t, x_t - x^* \\rangle - \\frac{\\eta}{2} |G_t|^2] + \\eta \\sigma^2 $$ 注意到 $$ \\langle G_t, x_t - x^* \\rangle - \\frac{\\eta}{2} |G_t|^2 $$\n$$ = -\\frac{1}{2\\eta} |(x_{t+1} - x_t) - (x^* - x_t)|^2 + \\frac{1}{2\\eta} |x_t - x^*|^2 $$\n$$ = \\frac{1}{2\\eta} (|x_t - x^*|^2 - |x_{t+1} - x^*|^2) $$ 也就是说 $$ \\mathbb{E}[f(x_{t+1})] \\leq f(x^*) + \\frac{\\eta}{2} \\mathbb{E}[|x_t - x^*|^2 - |x_{t+1} - x^*|^2] + \\eta \\sigma^2 $$\n从 $t = 0$ 到 $T-1$求和(telescope):\n$$ \\frac{1}{T}\\sum_{t=0}^{T-1} (\\mathbb{E}[f(x_t)] - f(x^*)) \\leq \\frac{1}{2\\eta T} |x_0 - x^*|^2 + \\eta \\sigma^2 $$\n取 $\\eta = \\frac{\\epsilon}{2\\sigma^2} \\leq \\frac{1}{L}$, 则有:\n$$ T = \\frac{2 \\sigma^2 |x_0 - x^*|^2}{\\epsilon^2} $$\nStochastic Gradient Descent (SGD) 的收敛率是 $ O\\left(\\frac{1}{\\sqrt{T}}\\right) $。\n1.4 SVRG 我们看到了通过Stochastic Gradient可以减少computation cost,但是随之而来的问题是因为 $G_t$拥有的variance,导致原来$O(\\frac{1}{T})$的convergence rate变成了$O(\\frac{1}{\\sqrt{T}})$,于是我们去想，有没有什么办法能够在保持computation cost比较小的情况下同时把variance降下来，SVRG是其中的一种算法，在strongly-convex和l-smooth的情况下最后能够获得和GD一样的convergence rate。\nAlgorithm Procedure SVRG Parameters: update frequency $m$ and learning rate $\\eta$\nInitialize $\\tilde{w}_0$\nIterate: for $s = 1, 2, \\ldots$\n$\\tilde{w} = \\tilde{w}_{s-1}$ $\\tilde{\\mu} = \\frac{1}{n} \\sum_{i=1}^{n} \\nabla l_i(\\tilde{w})$ $w_0 = \\tilde{w}$\nIterate: for $t = 1, 2, \\ldots, m$\ni. Randomly pick $i_t \\in {1, \\ldots, n}$ and update weight\n$ w_t = w_{t-1} - \\eta \\left( \\nabla l_{i_t}(w_{t-1}) - \\nabla l_{i_t}(\\tilde{w}) + \\tilde{\\mu} \\right) $ end\nOption I: set $\\tilde{w}_s = w_m$\nOption II: set $\\tilde{w}_s = w_t$ for randomly chosen $t \\in {0, \\ldots, m - 1}$\nend Convergence Rate 前提假设：\nL-smooth, $l_i$: convex, $f$: strong-convex\nBound $\\mathbb{E}[||v_t||^2]$:\n令 $v_t = \\nabla l_i(w_{t-1}) - \\nabla l_i(\\tilde{w}) + \\tilde{u}$\n$\\mathbb{E}[||v_t||^{2}] = \\mathbb{E}[(\\nabla l_i(w_{t-1}) - \\nabla l_i(\\tilde{w}) + \\tilde{u})^2]$\n因为$ (a+b)^2 \\leq 2a^2 + 2b^2 $：\n$\\leq 2\\mathbb{E}[(\\nabla l_i(w_{t-1}) - \\nabla l_i(w^*))^2] + 2\\mathbb{E}[(\\nabla l_i(w^*) - \\nabla l_i(\\tilde{w}) + \\tilde{u})^2]$\n$= 2\\mathbb{E}[(\\nabla l_i(w_{t-1}) - \\nabla l_i(w^*))^2] $\n$+ 2\\mathbb{E}[\\left((\\nabla l_i(w^*) - \\nabla l_i(\\tilde{w}))-\\mathbb{E}[(\\nabla l_i(w^*) - \\nabla l_i(\\tilde{w}))]\\right)^2]$\n又因为$$\\mathbb{E}[(x - \\mathbb{E}[x])^2] = \\mathbb{E}[x^2] - (\\mathbb{E}[x])^2 \\leq \\mathbb{E}[x^2]:$$\n所以$\\mathbb{E}[||v_t||^{2}]$\n$\\leq 2\\mathbb{E}[(\\nabla l_i(w_{t-1}) - \\nabla l_i(w^*))^2] + 2\\mathbb{E}[(\\nabla l_i(w^*) - \\nabla l_i(\\tilde{w}))^2]$\n根据Thm.1:\n$\\leq 4L(f(w_{t-1}) - f(w^*) + f(\\tilde{w}) - f(w^*))$\nBound $||w_t-w^*||$ $$ \\mathbb{E}[|w_{t} - w^*|^2] = \\mathbb{E}[|w_t - w_{t-1} + w_{t-1} - w^*|^2] $$ $$ = \\mathbb{E}[|w_{t} - w^*|^2] + 2 \\mathbb{E}[\\langle w_t - w_{t-1}, w_{t-1} - w^* \\rangle] + \\mathbb{E}[|w_t - w_{t-1}|^2] $$\n$$ = |w_{t-1} - w^*|^2 - 2\\eta \\mathbb{E}[\\langle v_t, w_{t-1} - w^* \\rangle] + \\eta^2 \\mathbb{E}[v_t^2] $$\n$$ \\leq |w_{t-1} - w^*|^2 - 2\\eta \\mathbb{E}[\\langle v_t, w_{t-1} - w^* \\rangle] + 4\\eta^2 L(f(w_{t-1}) - f(w^*) + f(\\tilde{w}) - f(w^*)) $$\n$$ = |w_{t} - w^*|^2 - 2\\eta \\langle \\nabla f(w_{t-1}), w_{t+1} - w^* \\rangle + 4L\\eta^2 (f(w_{t-1}) - f(w^*) + f(\\tilde{w}) - f(w^*)) $$ 又因为convexity： $$ f(w_{t-1}) - f(w^*) \\geq \\langle \\nabla f(w_{t-1}), w_{t-1} - w^* \\rangle $$\n$$ \\Rightarrow \\mathbb{E}[|w_{t} - w^*|^2] \\leq |w_{t-1} - w^*|^2 - 2\\eta (f(w_{t-1}) - f(w^*)) + 4L\\eta^2 (f(w_{t-1}) - f(w^*) + f(\\tilde{w}) - f(w^*)) $$\n$$ = |w_{t+1} - w^*|^2 + 4L\\eta^2 (f(\\tilde{w}) - f(w^*)) + 2\\eta (2L\\eta - 1)(f(w_{t-1}) - f(w^*)) $$\nTelescope 从$\\sum_{t=1}^{m}$，用option 2: $$ \\mathbb{E}[|w_m - w^*|^2] \\leq \\mathbb{E}[|\\tilde{w} - w^*|^2] + 4mL\\eta^2 (f(\\tilde{w}) - f(w^*)) + 2m\\eta (2L\\eta - 1) \\mathbb{E}[f(\\tilde{w}_s) - f(w^*)] $$\n重新整理成:\n$$ \\mathbb{E}[|w_m - w^*|^2] + 2m\\eta (1 - 2L\\eta) \\mathbb{E}[f(\\tilde{w}_s) - f(w^*)] $$\n$$ \\leq \\mathbb{E}[|\\tilde{w} - w^*|^2] + 4mL\\eta^2 (f(\\tilde{w}) - f(w^*)) $$\n$$ \\leq \\left(\\frac{2}{u} + 4mL\\eta^2\\right)(f(\\tilde{w}) - f(w^*)) $$\n所以\n$$ \\mathbb{E}[f(\\tilde{w}_s) - f(w^*)] \\leq (\\frac{1}{u\\eta (1 - 2L\\eta)m} + \\frac{2L\\eta}{1-2L\\eta}) $$\n$$\\cdot \\mathbb{E} [f(\\tilde{w}_{s - 1})-f(w^*)]$$\n所以收敛率是Linear Convergence, $\\frac{L}{u}$大时比GD快。\n1.5 Mirror Descent Algorithm 对于一个1-strongly convex的Distance Generating Function$w(x)$,我们定义Bergman Divergence:$$V_x(y)=w(y)-w(x)-\\langle \\nabla w(x),y-x \\rangle$$ 然后我们定义: $$\\text{Mirror}_ {x}(\\zeta) = \\arg \\min_ {y} { V_ {x}(y) + \\langle \\zeta, y - x \\rangle } $$\n一个Mirror Descent的定义是 $$ x_{t+1} = \\text{Mirror}_ {x_t} (\\alpha \\nabla f(x_t)) $$\n$$ = \\arg \\min_{y} \\left( w(y) - w(x_t) - \\langle \\nabla w(x_t), y - x_t \\rangle + \\alpha \\langle \\nabla f(x_t), y - x_t \\rangle \\right) $$\nIntuition 第二种视角称为镜像空间 (Mirror space) 视角，一个 Mirror step 可以被视作将偶空间上的梯度下降，即朝另一个新的极值点进行搜索。过程形如：\n将 $x$ 通过 Mirror map 映射到对偶空间上的 $\\theta_k$。 $\\theta_ {k+1} = \\theta_ k - \\alpha \\nabla f(x_k)$。 将 $\\theta_ {k+1}$ 映射回原空间上的 $\\overline{x} _{k+1}$。 将 $\\overline{x}_ {k+1}$ 投影到约束集，投影使用 Bregman divergence 作为其距离，即 $x_ {k+1} = \\arg \\min_ {y} V_ {x_{k+1}}(y)$。 按照 Mirror step 的式子，可以看出 Mirror map 就是 $\\nabla w(\\cdot)$。因此实际过程为：\n$\\theta_k = \\nabla w(x)$。 $\\theta_{k+1} = \\theta_k - \\alpha \\nabla f(x_k)$。 $\\overline{x}_{k+1} = (\\nabla w)^{-1}(\\theta{k+1})$。 $x_{k+1} = \\arg \\min_{y} V_{\\overline{x}_{k+1}}(y)$。 这个视角提出了一点假设，$(\\nabla w)^{-1}(\\overline{x}_{k+1})$ 始终存在，即 ${\\nabla w(x)} = \\mathbb{R}^n$。\nRelationship between GD \u0026 MD 这个问题曾很长一段时间让笔者感到困惑。笔者对于这一块并非很懂，笔者现在的理解是:\n我们知道一个Primal Space和Dual Space的范数之间满足$\\frac{1}{p}+\\frac{1}{q}=1$\nGD是MD在 $\\alpha=\\frac{1}{L}$，primal space取$||·||_2$范数，Distance Generating Function取 $w(x)=\\frac{1}{2} x^2$下的特殊情况。在这种情况下，因为L2-norm的Dual就是L2-norm，所以这个对偶空间就是原空间。\n但是另一种理解方式是，MD是先通过梯度映射到Dual Space之后在这个空间下做GD再逆映射后project回原来的空间中。\nConvergence: 前提条件: $f(x)$ convex, $w(x)$ 1-strongly convex, $\\nabla f(x)\\leq \\rho$\nBound $f(x_t)-f(x^*)$: 因为convexity： $$ \\alpha (f(x_{t+1}) - f(u)) \\leq \\langle \\alpha \\nabla f(x_t), x_t - u \\rangle $$ 又因为MD的更新规则： $$ x_{t+1} = \\arg \\min_{y} \\left( V_{x_t}(y) + \\langle \\alpha \\nabla f(x_t), y - x_t \\rangle \\right) $$ 所以说由最小值点梯度等于0: $$ \\alpha \\nabla f(x_t) = - \\nabla V_{x_t}(x_{t+1}) $$ 因此 $$ \\alpha (f(x_t) - f(u)) \\leq \\langle \\alpha \\nabla f(x_t), x_t - x_{k+1} \\rangle + \\langle - \\nabla V_{x_t}(x_{k+1}), x_{k+1} - u \\rangle $$ 接下来我们证明一个重要的triangle inequality: $$ \\langle - \\nabla V_{x_t}(y), y - u \\rangle = \\langle \\nabla w(x) - \\nabla w(y), y - u \\rangle $$\n$$ = (w(u) - w(x)) - \\langle \\nabla w(x), u - x \\rangle - (w(y) - w(x) - \\langle \\nabla w(x), y - x \\rangle) $$\n$$ = V_x(u) - V_x(y) - V_y(u) $$ 带回原式: $$ \\alpha (f(x_t) - f(u)) \\leq \\langle \\alpha \\nabla f(x_t), x_t - x_{k+1} \\rangle + V_{x_k}(u) - V_{x_k}(x_{k+1}) - V_{x_{k+1}}(u) $$\n由于DGF的1-strongly convex:\n$$ \\leq \\langle \\alpha \\nabla f(x_t), x_t - x_{k+1} \\rangle- \\frac{1}{2} |x_{k+1} - x_t|^2 + V_{x_k}(u) - V_{x_{k+1}}(u) $$ 这步是前两项做个配方法: $$ \\leq \\frac{\\alpha^2}{2} |\\nabla f(x_t)|^2 + V_{x_k}(u) - V_{x_k}(x_{k+1}) $$\nTelescoping: $$ \\alpha T (f(\\overline{x}) - f(x_t)) \\leq \\sum \\text{LHS} \\leq \\sum \\text{RHS} $$ $$ \\leq \\frac{\\alpha^2 T}{2} \\cdot \\rho^2 + V_{x_0}(x^*) - V_{x_T}(x^*) $$ 所以说 $$ f(\\overline{x}) - f(x^*) \\leq \\frac{\\alpha}{2} \\rho^2 + \\frac{\\Theta}{\\alpha T} $$ 令$\\alpha = \\sqrt{\\frac{2\\Theta}{T \\rho^2}}$.\n有$f(x_T) - f(x^*) \\leq \\sqrt{\\frac{2\\Theta}{T }}\\rho= \\epsilon$ 于是我们得到了我们的收敛率 $$ T = \\Omega \\left( \\frac{\\rho^2}{\\epsilon^2} \\right) $$\n1.6 Linear Coupling Wishful Thinking 我们通过1.5的分析已经知道Mirror Descent有 $ T = O\\left(\\frac{\\rho^2}{\\epsilon^2}\\right) $的收敛率\n然后我们知道在GD中 $$ f(x_{t+1}) - f(x_t) \\leq -\\frac{1}{2L} |\\nabla f(x_t)|^2 $$ 所以说在gradient比较大的时候: $$ |\\nabla f(x_t)| \u003e \\rho : \\Omega\\left(\\frac{L \\epsilon}{\\rho^2}\\right) \\text{ steps} $$\n在gradient比较小的时候MD:\n$$ |\\nabla f(x_t)| \u003c \\rho : \\Omega\\left(\\frac{\\rho^2}{\\epsilon^2}\\right) \\text{ steps} $$ 所以我们想能不能在梯度大的时候跑GD，在梯度小的时候跑MD，这样会获得一个更好的收敛率\nCoupling:\n$$\\Omega ( \\max { \\frac{L \\epsilon}{\\rho^2}, \\frac{\\rho^2}{\\epsilon^2} })$$ 取$\\rho = (L \\epsilon^{3})^\\frac{1}{4}$: $$ \\Omega\\left(\\sqrt{\\frac{L}{\\epsilon}}\\right) \\text{ steps} $$\nAlgorithm 初始化 $$x_0 = y_0 = z_0$$ 每一步更新,更新$x$: $$ x_{k+1} = \\tau z_k + (1 - \\tau) y_k $$ 更新$y$: $$ y_{k+1} = \\arg \\min_{y \\in \\mathcal{Q}} { \\frac{L}{2} |y - x_{k+1}|^2 + \\langle \\nabla f(x_{k+1}), y - x_{k+1} \\rangle } $$\n$$ = x_{k+1} - \\frac{1}{L} \\nabla f(x_{k+1}) \\quad \\text{(GD step)} $$\n更新$z$: $$ z_{k+1} = Mirror_{z_k} (\\alpha \\nabla f(x_{k+1})) $$ Convergence 根据MD的分析: $$ \\alpha \\langle \\nabla f(x_{k+1}), z_k - u \\rangle \\leq \\frac{\\alpha^2}{2} |\\nabla f(x_{k+1})|^2 + V_{z_k}(u) - V_{z_{k+1}}(u) $$ 由于 $$ f(x_{k+1}) - f(y_{k+1}) \\geq \\frac{1}{2L} |\\nabla f(x_{k+1})|^2$$ 所以原式 $$ \\leq \\alpha^2 L (f(x_{k+1}) - f(y_{k+1})) + V_{z_k}(u) - V_{z_{k+1}}(u) $$ 又因为convexity: $$ \\alpha (f(x_{k+1}) - f(u)) \\leq \\alpha \\langle \\nabla f(x_{k+1}), x_{k+1} - u \\rangle $$\n$$ = \\alpha \\langle \\nabla f(x_{k+1}), z_k - u \\rangle + \\alpha \\langle \\nabla f(x_{k+1}), x_{k+1} - z_k \\rangle $$ 前面一项我们已经MD做掉了，后面一项 $$ \\alpha \\langle \\nabla f(x_{k+1}), x_{k+1} - z_k \\rangle $$\n$$ = \\frac{(1 - \\tau) \\alpha}{\\tau} \\langle \\nabla f(x_{k+1}), y_k - x_{k+1} \\rangle $$\n$$ \\leq \\frac{(1 - \\tau) \\alpha}{\\tau} (f(y_k) - f(x_{k+1})) $$ 所以说 $$ \\alpha (f(x_{k+1}) - f(u)) \\leq \\alpha^2 L (f(x_{k+1}) - f(y_{k+1})) + \\frac{(1 - \\tau) \\alpha}{\\tau} (f(y_k) - f(x_{k+1})) $$\n$$+ V_{z_k}(u) - V_{z_{k+1}}(u) $$ 令 $ \\frac{(1 - \\tau) \\alpha}{\\tau} = \\alpha^2 L $， 有 $$ f(x_{k+1}) - f(u) \\leq \\alpha^2 L (f(y_k) - f(y_{k+1})) + V_{z_k}(u) - V_{z_{k+1}}(u) $$\nTelescope:\n$$ \\alpha T (f(\\overline{x}) - f(x^*)) \\leq \\alpha^2 L (f(y_0) - f(y_T)) + V_{x_0}(x^*) - V_{z_T}(x^*) $$\n假设 $f(y_0) - f(x^*) = d$, $V_{x_0}(x^*) = \\Theta$ 有 $$ f(x_i) - f(x^*) \\leq \\frac{\\alpha dL}{T} + \\frac{\\Theta}{\\alpha T} $$ 令$ \\alpha = \\sqrt{\\frac{\\Theta}{dL}}$, 有 $$ f(\\overline{x}) - f(x^*) \\leq \\frac{2 \\sqrt{\\Theta Ld}}{T}$$\n取 $ T = 4 \\sqrt{\\frac{L\\Theta}{d}}$, 有$$f(\\overline{x})-f(x^*)\\leq \\frac{d}{2}$$ 所以说我们每 $2\\epsilon\\rightarrow \\epsilon$过程重新调整一次$\\tau,\\alpha$，最后得到的迭代次数是: $$O(\\sqrt{\\frac{L \\Theta}{\\epsilon}})+O(\\sqrt{\\frac{L \\Theta}{2\\epsilon}})+O(\\sqrt{\\frac{L \\Theta}{4\\epsilon}})+…=O(\\sqrt{\\frac{L \\Theta}{\\epsilon}})$$ Nesterov告诉我们$O(\\frac{1}{T^2})$(aka.$O(\\sqrt{\\frac{L}{\\epsilon}})$)就是我们对于convex且L-smooth函数能得到的最好结果了，所以Linear Coupling确实很牛。\n1.7 Non-Convex Optimization Matrix Completion $A \\in \\mathbb{R}^{m \\times n}$满足以下假设:\n1° $A$ is low rank\n2° Known entries are uniformly distributed\n3° Incoherence: $$ A = U \\Sigma V^T \\quad \\text{for } i \\in [n], j \\in [m]$$ $$\\exists \\mu: 1 \\leq \\mu \\leq \\frac{min(m,n)}{r}$$$$ |e_i^T U| \\leq \\sqrt{\\frac{\\mu r}{n}}, \\quad |e_j^T V| \\leq \\sqrt{\\frac{\\mu r}{m}}$$\n那么我们的目标($P_\\Omega$代表不知道的元素都mask掉): $$ \\min |P_\\Omega(UV^T) - P_\\Omega(A)|_F^2 $$ 可以有以下算法:\nAlgorithm:\nFor $t = 0, 1, 2, \\ldots, T$\n$V^{t+1} \\leftarrow \\arg \\min_V ||P_{\\Omega}(U^t V) - P_{\\Omega}(A)||_F^2$ $U^{t+1} \\leftarrow \\arg \\min_U ||P_{\\Omega}(U V^{t}) - P_{\\Omega}(A)||_F^2$ Escaping Saddle Points SGD在非凸优化中有一些GD之类算法没有的好处，这就是噪声所带来的随机性所展现的优势:\nThm.If 𝐿 is smooth, bounded and strict saddle (actually more general version, applies to points with small gradients, rather than zero gradients), and Hessian is smooth. If SGD noise has non-negligible variance in every direction with constant probability, SGD will escape all saddle points and local maxima, converge to a local minimum after polynomial number of steps.\n其中Strict Saddle Point是指一个点$\\nabla f(x)=0$， $\\nabla^2 f(x)$又有正特征值又有负特征值。Flat Saddle Point是指一个点$\\nabla f(x)=0$， $\\nabla^2 f(x)$的所有特征值都大于等于0，且有一个等于0的特征值。\n2.Generalization 2.1 No Free Lunch Thm. Thm. 设 $A$ 为在定义域 $\\mathcal{X}$ 上相对于 0-1 损失的二元分类任务的任意学习算法。设 $m$ 为小于 $|\\mathcal{X}|/2$ 的任意数，表示训练集大小。则存在一个在 $\\mathcal{X} \\times {0, 1}$ 上的分布 $\\mathcal{D}$ 使得：\n存在一个函数 $f : \\mathcal{X} \\to {0, 1}$，使得 $L_\\mathcal{D}(f) = 0$。 以至少 $1/7$ 的概率，对于从 $\\mathcal{D}^m$ 中选取的 $S$，有 $L_\\mathcal{D}(A(S)) \\geq 1/8$。 这个的直觉在于由Markov不等式，$\\mathbb{E}_{S \\sim D^m }[L_D(A(S))]\\geq \\frac{1}{4}$,也就是说对于一个完全靠背诵的算法: 假如见过$(X,y)$,输出$y$，假如没见过就随机输出0或1。这样对于一个$|C|=2m$的$X$的子集，这样“背诵+瞎蒙”的loss function是$\\frac{1}{4}$。也就是说，没有什么办法能够从期望上比“背诵+瞎蒙”效果更好，也就是说学习算法失败了。\n证明:\n为了简洁性，不妨设$|C| = 2m$.\n记$T = 2^{2m}$。从$C$到${0, 1}$的函数一共有$f_1, \\ldots, f_T$，共$T$个\n记 $$ D_i({x, y}) = \\frac{1}{|C|} \\quad \\text{if } y = f_i(x) $$ $$ D_i({x, y}) = 0 \\quad \\text{otherwise.} $$\n显然，$L_{D_i}(f_i) = 0$.\n我们接下来证明:\n$$\\max_{i \\in [T]} E_{S \\sim D_{i}^{m}} [ L_{D_i}(A(S)) ] \\geq \\frac{1}{4}$$\n记一共有$k$个可能的从$C$中取样出的$m$个数据点$x_i$序列: 有$k = (2m)^m$，记 $S_j = (x_1, \\ldots, x_m)$ ，记 $S_j^i = \\left( (x_1, f_i(x_1)), \\ldots, (x_m, f_i(x_m)) \\right)$。\n我们只需要取出一个$i \\in [T]$能够让$E_{S \\sim D_i^m} \\left[ L_{D_i}(A(S)) \\right]\\geq \\frac{1}{4}$,那么对应的$D_i$便是我们在NFL中所希望找到的$D$。 $$ \\max_{i \\in [T]} E_{S \\sim D_i^m} \\left[ L_{D_i}(A(S)) \\right] $$\n$$ = \\max_{i \\in [T]} \\frac{1}{k} \\sum_{j=1}^k L_{D_i}(A(S_j^i)) $$\n$$ \\geq \\frac{1}{T} \\sum_{i=1}^T \\frac{1}{k} \\sum_{j=1}^k L_{D_i}(A(S_j^i)) $$\n$$ = \\frac{1}{k} \\sum_{j=1}^k \\frac{1}{T} \\sum_{i=1}^T L_{D_i}(A(S_j^i)) $$\n$$ \\geq \\min_{j \\in [k]} \\frac{1}{T} \\sum_{i=1}^T L_{D_i}(A(S_j^i)) $$ 对于给定的 $j$:\n令$v_1, \\ldots, v_p$ 为$S_j$中没有出现的$x\\in C$, 注意到$p \\geq m$。\n$$ L_{D_i}(A(S_j^i)) = \\frac{1}{2m} \\sum_{x \\in C} \\mathbf{1}[h(x) \\neq f_i(x)] $$\n$$ \\geq \\frac{1}{2m} \\sum_{r=1}^p \\mathbf{1}[h(v_r) \\neq f_i(v_r)] $$\n$$ \\geq \\frac{1}{2p} \\sum_{r=1}^p \\mathbf{1}[h(v_r) \\neq f_i(v_r)] $$\n所以说\n$$ \\frac{1}{T} \\sum_{i=1}^T L_{D_i}(A(S_j^i)) $$\n$$ \\geq \\frac{1}{T} \\sum_{i=1}^T \\frac{1}{2p} \\sum_{r=1}^p \\mathbf{1}[h(v_r) \\neq f_i(v_r)] $$\n我们可以将 $f_1, \\ldots, f_T$ 中的所有函数划分成 $T/2$ 对不相交的函数对，其中对于每一对 $(f_i, f_{i’})$，对于任意 $c \\in C$，都有 $f_i(c) \\neq f_{i’}(c)$。\n于是有 $$ \\frac{1}{2p} \\sum_{r=1}^p \\frac{1}{T} \\sum_{i=1}^T \\mathbf{1}[h(v_r) \\neq f_i(v_r)] = \\frac{1}{4} $$\n所以说 $$ \\max_{i \\in [T]} E_{S \\sim D_i^m} \\left[ L_{D_i}(A(S)) \\right] \\geq \\frac{1}{4} $$\n令$\\mathcal{D} = D_i$:\n如果\n$$ \\Pr \\left[ L_{\\mathcal{D}}(A(S)) \\geq \\frac{1}{8} \\right] \u003c \\frac{1}{7} $$\n那么\n$$ E_{S \\sim \\mathcal{D}^m} \\left[ L_{\\mathcal{D}}(A(S)) \\right] \u003c \\frac{1}{7} \\cdot 1 + \\frac{6}{7} \\cdot \\frac{1}{8} $$\n$$ = \\frac{1}{7} + \\frac{3}{28} = \\frac{1}{4}.\\quad\\blacksquare $$\n2.2 PAC-Learning 一些概念: Hypothesis Class (H) ：能够选择的假设$h$的集合 $ERM_H$ ：选择具有最小empirical loss的假设 $$ ERM_H(S) \\in \\arg\\min_{h \\in H} L_S(h) $$\nRealizability Assumption: 存在 $h^* \\in H$ 使得 $L_{D,f}(h^*) = 0$。这意味着对于每个训练集 $S$，我们有 $L_S(h^*) = 0$。 PAC-Learnable: 如果存在一个函数 $m_H: (0,1)^2 \\to \\mathbb{N}$ 和一个learning algorithm，使得对于任意的 $\\epsilon, \\delta \\in (0,1)$，对于定义在 $X$ 上的任意分布 $D$，以及任意labeling function $f: X \\to {0,1}$，若Realizability Assumption在 $H, D, f$ 下成立，则当在由 $D$ 生成并由 $f$ 标记的 $m \\geq m_H(\\epsilon, \\delta)$ 个独立同分布样本上运行该learning algorithm时，该算法返回一个假设 $h$，使得以至少 $1 - \\delta$ 的概率（在样本选择的随机性上），$L_{D,f}(h) \\leq \\epsilon$。 Finite Classes are PAC-learnable Thm. 给定 $\\delta \\in (0,1)$, $\\epsilon \u003e 0$, 如果 $m \\geq \\frac{\\log(|H|/\\delta)}{\\epsilon}$，那么如果Realizability Assumption成立， 那么对于任意ERM hypothesis $h_S$: $$ \\Pr [ L_D(h_S) \\leq \\epsilon ] \\geq 1 - \\delta $$ Pf. 我们想要upper bound\n$$ \\Pr_{S\\sim \\mathcal{D}^m} [ S | L_D(h(S)) \u003e \\epsilon ] $$\n定义所有不好的假设的集合为: $$ H_B := { h \\in H | L_D(f, h) \u003e \\epsilon } $$ 定义misleading的假设的集合为： $$ M := { S \\mid \\exists h \\in H_B, L_S(h) = 0 } $$ 有 $$ { S \\mid L_D(h(S)) \u003e \\epsilon } \\subseteq M $$ 所以 $$ \\Pr \\left[ L_D(h(S)) \u003e \\epsilon \\right] \\leq \\Pr \\left[ S \\in M \\right] \\leq \\sum_{h \\in H_B} \\Pr \\left[ L_S(h) = 0 \\right] $$ 又因为 $$ \\Pr \\left[ L_S(h) = 0 \\right] = \\prod_{i=1}^m Pr_{x_i\\sim\\mathcal{D}} \\left[ h(x_i) = f(x_i) \\right] $$\n因为 $$ Pr_{x_i\\sim\\mathcal{D}} \\left[ h(x_i) = f(x_i) \\right] = 1 - L_D(f, h) \\leq 1 - \\epsilon $$ 所以\n$$ \\Pr \\left[ L_S(h) = 0 \\right] \\leq (1 - \\epsilon)^m \\leq e^{-m \\epsilon} $$\n$$ |H| \\cdot e^{-m \\epsilon} \\leq \\delta \\implies m = \\frac{\\log(|H|/\\delta)}{\\epsilon}. \\blacksquare $$\nThreshold Functions are PAC-learnable Threshold Functions: $$ \\mathcal{H}={h(x) = \\mathbf{1}[x \u003c a]} $$ 注意到这是一个infinite class。 Thm. 设 $H$ 为Threshold Functions。则 $H$ 是 PAC-learnable的，使用 ERM 算法，其样本复杂度为$$ m_H(\\epsilon, \\delta) \\leq \\frac{\\lceil \\log(2/\\delta) \\rceil}{\\epsilon}$$\nPf. 记$ h^*(x) = \\mathbf{1}[x \u003c a^*] $s.t.$L_D(h^*)=0$\n定义 $$ b_0 := \\sup {x \\mid (x, 1) \\in S}, \\quad b_1 := \\inf {x \\mid (x, 0) \\in S} $$ 注意到 $$ \\Pr \\left[ L_D(h) \u003e \\epsilon \\right] \\leq \\Pr \\left[ b_0 \u003c a_0 \\right] + \\Pr \\left[ b_1 \u003e a_1 \\right] $$ 在$ m = \\frac{\\ln \\left(\\frac{2}{\\delta}\\right)}{\\epsilon} $的情况下: $$ \\Pr \\left[ b_0 \u003c a_0 \\right] = (1 - \\epsilon)^m \\leq e^{-\\epsilon m} = \\frac{\\delta}{2} $$\n$$ \\Pr \\left[ b_1 \u003e a_1 \\right] = (1 - \\epsilon)^m \\leq e^{-\\epsilon m} = \\frac{\\delta}{2}. \\blacksquare $$\n2.3 Agnostic PAC-Learnable 有时候Realizability Assumption太强了，我们希望能够得到一个在$\\mathcal{H}$中没有Loss=0的hypothesis的情况下衡量estimation error的手段:\nAgnostic PAC-Learnable: 一个假设类 $H$ 是 Agnostic PAC 可学习的，如果存在一个函数 $m_H: (0,1)^2 \\rightarrow \\mathbb{N}$ 和一个具有以下性质的学习算法：对于每一个 $\\epsilon, \\delta \\in (0,1)$，以及定义在 $X \\times Y$ 上的每个分布 $D$，当在由 $D$ 生成的 $m \\geq m_H(\\epsilon, \\delta)$ 个独立同分布（iid）样本上运行该学习算法时，算法会返回一个假设 $h$，使得以至少 $1 - \\delta$ 的概率（对于 $m$ 个训练样本的选择而言），满足\n$$ L_D(h) \\leq \\min_{h’ \\in H} L_D(h’) + \\epsilon $$\nError Decomposition: $L_D(h_S) = \\epsilon_{app} + \\epsilon_{est}$ $\\epsilon_{app} = \\min_{h \\in H} L_D(h)$ $\\epsilon_{est} = L_D(h_S) - \\epsilon_{app}$ $\\epsilon_{app} = L_D(BO) + \\min_{h \\in H} L_D(h) - L_D(BO)$ $\\epsilon_{app}$描述的是这个hypothesis class的inductive bias的多少，而$\\epsilon_{est}$是与sample size和sample complexity相关的(sample complexity与hypothesis class的representation power成正比)，所以说当我们想要减少$L_D(h_S)$,我们面临一个bias-complexity tradeoff。\n其中BO指代的是Bayes Optimal Predictor。\nBayes Optimal Predictor 给定任何在 $X \\times {0,1}$ 上的概率分布 $D$，从 $X$ 到 ${0,1}$ 的最佳标签预测函数为\n$$ f_D(x) = 1 \\quad \\text{if } P[y = 1 \\mid x] \\geq \\frac{1}{2} $$ $$ f_D(x) = 0 \\quad \\text{otherwise} $$\n很容易验证，对于每个概率分布 $D$，贝叶斯最优预测器 $f_D$ 是最优的，因为没有其他分类器 $g: X \\rightarrow {0,1}$ 的错误率更低。即，对于每个分类器 $g$，有\n$$ L_D(f_D) \\leq L_D(g) $$\n2.4 VC-Dim Restriction of $H$ to $C$ 设 $H$ 是从 $X$ 到 ${0,1}$ 的函数类，$C = {c_1, \\cdots, c_m} \\subseteq X$。$H$ 在 $C$ 上的限制是从 $C$ 到 ${0,1}$ 的函数集合，这些函数可以从 $H$ 中导出。即\n$$ H_C = {(h(c_1), \\cdots, h(c_m)) : h \\in H} $$\n我们将从 $C$ 到 ${0,1}$ 的每个函数表示为 ${0,1}^{|C|}$ 中的一个向量。\nShattering 一个假设类 $H$ Shatter有限集 $C \\subseteq X$，如果 Restriction of $H$ to $C$是从 $C$ 到 ${0,1}$ 的所有函数集合。即\n$$ |H_C| = 2^{|C|} $$\nNFL Reexpressed 设 $H$ 是从 $X$ 到 ${0,1}$ 的hypothesis class。令 $m$ 为训练集大小。假设存在一个大小为 $2m$ 的集合 $C \\subseteq X$，它被 $H$ shatter。则对于任意学习算法 $A$，存在一个定义在 $X \\times {0,1}$ 上的分布 $D$ 和一个预测器 $h \\in H$，使得 $L_D(h) = 0$，但以至少 $\\frac{1}{7}$ 的概率，对于 $S \\sim D^m$ 的选择，有\n$$ L_D(A(S)) \\geq \\frac{1}{8} $$\nVC-Dimension Hypothesis class $H$ 的 VC-dimension（记作 $\\text{VCdim}(H)$）是 $H$ 可以shatter的集合 $C \\subseteq X$ 的最大大小。如果 $H$ 可以shatter任意大的集合，我们称 $\\text{VCdim}(H)=+ \\infty$.\nInifite VC-dim hypothesis classes are not PAC-learnable NFL的直接后果就是$\\text{VCdim}(H)=+ \\infty$的$H$不是PAC-learnable的。\n2.5 Fundamental theorem of statistical learning 设 $H$ 是从一个域 $X$ 到 ${0,1}$ 的hypothesis class，并且损失函数是 0-1 损失。假设 $\\text{VCdim}(H) = d \u003c \\infty$。则存在常数 $C_1, C_2$，使得\n$H$ 是具有以下样本复杂度的Agnostic PAC-learnable：\n$$ C_1 \\frac{d + \\log \\left(\\frac{1}{\\delta}\\right)}{\\epsilon^2} \\leq m_H(\\epsilon, \\delta) \\leq C_2 \\frac{d + \\log \\left(\\frac{1}{\\delta}\\right)}{\\epsilon^2} $$\n$H$ 是具有以下样本复杂度的 PAC-learnable：\n$$ C_1 \\frac{d + \\log \\left(\\frac{1}{\\delta}\\right)}{\\epsilon} \\leq m_H(\\epsilon, \\delta) \\leq C_2 \\frac{d \\log \\left(\\frac{1}{\\epsilon}\\right) + \\log \\left(\\frac{1}{\\delta}\\right)}{\\epsilon} $$\n3.Supervised Learning 对于回归问题，我们构造一个函数$f: X\\rightarrow \\mathbb{R}$ 在分类问题中，我们构造一个函数$f: X\\rightarrow {0,1}$或者${-1,1}$。 前者我们的loss function很好design，比如说Mean Square Loss，但是后者的loss就不是特别好design。一种自然的想法是$f(x)=sign(w^Tx)$,但是问题就是这个loss不可导，下面是一种利用这种函数但是不需要导数的远古算法。\n3.1 Perceptron Algorithm Convergence Thm.\n合适缩放使得 $||x_i|| \\leq 1$ 。假设存在 $w_*$ 满足 $||w_*|| = 1$ 且 $y_i w_*^T x_i \u003e \\gamma$（存在过原点的划分平面，安全距离为 $\\gamma$）。该算法收敛前最多触发 $\\frac{1}{\\gamma^2}$ 次预测错误。\nPf. 假设算法第 $t$ 次犯错是 $(x_t, y_t)$，这会使得\n$$w_{t+1} = w_t + y_t x_t$$\n且此时 $\\langle {w}^T, y_t x_t \\rangle \u003c 0$（锐角）。这说明 $$ ||w_{t+1}||^2 \\leq ||w_t||^2 + ||y_t x_t||^2 = ||w_t||^2 + 1 \\ ||w_t||^2 \\leq t $$\n另一方面 $$ ||w_{t+1}|| \\geq \\langle w_{t+1}, w_* \\rangle \\geq \\langle w_t, w_* \\rangle + \\gamma \\ ||w_t|| \\geq \\gamma t $$\n综上 $$ \\gamma^2 t^2 \\leq |w_t|^2 \\leq t $$ 解得 $t \\leq \\frac{1}{\\gamma^2}$。$\\blacksquare$\n3.2 Logistic Regression 为了解决不可导的问题，更为现代的想法是通过sigmoid函数把$w^Tx$压缩到$(0,1)$之间的概率，即$$f(x)=\\frac{1}{1+e^{-w^Tx}}.$$ 衡量两个概率之间的差异，可以用l1-norm或者cross-entropy loss。\n熵 (Entropy) 对于离散概率分布 $(p_1, p_2, \\cdots, p_n)$，定义它的熵为$$ H(p) = \\sum_{i=1}^{n} p_i \\log \\frac{1}{p_i}$$\n交叉熵 (Cross entropy) 定义两个离散概率分布 $(p_1, p_2, \\cdots, p_n)$ 和 $(q_1, q_2, \\cdots, q_n)$ 的交叉熵为$$ XE(p, q) = \\sum_{i=1}^{n} p_i \\log \\frac{1}{q_i}$$\nKL 散度 定义两个离散概率分布 $(p_1, p_2, \\cdots, p_n)$ 和 $(q_1, q_2, \\cdots, q_n)$ 的 KL 散度为$$ KL(p, q) = XE(p, q) - H(p)$$\n交叉熵比l1-norm 好在：\nl1-norm：提供恒定的梯度。 交叉熵：差距越大，梯度越大 3.3 Regularization 当我们想要限制$f$的表达能力时，经典的看法就是通过在$||·||_2$或$||·||_1$意义下限制$w$的可能取值区间。\nRidge Regression 把loss function改为$$l(w)+\\lambda||w||^2$$ 这里是2-norm, 这相当于每一步先GD，之后再进行了一次 $$w_{t+1}=(1-\\eta \\lambda)\\tilde{w}_{t}$$ 这被称为weight decay。\nLasso Regression 有时候我们想要获得sparse的解，因此我们把loss function改为$$l(w)+\\lambda||w||_1^2$$ 这个直觉在于用diamond和凸集的交集更有可能是sparse的 3.4 Compressed Sensing Nyquist theorem: for a signal with frequency 𝑓, we need 2𝑓 sampling rate to fully reconstruct the signal\n这个是一个通用的定理，但是大部分情况下，我们的信号其实是存在一组基下的稀疏表示，所以我们会去想能不能通过更少的采样，来重构出信号，这就是compressed sensing的背景。\n在Compressed Sensing中，和supervised learning不同的是我们可以自己选择自己的measurement matrix，即训练集，在下图中也就是说我们可以自由选定$A$的每一行，然后获得对应的$y$，最终我们希望通过$y$还原出$x$。\n最后的得到的主要结论，用自然语言去描述，是如下三条:\n如果一个稀疏信号通过 $x \\mapsto Wx$ 进行了压缩，其中 $W$ 是满足$(\\epsilon, s)$-RIP 的矩阵，那么可以完全重构任何稀疏信号。满足此性质的矩阵保证了任何稀疏可表示向量的范数distortion较小。\n通过求解线性规划，重构可以在多项式时间内计算。\n给定 $n \\times d$ 的随机矩阵，在 $n$ 大于 $s \\log(d)$ 的数量级时，它很可能满足 RIP 条件。\n接下来让我formally用数学的语言build up都以上的结论。\nRIP-Condition 一个矩阵 $W \\in \\mathbb{R}^{n,d}$ 是 $(\\epsilon, s)$-RIP 的当且仅当对于所有 $x \\neq 0$ 且满足 $||x||_{0}\\leq s$ 的 $x$，我们有 $$ \\left| \\frac{||Wx||_2^2}{||x||_2^2} - 1 \\right| \\leq \\epsilon. $$\nThm.1 Thm.1 设 $\\epsilon \u003c 1$，并且设 $W$ 为 $(\\epsilon, 2s)$-RIP 矩阵。设 $x$ 为一个满足 $||x||_0\\leq s$ 的向量，\n令 $y = Wx$ 为 $x$ 的压缩结果，并且令 $$\\tilde{x} \\in \\arg \\min_{{v}: W{v}=y} ||{v}||_0$$ 为重构向量。那么，$\\tilde{x} = x$。\n这个定理告诉我们对于RIP的矩阵，如果我们能够通过找到符合$Wv=y$的$v$的l0-norm最小的向量，我们就能够成功的(无损)重建出$x$。\nPf. 令 $h = \\tilde{x} - x$\n$$ |\\tilde{x}|_0 \\leq |x|_0 \\leq s $$\n因此 $h$ 是 $2s$-sparse的。\n$$ (1 - \\epsilon) |h|^2 \\leq |Wh|^2 \\leq (1 + \\epsilon) |h|^2 $$\n由于 $Wh = W(\\tilde{x} - x) = 0$\n$$ \\Rightarrow |h|^2 = 0 $$\n因此 $\\tilde{x} = x$。$\\blacksquare$\n但问题是，我们没有一个polytime求解l0-norm最小值的算法，所以这个定理在实际应用中没有意义，我们在实际应用中尝试吧l0-norm relax到 l1-norm，下面的thm2和3便是l1-norm下重建结果相似性的保证。\nThm.2 Thm.2 假设 $W$ 为 $(\\epsilon, 2s)$-RIP 矩阵。$x$ 为一个满足 $|x|_0 \\leq s$ 的向量，\n令 $y = Wx$ 为 $x$ 的压缩结果，并且 $\\epsilon \u003c \\frac{1}{1 + \\sqrt{2}}$，那么,\n$$x=\\arg \\min_{v: Wv = y} ||v||_ {0}=\\arg \\min_{v:Wv = y}||v||_1$$\n这个定理说明在s-sparse的情况下，Relax 到l1-norm也可以重构出一样的向量。\n事实上，我们将证明一个更强的结果，该结果即使在 $x$ 不是一个稀疏向量的情况下也成立，即Thm.3。\nThm.3 Thm.3 设 $\\epsilon \u003c \\frac{1}{1 + \\sqrt{2}}$ 并且 $W$ 是一个 $(\\epsilon, 2s)$-RIP 矩阵。设 $x$ 是任意向量，并定义 $$x_s \\in \\arg \\min_{v: ||v|| _ 0 \\leq s} ||x - v||_ 1 $$ 也就是说，$x_s$ 是一个在 $x$ 的 $s$ 个最大元素处等于 $x$ 并在其他地方等于 $0$ 的向量。设 $y = Wx$ ，并令 $$x^* \\in \\arg \\min_{v: Wv = y} |v|_1$$ 为重构的向量。那么， $$|x^* - x|_2 \\leq 2 \\frac{1 + \\rho}{1 - \\rho} s^{-1/2} |x - x_s|_1,$$ 其中 $\\rho = \\sqrt{2\\epsilon}/(1 - \\epsilon)$。\nPf.\n这个定理的证明相对比较复杂，主要是证明以下两个Claim:\nClaim 1： $$ |h_{T_{0,1}}|_ 2 \\leq |h _{T_0}|_2 + 2s^{-1/2}|x - x_s|_1。 $$\nClaim 2： $$ |h_{T_{0,1}}|_ 2 \\leq \\frac{2\\rho}{1 - \\rho}s^{-1/2}|x - x_s|_1。 $$ 符号说明： 给定一个向量 $v$ 和一组索引 $I$，我们用 $v_I$ 表示向量，其第 $i$ 个元素为 $v_i$ 如果 $i \\in I$，否则其第 $i$ 个元素为 0。令 $h = x^* - x$。\n我们使用的第一个技巧是将索引集合 $[d] = {1, \\ldots, d}$ 划分为大小为 $s$ 的不相交集合。也就是说，我们写作 $[d] = T_0 \\cup T_1 \\cup T_2 \\ldots T_{d/s-1}$，对于所有 $i$，我们有 $|T_i| = s$，并且我们为简便起见假设 $d/s$ 是一个整数。我们如下定义划分。在 $T_0$ 中，我们放置 $s$ 个对应于 $x$ 的绝对值中最大的元素的索引（如果有并列的情况，则任意打破平局）。设 $T_0^c = [d] \\setminus T_0$。接下来，$T_1$ 将是对应于 $h_{T_0^c}$ 绝对值中最大的 $s$ 个元素的索引。设 $T_{0,1} = T_0 \\cup T_1$，并令 $T_{0,1}^c = [d] \\setminus T_{0,1}$。接下来，$T_2$ 将是对应于 $h_{T_{0,1}^c}$ 绝对值中最大的 $s$ 个元素的索引。我们将继续构造 $T_3, T_4, \\ldots$ 以相同的方式。\nPf of Claim 1，我们不使用RIP条件，仅仅使用$x^*$最小化$\\ell_1$范数这一事实。设$j \u003e 1$。对于每个$i \\in T_j$和$i’ \\in T_{j-1}$，我们有$|h_i| \\leq |h_{i’}|$。因此，$|h_ {T_j}|_ \\infty \\leq |h_ {T_ {j-1}}|_ 1/s$。由此可以得到：\n$$ ||h_{T_j}||_ 2 \\leq s^{-1/2} ||h_{T_{j-1}}||_1 $$\n对$j = 2, 3, \\ldots$求和，并使用三角不等式，可以得到：\n$$ ||h_{T_{0,1}^c}||_ 2 \\leq \\sum_{j \\geq 2} ||h_{T_j}||_ 2 \\leq s^{-1/2} ||h_{T_{0,1}^c}||_1 $$\n接下来，我们证明$|h_{T_0}|_1$不能太大。实际上，由于$x^* = x + h$具有最小的$\\ell_1$范数，并且$x$满足$x^*$的定义中的约束条件，我们有$|x|_1 \\geq |x + h|_1$。因此，利用三角不等式我们可以得到：\n$$ ||x||_ 1 \\geq \\sum_{i \\in T_0} |x_i + h_i| + \\sum_{i \\in T_{0,1}^c} |x_i + h_i| \\geq ||x_{T_0}||_ 1 - ||h_{T_0}||_ 1 + ||x_{T_{0,1}^c}||_ 1 - ||h_{T_{0,1}^c}||_1 $$\n由于$|x_ {T_ {0,1}^c}|_ 1 = |x - x_s|_ 1 = |x|_ 1 - |x_ {T_ 0}|_ 1$，我们得到：\n$$ |h_{T_0}|_ 1 \\leq |h_{T_0}|_ 1 + 2|x_{T_{0,1}^c}|_1。 $$\n结合上述等式可以得到：\n$$ |h_{T_{0,1}^c}|_ 2 \\leq s^{-1/2} (|h_{T_0}|_ 1 + 2|x_{T_{0,1}^c}|_1)。\\blacksquare $$\nPf of Claim 2\n对于2s-稀疏的向量$h_{T_{0,1}}$，我们有：\n$$(1 - \\epsilon) ||h_{T_{0,1}}||_ 2^2 \\leq ||Wh_{T_{0,1}}||_2^2$$\n而\n$$Wh_{T_{0,1}} = Wh - \\sum_{j \\geq 2} Wh_{T_j} = -\\sum_{j \\geq 2} Wh_{T_j}$$\n因此\n$$||Wh_{T_{0,1}}||_ 2^2 = -\\sum_{j \\geq 2} \\langle Wh_{T_{0,1}}, Wh_{T_j} \\rangle$$\nLemma：如果$W$是$(\\epsilon, 2s)$-RIP矩阵，对于任意不相交的$I, J$集合，若$|I| \\leq s, |J| \\leq s$，则 $$ \\langle W u_{I}, W u_{J} \\rangle \\leq \\epsilon |u_{I}| |u_{J}| $$\nPf.\n$$\\langle W u_{I}, W u_{J} \\rangle = \\frac{|W(u_I + u_J)|^2 - |W(u_I - u_J)|^2}{4}$$\n$$ \\leq \\frac{(1 + \\epsilon) |u_I + u_J|^2 - (1 - \\epsilon) |u_I - u_J|^2}{4} $$\n由于$I, J$是不相交的集合：\n$$ = \\frac{(1 + \\epsilon) (|u_I|^2 + |u_J|^2) - (1 - \\epsilon) (|u_I|^2 + |u_J|^2)}{4} $$\n$$ = \\frac{\\epsilon}{2} ((|u_I|^2 + |u_J|^2) \\leq \\epsilon |u_I||u_J|.\\blacksquare $$\n原式代入Lemma，我们有：\n$$||Wh_{T_{0,1}}||_ 2^2 \\leq \\epsilon (||h_{T_0}||_ 2 + ||h_{T_{1}}||_ 2) \\cdot \\sum_{j \\geq 2} ||h_{T_j}||_ 2 $$ 利用$2(a^2 + b^2) \\geq (a + b)^2$: $$||h_{T_0}||_ 2 + ||h_{T_1}||_ 2 \\leq \\sqrt{2} ||h_ {T_{0,1}}|| _2$$\n所以\n$$ |Wh_{T_{0,1}}|_ 2^2 \\leq \\sqrt{2} \\epsilon |h_{T_{0,1}}| _ 2 \\cdot \\sum_{j \\geq 2} |h_{T_j}|_ 2 $$\n$$ \\leq \\sqrt{2} \\epsilon \\cdot s^{-1/2} |h_{T_ {0,1}}| _ 2 \\cdot |h _{T _{0,1}^C}| _1 $$\n因此\n$$ |h_{T_0,1}|_ 2 \\leq \\frac{\\sqrt{2} \\epsilon}{1 - \\epsilon} s^{-1/2} |h_{T_0^C}|_1 $$\n$$ |h_{T_0,1}|_ 2 \\leq \\frac{\\sqrt{2} \\epsilon}{1 - \\epsilon} s^{-1/2} (|h_{T_0}|_ 1 + 2|x_{T_0^C}|_1) $$\n$$ \\leq \\rho ||h_ {T_{0}}|| _{2} + 2 \\rho s^{-1/2} ||x _{T _{0}^{C}}|| _{1} $$\n由于\n$$||h_{T_ {1}}|| _ 2 \\leq ||h_{T _{0,1}}|| _2$$\n因此\n$$ ||h_{T_{0,1}}||_2 \\leq \\frac{2 \\rho}{1 - \\rho} s^{-1/2} ||x - x_s||_1\\blacksquare $$\n回到Thm.3的证明:\n$$ |h|_ 2 \\leq |h_{T _{0,1}}| _2 + |h _{T _{0,1}^C}| _2 $$\n$$ \\leq 2 |h_{T_0,1}|_2 + 2s^{-1/2} |x - x_s|_1 $$\n$$ \\leq \\left( \\frac{4 \\rho}{1 - \\rho} s^{-1/2} + 2s^{-1/2} \\right) |x - x_s|_1 $$\n$$ = 2 \\frac{1 + \\rho}{1 - \\rho} s^{-1/2} |x - x_s|_1. \\blacksquare $$\nThm.4 最后我们就剩下Thm.4了，\nThm.4\n设 $U$ 为任意固定的 $d \\times d$ 正交矩阵，设 $\\epsilon, \\delta$ 为在 $(0, 1)$ 之间的标量，设 $s$ 是 $[d]$ 中的一个整数，且设 $n$ 为满足以下条件的整数 $$ n \\geq 100 \\frac{s \\ln(40d/(\\delta \\epsilon))}{\\epsilon^2}.$$ 设 $W \\in \\mathbb{R}^{n, d}$ 为一个矩阵，其每个元素均以零均值和方差 $1/n$ 正态分布。则，对于至少 $1 - \\delta$ 的概率而言，矩阵 $WU$ 是 $(\\epsilon, s)$-RIP。\n这里的常数项可能有一些问题，证明也比较复杂，这里就不展开了。大体的Proof Sketch是:\n将连续空间映射到有限个点上\n考虑一个特定的大小为 $s$的索引集 $I$\n使用这个索引集进入稀疏空间\n对所有可能的 $I$ 应用union bound 具体可以参考Shai Shalev-Shwartz的paper: Compressed Sensing: Basic results and self contained proofs*.\n4. 后记 “The people who are crazy enough to think they can change the world, are the ones who do.”\n期中之前的内容大概是这些。在写作的过程中，我发现我往往会忽略一些我不那么感兴趣的部分而只是去写自认为有趣的部分，这一点亦如我的复习，其中植入了太多的个人理解而忽视掉了老师或者学界主流想让人关注的框架，形成的Map of Machine Learning World自然也会是不同的。这大抵也能解释考试为什么会寄的一部分原因吧。后半学期争取让自己学会的东西的分布和课上的分布接近一些，或者搞一个generative model,从自己的分布里采样，经过一些变换能够接近他的分布吧。 ",
+  "wordCount" : "4487",
+  "inLanguage": "en",
+  "datePublished": "2024-11-09T00:00:00Z",
+  "dateModified": "2024-11-09T00:00:00Z",
+  "author":[{
+    "@type": "Person",
+    "name": "Nemo"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/blog/posts/ml1/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Nemo's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/blog/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/blog/" accesskey="h" title="Nemo&#39;s Blog (Alt + H)">Nemo&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/blog/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/blog/posts/" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/blog/archives/" title="Archive">
+                    <span>Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/blog/search/" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/blog/tags/" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://knightnemo.github.io" title="About Me">
+                    <span>About Me</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/blog/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/blog/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Machine Learning Series: 1.Optimization, Generalization and Supervised Learning
+    </h1>
+    <div class="post-meta"><span title='2024-11-09 00:00:00 +0000 UTC'>November 9, 2024</span>&nbsp;·&nbsp;22 min&nbsp;·&nbsp;Nemo
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#0%e9%a5%ad%e5%90%8e%e7%94%9c%e5%93%81%e4%bd%a0%e4%b8%8d%e8%83%bd%e6%8c%87%e6%9c%9b%e8%b7%9f%e6%ad%a3%e9%a4%90%e4%b8%80%e8%b5%b7" aria-label="0.饭后甜品，你不能指望跟正餐一起">0.饭后甜品，你不能指望跟正餐一起</a></li>
+                <li>
+                    <a href="#1-optimization" aria-label="1. Optimization">1. Optimization</a><ul>
+                        
+                <li>
+                    <a href="#11-l-smooth--convex" aria-label="1.1 L-Smooth &amp; Convex">1.1 L-Smooth &amp; Convex</a><ul>
+                        
+                <li>
+                    <a href="#l-smooth" aria-label="L-smooth">L-smooth</a></li>
+                <li>
+                    <a href="#convex" aria-label="Convex">Convex</a></li>
+                <li>
+                    <a href="#mu-strongly-convex" aria-label="$\mu$-strongly Convex">$\mu$-strongly Convex</a></li>
+                <li>
+                    <a href="#convex--l-smooth" aria-label="Convex &amp; L-Smooth:">Convex &amp; L-Smooth:</a></li></ul>
+                </li>
+                <li>
+                    <a href="#12-gradient-descent" aria-label="1.2 Gradient Descent">1.2 Gradient Descent</a><ul>
+                        
+                <li>
+                    <a href="#convex-l-smooth" aria-label="Convex, L-Smooth">Convex, L-Smooth</a></li>
+                <li>
+                    <a href="#mu-strongly-convex--l-smooth" aria-label="$\mu$-strongly Convex &amp; L-smooth">$\mu$-strongly Convex &amp; L-smooth</a></li>
+                <li>
+                    <a href="#l-smooth-1" aria-label="L-Smooth">L-Smooth</a></li>
+                <li>
+                    <a href="#recap" aria-label="Recap:">Recap:</a></li></ul>
+                </li>
+                <li>
+                    <a href="#13-stochastic-gradient-descent" aria-label="1.3 Stochastic Gradient Descent">1.3 Stochastic Gradient Descent</a><ul>
+                        
+                <li>
+                    <a href="#why-sgd" aria-label="Why SGD">Why SGD</a></li>
+                <li>
+                    <a href="#algorithm" aria-label="Algorithm">Algorithm</a></li>
+                <li>
+                    <a href="#convergence" aria-label="Convergence">Convergence</a></li></ul>
+                </li>
+                <li>
+                    <a href="#14-svrg" aria-label="1.4 SVRG">1.4 SVRG</a><ul>
+                        
+                <li>
+                    <a href="#algorithm-1" aria-label="Algorithm">Algorithm</a></li>
+                <li>
+                    <a href="#procedure-svrg" aria-label="Procedure SVRG">Procedure SVRG</a></li>
+                <li>
+                    <a href="#convergence-rate" aria-label="Convergence Rate">Convergence Rate</a></li></ul>
+                </li>
+                <li>
+                    <a href="#15-mirror-descent" aria-label="1.5 Mirror Descent">1.5 Mirror Descent</a><ul>
+                        
+                <li>
+                    <a href="#algorithm-2" aria-label="Algorithm">Algorithm</a></li>
+                <li>
+                    <a href="#intuition" aria-label="Intuition">Intuition</a></li>
+                <li>
+                    <a href="#relationship-between-gd--md" aria-label="Relationship between GD &amp; MD">Relationship between GD &amp; MD</a></li>
+                <li>
+                    <a href="#convergence-1" aria-label="Convergence:">Convergence:</a></li></ul>
+                </li>
+                <li>
+                    <a href="#16-linear-coupling" aria-label="1.6 Linear Coupling">1.6 Linear Coupling</a><ul>
+                        
+                <li>
+                    <a href="#wishful-thinking" aria-label="Wishful Thinking">Wishful Thinking</a></li>
+                <li>
+                    <a href="#algorithm-3" aria-label="Algorithm">Algorithm</a></li>
+                <li>
+                    <a href="#convergence-2" aria-label="Convergence">Convergence</a></li></ul>
+                </li>
+                <li>
+                    <a href="#17-non-convex-optimization" aria-label="1.7 Non-Convex Optimization">1.7 Non-Convex Optimization</a><ul>
+                        
+                <li>
+                    <a href="#matrix-completion" aria-label="Matrix Completion">Matrix Completion</a></li>
+                <li>
+                    <a href="#escaping-saddle-points" aria-label="Escaping Saddle Points">Escaping Saddle Points</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#2generalization" aria-label="2.Generalization">2.Generalization</a><ul>
+                        
+                <li>
+                    <a href="#21-no-free-lunch-thm" aria-label="2.1 No Free Lunch Thm.">2.1 No Free Lunch Thm.</a></li>
+                <li>
+                    <a href="#22-pac-learning" aria-label="2.2 PAC-Learning">2.2 PAC-Learning</a><ul>
+                        
+                <li>
+                    <a href="#%e4%b8%80%e4%ba%9b%e6%a6%82%e5%bf%b5" aria-label="一些概念:">一些概念:</a></li>
+                <li>
+                    <a href="#finite-classes-are-pac-learnable" aria-label="Finite Classes are PAC-learnable">Finite Classes are PAC-learnable</a></li>
+                <li>
+                    <a href="#threshold-functions-are-pac-learnable" aria-label="Threshold Functions are PAC-learnable">Threshold Functions are PAC-learnable</a></li></ul>
+                </li>
+                <li>
+                    <a href="#23-agnostic-pac-learnable" aria-label="2.3 Agnostic PAC-Learnable">2.3 Agnostic PAC-Learnable</a><ul>
+                        
+                <li>
+                    <a href="#agnostic-pac-learnable" aria-label="Agnostic PAC-Learnable:">Agnostic PAC-Learnable:</a></li>
+                <li>
+                    <a href="#error-decomposition" aria-label="Error Decomposition:">Error Decomposition:</a></li>
+                <li>
+                    <a href="#bayes-optimal-predictor" aria-label="Bayes Optimal Predictor">Bayes Optimal Predictor</a></li></ul>
+                </li>
+                <li>
+                    <a href="#24-vc-dim" aria-label="2.4 VC-Dim">2.4 VC-Dim</a><ul>
+                        
+                <li>
+                    <a href="#restriction-of-h-to-c" aria-label="Restriction of $H$ to $C$">Restriction of $H$ to $C$</a></li>
+                <li>
+                    <a href="#shattering" aria-label="Shattering">Shattering</a></li>
+                <li>
+                    <a href="#nfl-reexpressed" aria-label="NFL Reexpressed">NFL Reexpressed</a></li>
+                <li>
+                    <a href="#vc-dimension" aria-label="VC-Dimension">VC-Dimension</a></li>
+                <li>
+                    <a href="#inifite-vc-dim-hypothesis-classes-are-not-pac-learnable" aria-label="Inifite VC-dim hypothesis classes are not PAC-learnable">Inifite VC-dim hypothesis classes are not PAC-learnable</a></li></ul>
+                </li>
+                <li>
+                    <a href="#25-fundamental-theorem-of-statistical-learning" aria-label="2.5 Fundamental theorem of statistical learning">2.5 Fundamental theorem of statistical learning</a></li></ul>
+                </li>
+                <li>
+                    <a href="#3supervised-learning" aria-label="3.Supervised Learning">3.Supervised Learning</a><ul>
+                        
+                <li>
+                    <a href="#31-perceptron" aria-label="3.1 Perceptron">3.1 Perceptron</a><ul>
+                        
+                <li>
+                    <a href="#algorithm-4" aria-label="Algorithm">Algorithm</a></li>
+                <li>
+                    <a href="#convergence-3" aria-label="Convergence">Convergence</a></li></ul>
+                </li>
+                <li>
+                    <a href="#32-logistic-regression" aria-label="3.2 Logistic Regression">3.2 Logistic Regression</a></li>
+                <li>
+                    <a href="#33-regularization" aria-label="3.3 Regularization">3.3 Regularization</a><ul>
+                        
+                <li>
+                    <a href="#ridge-regression" aria-label="Ridge Regression">Ridge Regression</a></li>
+                <li>
+                    <a href="#lasso-regression" aria-label="Lasso Regression">Lasso Regression</a></li></ul>
+                </li>
+                <li>
+                    <a href="#34-compressed-sensing" aria-label="3.4 Compressed Sensing">3.4 Compressed Sensing</a><ul>
+                        
+                <li>
+                    <a href="#rip-condition" aria-label="RIP-Condition">RIP-Condition</a></li>
+                <li>
+                    <a href="#thm1" aria-label="Thm.1">Thm.1</a></li>
+                <li>
+                    <a href="#thm2" aria-label="Thm.2">Thm.2</a></li>
+                <li>
+                    <a href="#thm3" aria-label="Thm.3">Thm.3</a></li>
+                <li>
+                    <a href="#thm4" aria-label="Thm.4">Thm.4</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#4-%e5%90%8e%e8%ae%b0" aria-label="4. 后记">4. 后记</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="0饭后甜品你不能指望跟正餐一起">0.饭后甜品，你不能指望跟正餐一起<a hidden class="anchor" aria-hidden="true" href="#0饭后甜品你不能指望跟正餐一起">#</a></h1>
+<blockquote>
+<p><em>Everything should be made as simple as possible, but not simpler.</em>
+<!-- raw HTML omitted --><!-- raw HTML omitted --> Albert Einstein.<!-- raw HTML omitted --></p>
+</blockquote>
+<p>记得高三的时候写过一篇作文，文章的立意大概是 <strong>“整顿旗鼓再出发”</strong> 。是啊，多少次，我们奋力狂奔，迎接着狂风骤雨的敲打，却不愿意放慢脚步，从对未来不确定性的焦虑之中跳脱出来，看看自己的来时路，看看昨日之我、今日之我。在忙忙叨叨之中时光便流逝掉了，有时不妨做点 <strong>reflection</strong>,整理一下杂乱的思绪和没想明白的问题。</p>
+<p><strong>另一个落在实处的动机是我发现我学东西有个特点，就是忘东西很快。如果不留下点东西呢，会忘，然后忘了没有笔记又很难捡起来。</strong> 所以我想，为什么不在自己对这个领域的内容认识最深刻的时候留下点记忆，寄希望于未来的自己或者或许对机器学习有兴趣的读者能够通过今日的一篇文章了解一些今日之我所思所想的一些内容呢，于是就诞生了这篇文章。</p>
+<p>但这件事怎么看都还是很呆，都考完了，然后在写的过程中肯定又能学到点东西。一位朋友跟我说 <strong>“饭后甜品，你不能指望跟正餐一起”</strong> ，于是本着一个品味甜品的食客的心态，我决定将这篇文章尽量写的轻量化一点、故事性强一点，穿起一个思考的主线。</p>
+<h1 id="1-optimization">1. Optimization<a hidden class="anchor" aria-hidden="true" href="#1-optimization">#</a></h1>
+<p>优化问题自然而然地出现在许多应用领域中。无论人们做什么，在某些时候，他们都会产生一种想要以最佳方式组织事物的渴望。这种意图，当被转换成数学形式时，就会变成某种类型的优化问题。下面介绍几种优化算法，包括：<em>Gradient Descent</em>, <em>Stochastic Gradient Descent</em>,  <em>SVRG</em>, <em>Mirror Desent</em>, <em>Linear Coupling</em>.</p>
+<h2 id="11-l-smooth--convex">1.1 L-Smooth &amp; Convex<a hidden class="anchor" aria-hidden="true" href="#11-l-smooth--convex">#</a></h2>
+<p>在优化函数的时候，我们往往需要一些有关函数性质的保障，才能够确保他有好的收敛率。</p>
+<h3 id="l-smooth">L-smooth<a hidden class="anchor" aria-hidden="true" href="#l-smooth">#</a></h3>
+<p>以下三条等价：</p>
+<ul>
+<li>
+<p>$f(x) \leq f(x_0) + \langle \nabla f(x_0), x-x_0 \rangle + \frac{L}{2}||x-x_0||^2$</p>
+</li>
+<li>
+<p>$|\lambda_{\nabla^2 f(x)}| \leq L$</p>
+</li>
+<li>
+<p>$||\nabla f(x) - \nabla f(y)|| \leq L||x-y||$</p>
+</li>
+</ul>
+<p>注意到L-smooth其实告诉我们的是梯度变化不会太快，另外一个有趣的看法是：</p>
+<ul>
+<li>Upper Bound:
+$f(x) \leq f(x_0) + \langle \nabla f(x_0), x-x_0 \rangle + \frac{L}{2}||x-x_0||^2$</li>
+<li>Lower Bound:
+$f(x) \geq f(x_0) + \langle \nabla f(x_0), x-x_0 \rangle - \frac{L}{2}||x-x_0||^2$</li>
+</ul>
+<p>也就是说给定一个点$f(x_0)$的零阶和一阶信息，我们就可以获得别的点的函数值的一个二次型的上下界。
+<img alt="figure1" loading="lazy" src="../img/ml1/image.png"></p>
+<h3 id="convex">Convex<a hidden class="anchor" aria-hidden="true" href="#convex">#</a></h3>
+<p>以下四条等价：</p>
+<ul>
+<li>$ f(x) \geq f(x_0) + \langle \nabla f(x_0), x - x_0 \rangle $</li>
+<li>$ f(x) \leq f(x_0) + \langle \nabla f(x), x - x_0 \rangle $</li>
+<li>$ \lambda_{\min}(\nabla^2 f(x)) \geq 0 $</li>
+<li>$
+\frac{1}{T} \sum_{i=1}^{T} f(x_i) \geq f(\bar{x}), \quad \bar{x} = \frac{1}{T} \sum_{i=1}^{T} x_i
+$</li>
+</ul>
+<h3 id="mu-strongly-convex">$\mu$-strongly Convex<a hidden class="anchor" aria-hidden="true" href="#mu-strongly-convex">#</a></h3>
+<p>以下三条等价：</p>
+<ul>
+<li>$
+f(x) \geq f(x_0) + \langle \nabla f(x_0), x - x_0 \rangle + \frac{\mu}{2} |x - x_0|^2
+$</li>
+<li>$ \lambda_{\min}(\nabla^2 f(x)) \geq \mu $</li>
+<li>$
+|\nabla f(x) - \nabla f(y)| \geq \mu |x - y|
+$</li>
+</ul>
+<h3 id="convex--l-smooth">Convex &amp; L-Smooth:<a hidden class="anchor" aria-hidden="true" href="#convex--l-smooth">#</a></h3>
+<p>在一个函数又convex又L-Smooth的情况下，我们会有一些更好的性质：</p>
+<blockquote>
+<p><strong>Thm.1</strong> $$
+f(y) - f(x) - \langle \nabla f(x), y - x \rangle \geq \frac{1}{2L} |\nabla f(x) - \nabla f(y)|^2 $$</p>
+</blockquote>
+<p>证明如下:</p>
+<p>令
+$h(y) = f(y) - f(x) - \langle \nabla f(x), y - x \rangle$</p>
+<p>注意到
+$$
+\nabla h(y) = \nabla f(y) - \nabla f(x)
+$$
+$$
+\nabla^2 h(y) = \nabla^2 f(y)
+$$
+所以说$h(y)$也是convex且L-smooth的，而且最小值点在$y=x$处取的。
+所以,<br>
+$$
+h(x) \leq h(y - \frac{1}{L} \nabla h(y))\
+$$
+$$\leq h(y) - \frac{1}{L} |\nabla h(y)|^2 + \frac{1}{2L} |\nabla h(y)|^2
+$$
+$$
+=h(y) - \frac{1}{2L} |\nabla h(y)|^2
+$$</p>
+<p>因此,<br>
+$$
+f(y) - f(x) - \langle \nabla f(x), y - x \rangle \geq \frac{1}{2L} |\nabla f(y)-\nabla f(x)|^2
+$$</p>
+<blockquote>
+<p><strong>Thm.2</strong>
+$$
+\langle \nabla f(x) - \nabla f(y), x - y \rangle \geq \frac{1}{L} |\nabla f(x) - \nabla f(y)|^2$$</p>
+</blockquote>
+<p>这个的证明可以由Thm.1交换$x,y$次序之后相加得到。</p>
+<h2 id="12-gradient-descent">1.2 Gradient Descent<a hidden class="anchor" aria-hidden="true" href="#12-gradient-descent">#</a></h2>
+<p>GD的update rule如下:
+$$x_{t+1}=x_{t}-\eta \nabla f(x_t)$$
+在以下三种情况下，分别有不同的收敛率：</p>
+<h3 id="convex-l-smooth">Convex, L-Smooth<a hidden class="anchor" aria-hidden="true" href="#convex-l-smooth">#</a></h3>
+<p>$$
+x_{t+1} = x_t - \eta \nabla f(x_t)
+$$</p>
+<p>$$
+f(x_{t+1}) \leq f(x_t) + \langle \nabla f(x_t), x_{t+1} - x_t \rangle + \frac{L}{2} |x_{t+1} - x_t|^2
+$$</p>
+<p>$$
+= f(x_t) - \eta |\nabla f(x_t)|^2 - \frac{L \eta^2}{2} |\nabla f(x_t)|^2
+$$</p>
+<p>取$\eta \leq \frac{1}{L}$:</p>
+<p>$$ f(x_{t+1}) \leq f(x_t) - \frac{\eta}{2} |\nabla f(x_t)|^2 $$</p>
+<p>由convexity:</p>
+<p>$$
+f(x_{t+1}) \leq f(x^*) + \langle \nabla f(x_t), x_t - x^* \rangle - \frac{\eta}{2} |\nabla f(x_t)|^2
+$$</p>
+<p>$$
+= f(x^*) - \frac{1}{\eta} \langle x_{t+1} - x_t, x_t - x^* \rangle - \frac{1}{2\eta} |x_{t+1} - x_t|^2
+$$</p>
+<p>$$
+= f(x^*) - \frac{1}{2\eta} |x_{t+1} - x^*|^2 + \frac{1}{2\eta} |x_t - x^*|^2
+$$</p>
+<p>接下来我们做telescope:</p>
+<p>$$
+\sum_{t=0}^{T-1} (f(x_{t+1}) - f(x^*)) \leq \frac{1}{2\eta} (|x_0 - x^*|^2 - |x_T - x^*|^2)
+$$</p>
+<p>因为$f(x_t)$是单调递减的(convex保证)</p>
+<p>$$ f(x_T) - f(x^*) \leq \frac{1}{2\eta T} |x_0 - x^*|^2 = \epsilon $$
+所以说
+$$ T = \frac{|x_0 - x^*|^2}{2\eta \epsilon} = O\left(\frac{L}{\epsilon}\right) $$
+在这种情况下需要迭代$O(\frac{1}{\epsilon})$次，收敛率为$O(\frac{1}{T})$.</p>
+<h3 id="mu-strongly-convex--l-smooth">$\mu$-strongly Convex &amp; L-smooth<a hidden class="anchor" aria-hidden="true" href="#mu-strongly-convex--l-smooth">#</a></h3>
+<p>这里起手式我们卡$||x-x^*||$:
+$$
+|x_{t+1} - x^*|^2 = |x_t - \eta \nabla f(x_t) - x^*|^2
+$$</p>
+<p>$$
+= |x_t - x^*|^2 - 2\eta \langle \nabla f(x_t), x_t - x^* \rangle + \eta^2 |\nabla f(x_t)|^2
+$$
+因为强凸性：
+$$
+f(y) \geq f(x) + \langle \nabla f(x), y - x \rangle + \frac{\mu}{2} |y - x|^2
+$$</p>
+<p>代入 $x = x_t$, $y = x^*$:</p>
+<p>$$
+f(x^*) \geq f(x_t) + \langle \nabla f(x_t), x^* - x_t \rangle + \frac{\mu}{2} |x_t - x^*|^2
+$$</p>
+<p>$$
+\langle \nabla f(x_t), x_t - x^* \rangle \geq f(x_t) - f(x^*) + \frac{\mu}{2} |x_t - x^*|^2
+$$
+所以
+$$
+|x_{t+1} - x^*|^2 \leq |x_t - x^*|^2 - 2\eta (f(x_t) - f(x^*) + \frac{\mu}{2} |x_t - x^*|^2） + \eta^2 |\nabla f(x_t)|^2
+$$
+根据之前的Thm.1:
+$$
+\frac{1}{2L} |\nabla f(x_t)|^2 \leq f(x_t) - f(x^*)
+$$
+所以
+$$
+|x_{t+1} - x^*|^2 \leq (1 - \eta \mu) |x_t - x^*|^2 + (2\eta^2 L - 2\eta )(f(x_t) - f(x^*))
+$$</p>
+<p>取 $\eta = \frac{1}{L}$:</p>
+<p>$$
+|x_{t+1} - x^*|^2 \leq (1 - \frac{\mu}{L}) |x_t - x^*|^2
+$$
+所以说Linear Convergence, 反映在$f(x)$上:
+$$f(x_T)\leq f(x^*)+\frac{L}{2}||x_T-x^*||^2$$
+$$\leq f(x^*)+\frac{L}{2}(1 - \frac{\mu}{L})^T||x_0-x^*||^2$$
+也就是说需要迭代次数$O(log(\frac{1}{\epsilon}))$, 收敛率为Linear Convergence.</p>
+<blockquote>
+<p><em>Remark</em>: <!-- raw HTML omitted -->
+对于$\mu$-strongly Convex &amp; L-smooth的函数有如下性质：$
+\frac{\mu}{2} | \mathbf{x}^* - \mathbf{x} |^2 \leq f(\mathbf{x}) - f^* \leq \frac{L}{2} | \mathbf{x}^* - \mathbf{x} |^2
+$
+$
+\frac{1}{2L} | \nabla f(\mathbf{x}) |^2 \leq f(\mathbf{x}) - f^* \leq \frac{1}{2\mu} | \nabla f(\mathbf{x}) |^2
+$根据这些性质有一个更为简洁的证明。</p>
+</blockquote>
+<h3 id="l-smooth-1">L-Smooth<a hidden class="anchor" aria-hidden="true" href="#l-smooth-1">#</a></h3>
+<p>根据第一种情况下的分析：
+$$
+f(x_{t+1}) - f(x_t) \leq -\frac{\eta}{2} |\nabla f(x_t)|^2
+$$</p>
+<p>然后做Telescope:</p>
+<p>$$
+\min_{k \in [T]} |\nabla f(x_t)|^2 \leq \frac{2L(f(x_0) - f(x^*))}{T} = \epsilon^2
+$$
+所以说当我们想获得$|\nabla f(x_t)|^2&lt;\epsilon$，我们需要
+$
+T = O\left(\frac{1}{\epsilon^2}\right)
+$的迭代次数，收敛率为
+$
+O\left(\frac{1}{\sqrt{T}}\right)
+$。</p>
+<h3 id="recap">Recap:<a hidden class="anchor" aria-hidden="true" href="#recap">#</a></h3>
+<p>总结起来大概是:
+<img alt="table" loading="lazy" src="../img/ml1/image2.png"></p>
+<h2 id="13-stochastic-gradient-descent">1.3 Stochastic Gradient Descent<a hidden class="anchor" aria-hidden="true" href="#13-stochastic-gradient-descent">#</a></h2>
+<h3 id="why-sgd">Why SGD<a hidden class="anchor" aria-hidden="true" href="#why-sgd">#</a></h3>
+<p>GD看起来不错，但是有两个问题:</p>
+<ul>
+<li>计算一次full gradient很贵</li>
+<li>GD会在local maximum和saddle point（鞍点）卡住</li>
+</ul>
+<p>于是我们就会去想，能不能少算几个数据点对应的loss function，同时又能有一些convergence guarantee呢，SGD便是这样的一种算法。</p>
+<h3 id="algorithm">Algorithm<a hidden class="anchor" aria-hidden="true" href="#algorithm">#</a></h3>
+<p>SGD的update rule如下所示:
+$$
+x_{t+1} = x_t - \eta G_t, $$
+其中$G_t$满足:
+$$ \mathbb{E}[G_t] = \nabla f(x_t), \quad \text{Var}(G_t) \leq \sigma^2
+$$</p>
+<h3 id="convergence">Convergence<a hidden class="anchor" aria-hidden="true" href="#convergence">#</a></h3>
+<p>下面我们证明SGD在L-Smooth, Convex, $\text{Var}(G_t) \leq \sigma^2$的条件下的收敛率:</p>
+<p>因为L-smooth:
+$$
+\mathbb{E}[f(x_{t+1})] \leq f(x_t) + \mathbb{E}[\langle \nabla f(x_t), x_{t+1} - x_t \rangle] + \frac{L}{2} \mathbb{E}[|x_{t+1} - x_t|^2]
+$$</p>
+<p>$$
+\mathbb{E}[f(x_{t+1})] \leq f(x_t) - \eta |\nabla f(x_t)|^2 + \frac{L \eta^2}{2} \mathbb{E}[|G_t|^2]
+$$</p>
+<p>根据方差的定义：
+$$\mathbb{E}[ ||G_t||^2 ] = \text{Var}(G_t) + ||\mathbb{E}[G_t]||^2 \leq \sigma^2 + |\nabla f(x_t)|^2$$
+所以有
+$$
+\mathbb{E}[f(x_{t+1})] \leq f(x_t) + \left(\frac{L \eta^2}{2} - \eta\right) |\nabla f(x_t)|^2 + \frac{L \eta^2}{2} \sigma^2
+$$</p>
+<p>取 $\eta = \frac{1}{L}$:</p>
+<p>$$
+\mathbb{E}[f(x_{t+1})] \leq f(x_t) - \frac{\eta}{2} |\nabla f(x_t)|^2 + \frac{\eta}{2} \sigma^2
+$$</p>
+<p>根据convexity:</p>
+<p>$$
+f(x_t) \leq f(x^*) + \langle \nabla f(x_t), x_t - x^* \rangle
+$$</p>
+<p>$$
+\mathbb{E}[f(x_{t+1})] \leq f(x^*) + \mathbb{E}[\langle G_t, x_t - x^* \rangle] - \frac{\eta}{2} |\nabla f(x_t)|^2 + \frac{\eta}{2} \sigma^2
+$$
+又因为
+$$
+|\nabla f(x_t)|^2 = \mathbb{E}[|G_t|^2] - \text{Var}(G_t) \geq \mathbb{E}[|G_t|^2] - \sigma^2
+$$</p>
+<p>所以
+$$
+\mathbb{E}[f(x_{t+1})] \leq f(x^*) + \mathbb{E}[\langle G_t, x_t - x^* \rangle - \frac{\eta}{2} |G_t|^2] + \eta \sigma^2
+$$
+注意到
+$$
+\langle G_t, x_t - x^* \rangle - \frac{\eta}{2} |G_t|^2
+$$</p>
+<p>$$
+= -\frac{1}{2\eta} |(x_{t+1} - x_t) - (x^* - x_t)|^2 + \frac{1}{2\eta} |x_t - x^*|^2
+$$</p>
+<p>$$
+= \frac{1}{2\eta} (|x_t - x^*|^2 - |x_{t+1} - x^*|^2)
+$$
+也就是说
+$$
+\mathbb{E}[f(x_{t+1})] \leq f(x^*) + \frac{\eta}{2} \mathbb{E}[|x_t - x^*|^2 - |x_{t+1} - x^*|^2] + \eta \sigma^2
+$$</p>
+<p>从 $t = 0$ 到 $T-1$求和(telescope):</p>
+<p>$$
+\frac{1}{T}\sum_{t=0}^{T-1} (\mathbb{E}[f(x_t)] - f(x^*)) \leq \frac{1}{2\eta T} |x_0 - x^*|^2 + \eta \sigma^2
+$$</p>
+<p>取 $\eta = \frac{\epsilon}{2\sigma^2} \leq \frac{1}{L}$, 则有:</p>
+<p>$$
+T = \frac{2 \sigma^2 |x_0 - x^*|^2}{\epsilon^2}
+$$</p>
+<p>Stochastic Gradient Descent (SGD) 的收敛率是
+$
+O\left(\frac{1}{\sqrt{T}}\right)
+$。</p>
+<h2 id="14-svrg">1.4 SVRG<a hidden class="anchor" aria-hidden="true" href="#14-svrg">#</a></h2>
+<p>我们看到了通过Stochastic Gradient可以减少computation cost,但是随之而来的问题是因为 $G_t$拥有的variance,导致原来$O(\frac{1}{T})$的convergence rate变成了$O(\frac{1}{\sqrt{T}})$,于是我们去想，有没有什么办法能够在保持computation cost比较小的情况下同时把variance降下来，SVRG是其中的一种算法，在strongly-convex和l-smooth的情况下最后能够获得和GD一样的convergence rate。</p>
+<h3 id="algorithm-1">Algorithm<a hidden class="anchor" aria-hidden="true" href="#algorithm-1">#</a></h3>
+<blockquote>
+<h3 id="procedure-svrg">Procedure SVRG<a hidden class="anchor" aria-hidden="true" href="#procedure-svrg">#</a></h3>
+<p><strong>Parameters</strong>: update frequency $m$ and learning rate $\eta$<br>
+<strong>Initialize</strong> $\tilde{w}_0$<br>
+<strong>Iterate</strong>: for $s = 1, 2, \ldots$</p>
+<ol>
+<li>$\tilde{w} = \tilde{w}_{s-1}$</li>
+<li>$\tilde{\mu} = \frac{1}{n} \sum_{i=1}^{n} \nabla l_i(\tilde{w})$</li>
+<li>$w_0 = \tilde{w}$<br>
+<strong>Iterate</strong>: for $t = 1, 2, \ldots, m$<br>
+i. Randomly pick $i_t \in {1, \ldots, n}$ and update weight<br>
+$
+w_t = w_{t-1} - \eta \left( \nabla l_{i_t}(w_{t-1}) - \nabla l_{i_t}(\tilde{w}) + \tilde{\mu} \right)
+$
+<strong>end</strong><br>
+<strong>Option I</strong>: set $\tilde{w}_s = w_m$<br>
+<strong>Option II</strong>: set $\tilde{w}_s = w_t$ for randomly chosen $t \in {0, \ldots, m - 1}$<br>
+<strong>end</strong></li>
+</ol>
+</blockquote>
+<h3 id="convergence-rate">Convergence Rate<a hidden class="anchor" aria-hidden="true" href="#convergence-rate">#</a></h3>
+<ul>
+<li>
+<p>前提假设：</p>
+<p>L-smooth, $l_i$: convex, $f$: strong-convex</p>
+</li>
+<li>
+<p>Bound $\mathbb{E}[||v_t||^2]$:</p>
+</li>
+</ul>
+<p>令  $v_t = \nabla l_i(w_{t-1}) - \nabla l_i(\tilde{w}) + \tilde{u}$</p>
+<p>$\mathbb{E}[||v_t||^{2}] = \mathbb{E}[(\nabla l_i(w_{t-1}) - \nabla l_i(\tilde{w}) + \tilde{u})^2]$</p>
+<p>因为$  (a+b)^2 \leq 2a^2 + 2b^2 $：</p>
+<p>$\leq 2\mathbb{E}[(\nabla l_i(w_{t-1}) - \nabla l_i(w^*))^2] + 2\mathbb{E}[(\nabla l_i(w^*) - \nabla l_i(\tilde{w}) + \tilde{u})^2]$</p>
+<p>$= 2\mathbb{E}[(\nabla l_i(w_{t-1}) - \nabla l_i(w^*))^2] $</p>
+<p>$+ 2\mathbb{E}[\left((\nabla l_i(w^*) - \nabla l_i(\tilde{w}))-\mathbb{E}[(\nabla l_i(w^*) - \nabla l_i(\tilde{w}))]\right)^2]$</p>
+<p>又因为$$\mathbb{E}[(x - \mathbb{E}[x])^2] = \mathbb{E}[x^2] - (\mathbb{E}[x])^2 \leq \mathbb{E}[x^2]:$$</p>
+<p>所以$\mathbb{E}[||v_t||^{2}]$</p>
+<p>$\leq 2\mathbb{E}[(\nabla l_i(w_{t-1}) - \nabla l_i(w^*))^2] + 2\mathbb{E}[(\nabla l_i(w^*) - \nabla l_i(\tilde{w}))^2]$</p>
+<p>根据Thm.1:</p>
+<p>$\leq 4L(f(w_{t-1}) - f(w^*) + f(\tilde{w}) - f(w^*))$</p>
+<ul>
+<li>Bound $||w_t-w^*||$
+$$
+\mathbb{E}[|w_{t} - w^*|^2] = \mathbb{E}[|w_t - w_{t-1} + w_{t-1} - w^*|^2]
+$$</li>
+</ul>
+<p>$$
+= \mathbb{E}[|w_{t} - w^*|^2] + 2 \mathbb{E}[\langle w_t - w_{t-1}, w_{t-1} - w^* \rangle] + \mathbb{E}[|w_t - w_{t-1}|^2]
+$$</p>
+<p>$$
+= |w_{t-1} - w^*|^2 - 2\eta \mathbb{E}[\langle v_t, w_{t-1} - w^* \rangle] + \eta^2 \mathbb{E}[v_t^2]
+$$</p>
+<p>$$
+\leq |w_{t-1} - w^*|^2 - 2\eta \mathbb{E}[\langle v_t, w_{t-1} - w^* \rangle] + 4\eta^2 L(f(w_{t-1}) - f(w^*) + f(\tilde{w}) - f(w^*))
+$$</p>
+<p>$$
+= |w_{t} - w^*|^2 - 2\eta \langle \nabla f(w_{t-1}), w_{t+1} - w^* \rangle + 4L\eta^2 (f(w_{t-1}) - f(w^*) + f(\tilde{w}) - f(w^*))
+$$
+又因为convexity：
+$$
+f(w_{t-1}) - f(w^*) \geq \langle \nabla f(w_{t-1}), w_{t-1} - w^* \rangle
+$$</p>
+<p>$$
+\Rightarrow \mathbb{E}[|w_{t} - w^*|^2] \leq |w_{t-1} - w^*|^2 - 2\eta (f(w_{t-1}) - f(w^*)) + 4L\eta^2 (f(w_{t-1}) - f(w^*) + f(\tilde{w}) - f(w^*))
+$$</p>
+<p>$$
+= |w_{t+1} - w^*|^2 + 4L\eta^2 (f(\tilde{w}) - f(w^*)) + 2\eta (2L\eta - 1)(f(w_{t-1}) - f(w^*))
+$$</p>
+<ul>
+<li>Telescope</li>
+</ul>
+<p>从$\sum_{t=1}^{m}$，用option 2:
+$$
+\mathbb{E}[|w_m - w^*|^2] \leq \mathbb{E}[|\tilde{w} - w^*|^2] + 4mL\eta^2 (f(\tilde{w}) - f(w^*)) + 2m\eta (2L\eta - 1) \mathbb{E}[f(\tilde{w}_s) - f(w^*)]
+$$</p>
+<p>重新整理成:</p>
+<p>$$
+\mathbb{E}[|w_m - w^*|^2] + 2m\eta  (1 - 2L\eta) \mathbb{E}[f(\tilde{w}_s) - f(w^*)]
+$$</p>
+<p>$$
+\leq \mathbb{E}[|\tilde{w} - w^*|^2] + 4mL\eta^2 (f(\tilde{w}) - f(w^*))
+$$</p>
+<p>$$
+\leq \left(\frac{2}{u} + 4mL\eta^2\right)(f(\tilde{w}) - f(w^*))
+$$</p>
+<p>所以</p>
+<p>$$
+\mathbb{E}[f(\tilde{w}_s) - f(w^*)] \leq (\frac{1}{u\eta (1 - 2L\eta)m} + \frac{2L\eta}{1-2L\eta}) $$</p>
+<p>$$\cdot \mathbb{E} [f(\tilde{w}_{s - 1})-f(w^*)]$$</p>
+<p>所以收敛率是Linear Convergence, $\frac{L}{u}$大时比GD快。</p>
+<h2 id="15-mirror-descent">1.5 Mirror Descent<a hidden class="anchor" aria-hidden="true" href="#15-mirror-descent">#</a></h2>
+<p><img loading="lazy" src="../img/ml1/image3.png"></p>
+<h3 id="algorithm-2">Algorithm<a hidden class="anchor" aria-hidden="true" href="#algorithm-2">#</a></h3>
+<p>对于一个1-strongly convex的Distance Generating Function$w(x)$,我们定义Bergman Divergence:$$V_x(y)=w(y)-w(x)-\langle \nabla w(x),y-x \rangle$$
+然后我们定义:
+$$\text{Mirror}_ {x}(\zeta) = \arg \min_ {y} { V_ {x}(y) + \langle \zeta, y - x \rangle } $$</p>
+<p>一个Mirror Descent的定义是
+$$
+x_{t+1} = \text{Mirror}_ {x_t} (\alpha \nabla f(x_t))
+$$</p>
+<p>$$
+= \arg \min_{y} \left( w(y) - w(x_t) - \langle \nabla w(x_t), y - x_t \rangle + \alpha \langle \nabla f(x_t), y - x_t \rangle \right)
+$$</p>
+<h3 id="intuition">Intuition<a hidden class="anchor" aria-hidden="true" href="#intuition">#</a></h3>
+<p>第二种视角称为镜像空间 (Mirror space) 视角，一个 Mirror step 可以被视作将偶空间上的梯度下降，即朝另一个新的极值点进行搜索。过程形如：</p>
+<ul>
+<li>将 $x$ 通过 Mirror map 映射到对偶空间上的 $\theta_k$。</li>
+<li>$\theta_ {k+1} = \theta_ k - \alpha \nabla f(x_k)$。</li>
+<li>将 $\theta_ {k+1}$ 映射回原空间上的 $\overline{x} _{k+1}$。</li>
+<li>将 $\overline{x}_ {k+1}$ 投影到约束集，投影使用 Bregman divergence 作为其距离，即 $x_ {k+1} = \arg \min_ {y} V_ {x_{k+1}}(y)$。</li>
+</ul>
+<p>按照 Mirror step 的式子，可以看出 Mirror map 就是 $\nabla w(\cdot)$。因此实际过程为：</p>
+<ul>
+<li>$\theta_k = \nabla w(x)$。</li>
+<li>$\theta_{k+1} = \theta_k - \alpha \nabla f(x_k)$。</li>
+<li>$\overline{x}_{k+1} = (\nabla w)^{-1}(\theta{k+1})$。</li>
+<li>$x_{k+1} = \arg \min_{y} V_{\overline{x}_{k+1}}(y)$。</li>
+</ul>
+<p>这个视角提出了一点假设，$(\nabla w)^{-1}(\overline{x}_{k+1})$ 始终存在，即 ${\nabla w(x)} = \mathbb{R}^n$。</p>
+<h3 id="relationship-between-gd--md">Relationship between GD &amp; MD<a hidden class="anchor" aria-hidden="true" href="#relationship-between-gd--md">#</a></h3>
+<p>这个问题曾很长一段时间让笔者感到困惑。笔者对于这一块并非很懂，笔者现在的理解是:</p>
+<p>我们知道一个Primal Space和Dual Space的范数之间满足$\frac{1}{p}+\frac{1}{q}=1$</p>
+<p>GD是MD在 $\alpha=\frac{1}{L}$，primal space取$||·||_2$范数，Distance Generating Function取 $w(x)=\frac{1}{2} x^2$下的特殊情况。在这种情况下，因为L2-norm的Dual就是L2-norm，所以这个对偶空间就是原空间。</p>
+<p>但是另一种理解方式是，MD是先通过梯度映射到Dual Space之后在这个空间下做GD再逆映射后project回原来的空间中。</p>
+<h3 id="convergence-1">Convergence:<a hidden class="anchor" aria-hidden="true" href="#convergence-1">#</a></h3>
+<ul>
+<li>前提条件:</li>
+</ul>
+<p>$f(x)$ convex, $w(x)$ 1-strongly convex, $\nabla f(x)\leq \rho$</p>
+<ul>
+<li>Bound $f(x_t)-f(x^*)$:</li>
+</ul>
+<p>因为convexity：
+$$
+\alpha (f(x_{t+1}) - f(u)) \leq \langle \alpha \nabla f(x_t), x_t - u \rangle $$
+又因为MD的更新规则：
+$$
+x_{t+1} = \arg \min_{y} \left( V_{x_t}(y) + \langle \alpha \nabla f(x_t), y - x_t \rangle \right)
+$$
+所以说由最小值点梯度等于0:
+$$
+\alpha \nabla f(x_t) = - \nabla V_{x_t}(x_{t+1})
+$$
+因此
+$$
+\alpha (f(x_t) - f(u)) \leq \langle \alpha \nabla f(x_t), x_t - x_{k+1} \rangle + \langle - \nabla V_{x_t}(x_{k+1}), x_{k+1} - u \rangle
+$$
+接下来我们证明一个重要的triangle inequality:
+$$
+\langle - \nabla V_{x_t}(y), y - u \rangle = \langle \nabla w(x) - \nabla w(y), y - u \rangle
+$$</p>
+<hr>
+<p>$$
+= (w(u) - w(x)) - \langle \nabla w(x), u - x \rangle - (w(y) - w(x) - \langle \nabla w(x), y - x \rangle)
+$$</p>
+<p>$$
+= V_x(u) - V_x(y) - V_y(u)
+$$
+带回原式:
+$$
+\alpha (f(x_t) - f(u))
+\leq \langle \alpha \nabla f(x_t), x_t - x_{k+1} \rangle + V_{x_k}(u) - V_{x_k}(x_{k+1}) - V_{x_{k+1}}(u)
+$$</p>
+<p>由于DGF的1-strongly convex:</p>
+<p>$$
+\leq \langle \alpha \nabla f(x_t), x_t - x_{k+1} \rangle- \frac{1}{2} |x_{k+1} - x_t|^2 + V_{x_k}(u) - V_{x_{k+1}}(u)
+$$
+这步是前两项做个配方法:
+$$
+\leq \frac{\alpha^2}{2} |\nabla f(x_t)|^2 + V_{x_k}(u) - V_{x_k}(x_{k+1})
+$$</p>
+<ul>
+<li>Telescoping:</li>
+</ul>
+<p>$$
+\alpha T (f(\overline{x}) - f(x_t)) \leq \sum \text{LHS} \leq \sum \text{RHS}
+$$
+$$
+\leq \frac{\alpha^2 T}{2} \cdot \rho^2 + V_{x_0}(x^*) - V_{x_T}(x^*)
+$$
+所以说
+$$
+f(\overline{x}) - f(x^*) \leq \frac{\alpha}{2} \rho^2 + \frac{\Theta}{\alpha T}
+$$
+令$\alpha = \sqrt{\frac{2\Theta}{T \rho^2}}$.</p>
+<p>有$f(x_T) - f(x^*) \leq \sqrt{\frac{2\Theta}{T }}\rho= \epsilon$
+于是我们得到了我们的收敛率
+$$
+T = \Omega \left( \frac{\rho^2}{\epsilon^2} \right)
+$$</p>
+<h2 id="16-linear-coupling">1.6 Linear Coupling<a hidden class="anchor" aria-hidden="true" href="#16-linear-coupling">#</a></h2>
+<h3 id="wishful-thinking">Wishful Thinking<a hidden class="anchor" aria-hidden="true" href="#wishful-thinking">#</a></h3>
+<p>我们通过1.5的分析已经知道Mirror Descent有
+$
+T = O\left(\frac{\rho^2}{\epsilon^2}\right)
+$的收敛率</p>
+<p>然后我们知道在GD中
+$$
+f(x_{t+1}) - f(x_t) \leq -\frac{1}{2L} |\nabla f(x_t)|^2
+$$
+所以说在gradient比较大的时候:
+$$
+|\nabla f(x_t)| &gt; \rho : \Omega\left(\frac{L \epsilon}{\rho^2}\right) \text{ steps}
+$$</p>
+<p>在gradient比较小的时候MD:</p>
+<p>$$
+|\nabla f(x_t)| &lt; \rho : \Omega\left(\frac{\rho^2}{\epsilon^2}\right) \text{ steps}
+$$
+所以我们想能不能在梯度大的时候跑GD，在梯度小的时候跑MD，这样会获得一个更好的收敛率</p>
+<p>Coupling:</p>
+<p>$$\Omega ( \max { \frac{L \epsilon}{\rho^2}, \frac{\rho^2}{\epsilon^2} })$$
+取$\rho = (L \epsilon^{3})^\frac{1}{4}$:
+$$ \Omega\left(\sqrt{\frac{L}{\epsilon}}\right) \text{ steps}
+$$</p>
+<h3 id="algorithm-3">Algorithm<a hidden class="anchor" aria-hidden="true" href="#algorithm-3">#</a></h3>
+<ul>
+<li>初始化
+$$x_0 = y_0 = z_0$$</li>
+<li>每一步更新,更新$x$:
+$$
+x_{k+1} = \tau z_k + (1 - \tau) y_k
+$$</li>
+<li>更新$y$:</li>
+</ul>
+<p>$$
+y_{k+1} = \arg \min_{y \in \mathcal{Q}} { \frac{L}{2} |y - x_{k+1}|^2 + \langle \nabla f(x_{k+1}), y - x_{k+1} \rangle }
+$$</p>
+<p>$$
+= x_{k+1} - \frac{1}{L} \nabla f(x_{k+1}) \quad \text{(GD step)}
+$$</p>
+<ul>
+<li>更新$z$:
+$$
+z_{k+1} = Mirror_{z_k} (\alpha \nabla f(x_{k+1}))
+$$</li>
+</ul>
+<h3 id="convergence-2">Convergence<a hidden class="anchor" aria-hidden="true" href="#convergence-2">#</a></h3>
+<p>根据MD的分析:
+$$
+\alpha \langle \nabla f(x_{k+1}), z_k - u \rangle \leq \frac{\alpha^2}{2} |\nabla f(x_{k+1})|^2 + V_{z_k}(u) - V_{z_{k+1}}(u)
+$$
+由于
+$$
+f(x_{k+1}) - f(y_{k+1}) \geq \frac{1}{2L} |\nabla f(x_{k+1})|^2$$
+所以原式
+$$ \leq \alpha^2 L (f(x_{k+1}) - f(y_{k+1})) + V_{z_k}(u) - V_{z_{k+1}}(u)
+$$
+又因为convexity:
+$$
+\alpha (f(x_{k+1}) - f(u)) \leq \alpha \langle \nabla f(x_{k+1}), x_{k+1} - u \rangle
+$$</p>
+<p>$$
+= \alpha \langle \nabla f(x_{k+1}), z_k - u \rangle + \alpha \langle \nabla f(x_{k+1}), x_{k+1} - z_k \rangle
+$$
+前面一项我们已经MD做掉了，后面一项
+$$
+\alpha \langle \nabla f(x_{k+1}), x_{k+1} - z_k \rangle
+$$</p>
+<p>$$
+= \frac{(1 - \tau) \alpha}{\tau} \langle \nabla f(x_{k+1}), y_k - x_{k+1} \rangle
+$$</p>
+<p>$$
+\leq \frac{(1 - \tau) \alpha}{\tau} (f(y_k) - f(x_{k+1}))
+$$
+所以说
+$$
+\alpha (f(x_{k+1}) - f(u)) \leq \alpha^2 L (f(x_{k+1}) - f(y_{k+1})) + \frac{(1 - \tau) \alpha}{\tau} (f(y_k) - f(x_{k+1}))
+$$</p>
+<p>$$+ V_{z_k}(u) - V_{z_{k+1}}(u)
+$$
+令
+$
+\frac{(1 - \tau) \alpha}{\tau} = \alpha^2 L
+$，
+有
+$$
+f(x_{k+1}) - f(u) \leq \alpha^2 L (f(y_k) - f(y_{k+1})) + V_{z_k}(u) - V_{z_{k+1}}(u)
+$$</p>
+<p>Telescope:</p>
+<p>$$
+\alpha T (f(\overline{x}) - f(x^*)) \leq \alpha^2 L (f(y_0) - f(y_T)) + V_{x_0}(x^*) - V_{z_T}(x^*)
+$$</p>
+<p>假设 $f(y_0) - f(x^*) = d$, $V_{x_0}(x^*) = \Theta$
+有
+$$
+f(x_i) - f(x^*) \leq \frac{\alpha dL}{T} + \frac{\Theta}{\alpha T}
+$$
+令$
+\alpha = \sqrt{\frac{\Theta}{dL}}$,
+有
+$$ f(\overline{x}) - f(x^*) \leq \frac{2 \sqrt{\Theta Ld}}{T}$$</p>
+<p>取 $ T = 4 \sqrt{\frac{L\Theta}{d}}$,
+有$$f(\overline{x})-f(x^*)\leq \frac{d}{2}$$
+所以说我们每 $2\epsilon\rightarrow \epsilon$过程重新调整一次$\tau,\alpha$，最后得到的迭代次数是:
+$$O(\sqrt{\frac{L \Theta}{\epsilon}})+O(\sqrt{\frac{L \Theta}{2\epsilon}})+O(\sqrt{\frac{L \Theta}{4\epsilon}})+&hellip;=O(\sqrt{\frac{L \Theta}{\epsilon}})$$
+Nesterov告诉我们$O(\frac{1}{T^2})$(aka.$O(\sqrt{\frac{L}{\epsilon}})$)就是我们对于convex且L-smooth函数能得到的最好结果了，所以Linear Coupling确实很牛。</p>
+<h2 id="17-non-convex-optimization">1.7 Non-Convex Optimization<a hidden class="anchor" aria-hidden="true" href="#17-non-convex-optimization">#</a></h2>
+<h3 id="matrix-completion">Matrix Completion<a hidden class="anchor" aria-hidden="true" href="#matrix-completion">#</a></h3>
+<p>$A \in \mathbb{R}^{m \times n}$满足以下假设:</p>
+<blockquote>
+<p>1° $A$ is low rank</p>
+<p>2° Known entries are uniformly distributed</p>
+<p>3° <strong>Incoherence</strong>: $$
+A = U \Sigma V^T \quad \text{for } i \in [n], j \in [m]$$ $$\exists \mu: 1 \leq \mu \leq \frac{min(m,n)}{r}$$$$
+|e_i^T U| \leq \sqrt{\frac{\mu r}{n}}, \quad |e_j^T V| \leq \sqrt{\frac{\mu r}{m}}$$</p>
+</blockquote>
+<p>那么我们的目标($P_\Omega$代表不知道的元素都mask掉):
+$$
+\min |P_\Omega(UV^T) - P_\Omega(A)|_F^2
+$$
+可以有以下算法:</p>
+<blockquote>
+<p>Algorithm:</p>
+<p>For $t = 0, 1, 2, \ldots, T$</p>
+<ul>
+<li>$V^{t+1} \leftarrow \arg \min_V ||P_{\Omega}(U^t V) - P_{\Omega}(A)||_F^2$</li>
+<li>$U^{t+1} \leftarrow \arg \min_U ||P_{\Omega}(U V^{t}) - P_{\Omega}(A)||_F^2$</li>
+</ul>
+</blockquote>
+<h3 id="escaping-saddle-points">Escaping Saddle Points<a hidden class="anchor" aria-hidden="true" href="#escaping-saddle-points">#</a></h3>
+<p>SGD在非凸优化中有一些GD之类算法没有的好处，这就是噪声所带来的随机性所展现的优势:</p>
+<blockquote>
+<p><strong>Thm.</strong><!-- raw HTML omitted -->If 𝐿 is <strong>smooth, bounded and strict saddle</strong> (actually more general version, applies to points with small gradients, rather than zero gradients), and <strong>Hessian is smooth</strong>. If <strong>SGD noise has non-negligible variance in every direction with constant probability</strong>, SGD will <strong>escape all saddle points and local maxima, converge to a local minimum after polynomial number of steps.</strong></p>
+</blockquote>
+<p>其中Strict Saddle Point是指一个点$\nabla f(x)=0$， $\nabla^2 f(x)$又有正特征值又有负特征值。Flat Saddle Point是指一个点$\nabla f(x)=0$， $\nabla^2 f(x)$的所有特征值都大于等于0，且有一个等于0的特征值。</p>
+<h1 id="2generalization">2.Generalization<a hidden class="anchor" aria-hidden="true" href="#2generalization">#</a></h1>
+<h2 id="21-no-free-lunch-thm">2.1 No Free Lunch Thm.<a hidden class="anchor" aria-hidden="true" href="#21-no-free-lunch-thm">#</a></h2>
+<blockquote>
+<p><em>Thm.</em>
+设 $A$ 为在定义域 $\mathcal{X}$ 上相对于 0-1 损失的二元分类任务的任意学习算法。设 $m$ 为小于 $|\mathcal{X}|/2$ 的任意数，表示训练集大小。则存在一个在 $\mathcal{X} \times {0, 1}$ 上的分布 $\mathcal{D}$ 使得：</p>
+<ol>
+<li>存在一个函数 $f : \mathcal{X} \to {0, 1}$，使得 $L_\mathcal{D}(f) = 0$。</li>
+<li>以至少 $1/7$ 的概率，对于从 $\mathcal{D}^m$ 中选取的 $S$，有 $L_\mathcal{D}(A(S)) \geq 1/8$。</li>
+</ol>
+</blockquote>
+<p>这个的直觉在于由Markov不等式，$\mathbb{E}_{S \sim D^m }[L_D(A(S))]\geq \frac{1}{4}$,也就是说对于一个完全靠背诵的算法: 假如见过$(X,y)$,输出$y$，假如没见过就随机输出0或1。这样对于一个$|C|=2m$的$X$的子集，这样“背诵+瞎蒙”的loss function是$\frac{1}{4}$。也就是说，没有什么办法能够从期望上比“背诵+瞎蒙”效果更好，也就是说学习算法失败了。</p>
+<p><strong>证明</strong>:</p>
+<p>为了简洁性，不妨设$|C| = 2m$.</p>
+<p>记$T = 2^{2m}$。从$C$到${0, 1}$的函数一共有$f_1, \ldots, f_T$，共$T$个</p>
+<p>记
+$$
+D_i({x, y}) =
+\frac{1}{|C|} \quad \text{if } y = f_i(x)
+$$
+$$
+D_i({x, y}) = 0 \quad \text{otherwise.}
+$$</p>
+<p>显然，$L_{D_i}(f_i) = 0$.</p>
+<p>我们接下来证明:</p>
+<p>$$\max_{i \in [T]} E_{S \sim D_{i}^{m}} [ L_{D_i}(A(S)) ] \geq \frac{1}{4}$$</p>
+<hr>
+<p>记一共有$k$个可能的从$C$中取样出的$m$个数据点$x_i$序列:
+有$k = (2m)^m$，记
+$S_j = (x_1, \ldots, x_m)$
+，记
+$S_j^i = \left( (x_1, f_i(x_1)), \ldots, (x_m, f_i(x_m)) \right)$。</p>
+<p>我们只需要取出一个$i \in [T]$能够让$E_{S \sim D_i^m} \left[ L_{D_i}(A(S)) \right]\geq \frac{1}{4}$,那么对应的$D_i$便是我们在NFL中所希望找到的$D$。
+$$
+\max_{i \in [T]} E_{S \sim D_i^m} \left[ L_{D_i}(A(S)) \right]
+$$</p>
+<p>$$
+= \max_{i \in [T]} \frac{1}{k} \sum_{j=1}^k L_{D_i}(A(S_j^i))
+$$</p>
+<p>$$
+\geq \frac{1}{T} \sum_{i=1}^T \frac{1}{k} \sum_{j=1}^k L_{D_i}(A(S_j^i))
+$$</p>
+<p>$$
+= \frac{1}{k} \sum_{j=1}^k \frac{1}{T} \sum_{i=1}^T L_{D_i}(A(S_j^i))
+$$</p>
+<p>$$
+\geq \min_{j \in [k]} \frac{1}{T} \sum_{i=1}^T L_{D_i}(A(S_j^i))
+$$
+对于给定的 $j$:</p>
+<p>令$v_1, \ldots, v_p$ 为$S_j$中没有出现的$x\in C$, 注意到$p \geq m$。</p>
+<p>$$
+L_{D_i}(A(S_j^i)) = \frac{1}{2m} \sum_{x \in C} \mathbf{1}[h(x) \neq f_i(x)]
+$$</p>
+<p>$$
+\geq \frac{1}{2m} \sum_{r=1}^p \mathbf{1}[h(v_r) \neq f_i(v_r)]
+$$</p>
+<p>$$
+\geq \frac{1}{2p} \sum_{r=1}^p \mathbf{1}[h(v_r) \neq f_i(v_r)]
+$$</p>
+<p>所以说</p>
+<p>$$
+\frac{1}{T} \sum_{i=1}^T L_{D_i}(A(S_j^i))
+$$</p>
+<p>$$
+\geq \frac{1}{T} \sum_{i=1}^T \frac{1}{2p} \sum_{r=1}^p \mathbf{1}[h(v_r) \neq f_i(v_r)]
+$$</p>
+<p>我们可以将 $f_1, \ldots, f_T$ 中的所有函数划分成 $T/2$ 对不相交的函数对，其中对于每一对 $(f_i, f_{i&rsquo;})$，对于任意 $c \in C$，都有 $f_i(c) \neq f_{i&rsquo;}(c)$。</p>
+<p>于是有
+$$
+\frac{1}{2p} \sum_{r=1}^p \frac{1}{T} \sum_{i=1}^T \mathbf{1}[h(v_r) \neq f_i(v_r)] = \frac{1}{4}
+$$</p>
+<p>所以说
+$$
+\max_{i \in [T]} E_{S \sim D_i^m} \left[ L_{D_i}(A(S)) \right] \geq \frac{1}{4}
+$$</p>
+<hr>
+<p>令$\mathcal{D} = D_i$:</p>
+<p>如果</p>
+<p>$$
+\Pr \left[ L_{\mathcal{D}}(A(S)) \geq \frac{1}{8} \right] &lt; \frac{1}{7}
+$$</p>
+<p>那么</p>
+<p>$$
+E_{S \sim \mathcal{D}^m} \left[ L_{\mathcal{D}}(A(S)) \right] &lt; \frac{1}{7} \cdot 1 + \frac{6}{7} \cdot \frac{1}{8}
+$$</p>
+<p>$$
+= \frac{1}{7} + \frac{3}{28} = \frac{1}{4}.\quad\blacksquare
+$$</p>
+<h2 id="22-pac-learning">2.2 PAC-Learning<a hidden class="anchor" aria-hidden="true" href="#22-pac-learning">#</a></h2>
+<h3 id="一些概念">一些概念:<a hidden class="anchor" aria-hidden="true" href="#一些概念">#</a></h3>
+<ul>
+<li><strong>Hypothesis Class (H)</strong> ：能够选择的假设$h$的集合</li>
+<li><strong>$ERM_H$</strong> ：选择具有最小empirical loss的假设</li>
+</ul>
+<p>$$
+ERM_H(S) \in \arg\min_{h \in H} L_S(h)
+$$</p>
+<ul>
+<li><strong>Realizability Assumption</strong>: 存在 $h^* \in H$ 使得 $L_{D,f}(h^*) = 0$。这意味着对于每个训练集 $S$，我们有 $L_S(h^*) = 0$。</li>
+<li><strong>PAC-Learnable</strong>: 如果存在一个函数 $m_H: (0,1)^2 \to \mathbb{N}$ 和一个learning algorithm，使得对于任意的 $\epsilon, \delta \in (0,1)$，对于定义在 $X$ 上的任意分布 $D$，以及任意labeling function $f: X \to {0,1}$，若Realizability Assumption在 $H, D, f$ 下成立，则当在由 $D$ 生成并由 $f$ 标记的 $m \geq m_H(\epsilon, \delta)$ 个独立同分布样本上运行该learning algorithm时，该算法返回一个假设 $h$，使得以至少 $1 - \delta$ 的概率（在样本选择的随机性上），$L_{D,f}(h) \leq \epsilon$。</li>
+</ul>
+<h3 id="finite-classes-are-pac-learnable">Finite Classes are PAC-learnable<a hidden class="anchor" aria-hidden="true" href="#finite-classes-are-pac-learnable">#</a></h3>
+<blockquote>
+<p><strong>Thm.</strong> 给定 $\delta \in (0,1)$, $\epsilon &gt; 0$, 如果 $m \geq \frac{\log(|H|/\delta)}{\epsilon}$，那么如果Realizability Assumption成立， 那么对于任意ERM hypothesis $h_S$:
+$$
+\Pr [ L_D(h_S) \leq \epsilon ] \geq 1 - \delta
+$$
+<strong>Pf.</strong> 我们想要upper bound</p>
+</blockquote>
+<p>$$
+\Pr_{S\sim \mathcal{D}^m} [ S | L_D(h(S)) &gt; \epsilon ]
+$$</p>
+<p>定义所有不好的假设的集合为:
+$$
+H_B := { h \in H | L_D(f, h) &gt; \epsilon }
+$$
+定义misleading的假设的集合为：
+$$
+M := { S \mid \exists h \in H_B, L_S(h) = 0 }
+$$
+有
+$$
+{ S \mid L_D(h(S)) &gt; \epsilon } \subseteq M
+$$
+所以
+$$
+\Pr \left[ L_D(h(S)) &gt; \epsilon \right] \leq \Pr \left[ S \in M \right] \leq \sum_{h \in H_B} \Pr \left[ L_S(h) = 0 \right]
+$$
+又因为
+$$
+\Pr \left[ L_S(h) = 0 \right] = \prod_{i=1}^m Pr_{x_i\sim\mathcal{D}} \left[ h(x_i) = f(x_i) \right]
+$$</p>
+<p>因为
+$$
+Pr_{x_i\sim\mathcal{D}} \left[ h(x_i) = f(x_i) \right] = 1 - L_D(f, h) \leq 1 - \epsilon
+$$
+所以</p>
+<p>$$
+\Pr \left[ L_S(h) = 0 \right] \leq (1 - \epsilon)^m \leq e^{-m \epsilon}
+$$</p>
+<p>$$
+|H| \cdot e^{-m \epsilon} \leq \delta \implies m = \frac{\log(|H|/\delta)}{\epsilon}. \blacksquare
+$$</p>
+<h3 id="threshold-functions-are-pac-learnable">Threshold Functions are PAC-learnable<a hidden class="anchor" aria-hidden="true" href="#threshold-functions-are-pac-learnable">#</a></h3>
+<ul>
+<li>Threshold Functions:
+$$
+\mathcal{H}={h(x) = \mathbf{1}[x &lt; a]}
+$$
+<img loading="lazy" src="../img/ml1/image4.png">
+注意到这是一个infinite class。</li>
+</ul>
+<blockquote>
+<p><strong>Thm.</strong> 设 $H$ 为Threshold Functions。则 $H$ 是 PAC-learnable的，使用 ERM 算法，其样本复杂度为$$
+m_H(\epsilon, \delta) \leq \frac{\lceil \log(2/\delta) \rceil}{\epsilon}$$</p>
+</blockquote>
+<ul>
+<li><strong>Pf.</strong></li>
+</ul>
+<p>记$
+h^*(x) = \mathbf{1}[x &lt; a^*]
+$s.t.$L_D(h^*)=0$</p>
+<p>定义
+$$
+b_0 := \sup {x \mid (x, 1) \in S}, \quad b_1 := \inf {x \mid (x, 0) \in S}
+$$
+<img loading="lazy" src="../img/ml1/image11.png">
+注意到
+$$
+\Pr \left[ L_D(h) &gt; \epsilon \right] \leq \Pr \left[ b_0 &lt; a_0 \right] + \Pr \left[ b_1 &gt; a_1 \right]
+$$
+在$
+m = \frac{\ln \left(\frac{2}{\delta}\right)}{\epsilon}
+$的情况下:
+$$
+\Pr \left[ b_0 &lt; a_0 \right] = (1 - \epsilon)^m \leq e^{-\epsilon m} = \frac{\delta}{2}
+$$</p>
+<p>$$
+\Pr \left[ b_1 &gt; a_1 \right] = (1 - \epsilon)^m \leq e^{-\epsilon m} = \frac{\delta}{2}. \blacksquare
+$$</p>
+<h2 id="23-agnostic-pac-learnable">2.3 Agnostic PAC-Learnable<a hidden class="anchor" aria-hidden="true" href="#23-agnostic-pac-learnable">#</a></h2>
+<p>有时候Realizability Assumption太强了，我们希望能够得到一个在$\mathcal{H}$中没有Loss=0的hypothesis的情况下衡量estimation error的手段:</p>
+<h3 id="agnostic-pac-learnable"><strong>Agnostic PAC-Learnable</strong>:<a hidden class="anchor" aria-hidden="true" href="#agnostic-pac-learnable">#</a></h3>
+<p>一个假设类 $H$ 是 Agnostic PAC 可学习的，如果存在一个函数 $m_H: (0,1)^2 \rightarrow \mathbb{N}$ 和一个具有以下性质的学习算法：对于每一个 $\epsilon, \delta \in (0,1)$，以及定义在 $X \times Y$ 上的每个分布 $D$，当在由 $D$ 生成的 $m \geq m_H(\epsilon, \delta)$ 个独立同分布（iid）样本上运行该学习算法时，算法会返回一个假设 $h$，使得以至少 $1 - \delta$ 的概率（对于 $m$ 个训练样本的选择而言），满足</p>
+<p>$$
+L_D(h) \leq \min_{h&rsquo; \in H} L_D(h&rsquo;) + \epsilon
+$$</p>
+<h3 id="error-decomposition"><strong>Error Decomposition</strong>:<a hidden class="anchor" aria-hidden="true" href="#error-decomposition">#</a></h3>
+<ul>
+<li>$L_D(h_S) = \epsilon_{app} + \epsilon_{est}$</li>
+<li>$\epsilon_{app} = \min_{h \in H} L_D(h)$</li>
+<li>$\epsilon_{est} = L_D(h_S) - \epsilon_{app}$</li>
+<li>$\epsilon_{app} = L_D(BO) + \min_{h \in H} L_D(h) - L_D(BO)$</li>
+</ul>
+<p>$\epsilon_{app}$描述的是这个hypothesis class的inductive bias的多少，而$\epsilon_{est}$是与sample size和sample complexity相关的(sample complexity与hypothesis class的representation power成正比)，所以说当我们想要减少$L_D(h_S)$,我们面临一个bias-complexity tradeoff。</p>
+<p>其中BO指代的是Bayes Optimal Predictor。</p>
+<h3 id="bayes-optimal-predictor">Bayes Optimal Predictor<a hidden class="anchor" aria-hidden="true" href="#bayes-optimal-predictor">#</a></h3>
+<p>给定任何在 $X \times {0,1}$ 上的概率分布 $D$，从 $X$ 到 ${0,1}$ 的最佳标签预测函数为</p>
+<p>$$
+f_D(x) = 1 \quad \text{if } P[y = 1 \mid x] \geq \frac{1}{2}
+$$
+$$
+f_D(x) = 0 \quad \text{otherwise}
+$$</p>
+<p>很容易验证，对于每个概率分布 $D$，贝叶斯最优预测器 $f_D$ 是最优的，因为没有其他分类器 $g: X \rightarrow {0,1}$ 的错误率更低。即，对于每个分类器 $g$，有</p>
+<p>$$
+L_D(f_D) \leq L_D(g)
+$$</p>
+<h2 id="24-vc-dim">2.4 VC-Dim<a hidden class="anchor" aria-hidden="true" href="#24-vc-dim">#</a></h2>
+<h3 id="restriction-of-h-to-c">Restriction of $H$ to $C$<a hidden class="anchor" aria-hidden="true" href="#restriction-of-h-to-c">#</a></h3>
+<p>设 $H$ 是从 $X$ 到 ${0,1}$ 的函数类，$C = {c_1, \cdots, c_m} \subseteq X$。$H$ 在 $C$ 上的限制是从 $C$ 到 ${0,1}$ 的函数集合，这些函数可以从 $H$ 中导出。即</p>
+<p>$$
+H_C = {(h(c_1), \cdots, h(c_m)) : h \in H}
+$$</p>
+<p>我们将从 $C$ 到 ${0,1}$ 的每个函数表示为 ${0,1}^{|C|}$ 中的一个向量。</p>
+<h3 id="shattering">Shattering<a hidden class="anchor" aria-hidden="true" href="#shattering">#</a></h3>
+<p>一个假设类 $H$ Shatter有限集 $C \subseteq X$，如果 Restriction of $H$ to $C$是从 $C$ 到 ${0,1}$ 的所有函数集合。即</p>
+<p>$$
+|H_C| = 2^{|C|}
+$$</p>
+<h3 id="nfl-reexpressed">NFL Reexpressed<a hidden class="anchor" aria-hidden="true" href="#nfl-reexpressed">#</a></h3>
+<p>设 $H$ 是从 $X$ 到 ${0,1}$ 的hypothesis class。令 $m$ 为训练集大小。假设存在一个大小为 $2m$ 的集合 $C \subseteq X$，它被 $H$ shatter。则对于任意学习算法 $A$，存在一个定义在 $X \times {0,1}$ 上的分布 $D$ 和一个预测器 $h \in H$，使得 $L_D(h) = 0$，但以至少 $\frac{1}{7}$ 的概率，对于 $S \sim D^m$ 的选择，有</p>
+<p>$$
+L_D(A(S)) \geq \frac{1}{8}
+$$</p>
+<h3 id="vc-dimension">VC-Dimension<a hidden class="anchor" aria-hidden="true" href="#vc-dimension">#</a></h3>
+<p>Hypothesis class $H$ 的 VC-dimension（记作 $\text{VCdim}(H)$）是 $H$ 可以shatter的集合 $C \subseteq X$ 的最大大小。如果 $H$ 可以shatter任意大的集合，我们称 $\text{VCdim}(H)=+ \infty$.</p>
+<h3 id="inifite-vc-dim-hypothesis-classes-are-not-pac-learnable">Inifite VC-dim hypothesis classes are not PAC-learnable<a hidden class="anchor" aria-hidden="true" href="#inifite-vc-dim-hypothesis-classes-are-not-pac-learnable">#</a></h3>
+<p>NFL的直接后果就是$\text{VCdim}(H)=+ \infty$的$H$不是PAC-learnable的。</p>
+<h2 id="25-fundamental-theorem-of-statistical-learning">2.5 Fundamental theorem of statistical learning<a hidden class="anchor" aria-hidden="true" href="#25-fundamental-theorem-of-statistical-learning">#</a></h2>
+<p>设 $H$ 是从一个域 $X$ 到 ${0,1}$ 的hypothesis class，并且损失函数是 0-1 损失。假设 $\text{VCdim}(H) = d &lt; \infty$。则存在常数 $C_1, C_2$，使得</p>
+<p>$H$ 是具有以下样本复杂度的Agnostic PAC-learnable：</p>
+<p>$$
+C_1 \frac{d + \log \left(\frac{1}{\delta}\right)}{\epsilon^2} \leq m_H(\epsilon, \delta) \leq C_2 \frac{d + \log \left(\frac{1}{\delta}\right)}{\epsilon^2}
+$$</p>
+<p>$H$ 是具有以下样本复杂度的 PAC-learnable：</p>
+<p>$$
+C_1 \frac{d + \log \left(\frac{1}{\delta}\right)}{\epsilon} \leq m_H(\epsilon, \delta) \leq C_2 \frac{d \log \left(\frac{1}{\epsilon}\right) + \log \left(\frac{1}{\delta}\right)}{\epsilon}
+$$</p>
+<h1 id="3supervised-learning">3.Supervised Learning<a hidden class="anchor" aria-hidden="true" href="#3supervised-learning">#</a></h1>
+<ul>
+<li>对于回归问题，我们构造一个函数$f: X\rightarrow \mathbb{R}$</li>
+<li>在分类问题中，我们构造一个函数$f: X\rightarrow {0,1}$或者${-1,1}$。</li>
+</ul>
+<p>前者我们的loss function很好design，比如说Mean Square Loss，但是后者的loss就不是特别好design。一种自然的想法是$f(x)=sign(w^Tx)$,但是问题就是这个loss不可导，下面是一种利用这种函数但是不需要导数的远古算法。</p>
+<h2 id="31-perceptron">3.1 Perceptron<a hidden class="anchor" aria-hidden="true" href="#31-perceptron">#</a></h2>
+<h3 id="algorithm-4">Algorithm<a hidden class="anchor" aria-hidden="true" href="#algorithm-4">#</a></h3>
+<p><img loading="lazy" src="../img/ml1/image10.png"></p>
+<h3 id="convergence-3">Convergence<a hidden class="anchor" aria-hidden="true" href="#convergence-3">#</a></h3>
+<blockquote>
+<p>Thm.</p>
+<p>合适缩放使得 $||x_i|| \leq 1$ 。假设存在 $w_*$ 满足 $||w_*|| = 1$ 且 $y_i w_*^T x_i &gt; \gamma$（存在过原点的划分平面，安全距离为 $\gamma$）。该算法收敛前最多触发 $\frac{1}{\gamma^2}$ 次预测错误。</p>
+</blockquote>
+<p><strong>Pf.</strong>
+假设算法第 $t$ 次犯错是 $(x_t, y_t)$，这会使得</p>
+<p>$$w_{t+1} = w_t + y_t x_t$$</p>
+<p>且此时 $\langle {w}^T, y_t x_t \rangle &lt; 0$（锐角）。这说明
+$$
+||w_{t+1}||^2 \leq ||w_t||^2 + ||y_t x_t||^2 = ||w_t||^2 + 1 \
+||w_t||^2 \leq t
+$$</p>
+<p>另一方面
+$$
+||w_{t+1}|| \geq \langle w_{t+1}, w_* \rangle \geq \langle w_t, w_* \rangle + \gamma \
+||w_t|| \geq \gamma t
+$$</p>
+<p>综上
+$$
+\gamma^2 t^2 \leq |w_t|^2 \leq t
+$$
+解得 $t \leq \frac{1}{\gamma^2}$。$\blacksquare$</p>
+<h2 id="32-logistic-regression">3.2 Logistic Regression<a hidden class="anchor" aria-hidden="true" href="#32-logistic-regression">#</a></h2>
+<p>为了解决不可导的问题，更为现代的想法是通过sigmoid函数把$w^Tx$压缩到$(0,1)$之间的概率，即$$f(x)=\frac{1}{1+e^{-w^Tx}}.$$
+衡量两个概率之间的差异，可以用l1-norm或者cross-entropy loss。</p>
+<p><img loading="lazy" src="../img/ml1/image9.png"></p>
+<blockquote>
+<p><strong>熵 (Entropy)</strong><!-- raw HTML omitted -->
+对于离散概率分布 $(p_1, p_2, \cdots, p_n)$，定义它的熵为$$
+H(p) = \sum_{i=1}^{n} p_i \log \frac{1}{p_i}$$</p>
+</blockquote>
+<blockquote>
+<p><strong>交叉熵 (Cross entropy)</strong><!-- raw HTML omitted -->
+定义两个离散概率分布 $(p_1, p_2, \cdots, p_n)$ 和 $(q_1, q_2, \cdots, q_n)$ 的交叉熵为$$
+XE(p, q) = \sum_{i=1}^{n} p_i \log \frac{1}{q_i}$$</p>
+</blockquote>
+<blockquote>
+<p><strong>KL 散度</strong><!-- raw HTML omitted -->
+定义两个离散概率分布 $(p_1, p_2, \cdots, p_n)$ 和 $(q_1, q_2, \cdots, q_n)$ 的 KL 散度为$$
+KL(p, q) = XE(p, q) - H(p)$$</p>
+</blockquote>
+<p>交叉熵比l1-norm 好在：</p>
+<ul>
+<li>l1-norm：提供恒定的梯度。</li>
+<li>交叉熵：差距越大，梯度越大</li>
+</ul>
+<h2 id="33-regularization">3.3 Regularization<a hidden class="anchor" aria-hidden="true" href="#33-regularization">#</a></h2>
+<p>当我们想要限制$f$的表达能力时，经典的看法就是通过在$||·||_2$或$||·||_1$意义下限制$w$的可能取值区间。</p>
+<h3 id="ridge-regression">Ridge Regression<a hidden class="anchor" aria-hidden="true" href="#ridge-regression">#</a></h3>
+<p>把loss function改为$$l(w)+\lambda||w||^2$$
+这里是2-norm, 这相当于每一步先GD，之后再进行了一次
+$$w_{t+1}=(1-\eta \lambda)\tilde{w}_{t}$$
+这被称为weight decay。</p>
+<h3 id="lasso-regression">Lasso Regression<a hidden class="anchor" aria-hidden="true" href="#lasso-regression">#</a></h3>
+<p>有时候我们想要获得sparse的解，因此我们把loss function改为$$l(w)+\lambda||w||_1^2$$
+这个直觉在于用diamond和凸集的交集更有可能是sparse的
+<img loading="lazy" src="../img/ml1/image8.png"></p>
+<h2 id="34-compressed-sensing">3.4 Compressed Sensing<a hidden class="anchor" aria-hidden="true" href="#34-compressed-sensing">#</a></h2>
+<blockquote>
+<p><strong>Nyquist theorem</strong>: <!-- raw HTML omitted -->for a signal with frequency 𝑓, we need 2𝑓 sampling rate to fully reconstruct the signal</p>
+</blockquote>
+<p>这个是一个通用的定理，但是大部分情况下，我们的信号其实是存在一组基下的稀疏表示，所以我们会去想能不能通过更少的采样，来重构出信号，这就是compressed sensing的背景。</p>
+<p><img loading="lazy" src="../img/ml1/image7.png"></p>
+<p>在Compressed Sensing中，和supervised learning不同的是我们可以自己选择自己的measurement matrix，即训练集，在下图中也就是说我们可以自由选定$A$的每一行，然后获得对应的$y$，最终我们希望通过$y$还原出$x$。</p>
+<p><img loading="lazy" src="../img/ml1/image6.png">
+最后的得到的主要结论，用自然语言去描述，是如下三条:</p>
+<ol>
+<li>
+<p>如果一个稀疏信号通过 $x \mapsto Wx$ 进行了压缩，其中 $W$ 是满足$(\epsilon, s)$-RIP 的矩阵，那么可以完全重构任何稀疏信号。满足此性质的矩阵保证了任何稀疏可表示向量的范数distortion较小。</p>
+</li>
+<li>
+<p>通过求解线性规划，重构可以在多项式时间内计算。</p>
+</li>
+<li>
+<p>给定 $n \times d$ 的随机矩阵，在 $n$ 大于 $s \log(d)$ 的数量级时，它很可能满足 RIP 条件。</p>
+</li>
+</ol>
+<p>接下来让我formally用数学的语言build up都以上的结论。</p>
+<h3 id="rip-condition">RIP-Condition<a hidden class="anchor" aria-hidden="true" href="#rip-condition">#</a></h3>
+<p>一个矩阵 $W \in \mathbb{R}^{n,d}$ 是 $(\epsilon, s)$-RIP 的当且仅当对于所有 $x \neq 0$ 且满足 $||x||_{0}\leq s$ 的 $x$，我们有
+$$
+\left| \frac{||Wx||_2^2}{||x||_2^2} - 1 \right| \leq \epsilon.
+$$</p>
+<h3 id="thm1">Thm.1<a hidden class="anchor" aria-hidden="true" href="#thm1">#</a></h3>
+<blockquote>
+<p><strong>Thm.1</strong> 设 $\epsilon &lt; 1$，并且设 $W$ 为 $(\epsilon, 2s)$-RIP 矩阵。设 $x$ 为一个满足 $||x||_0\leq s$ 的向量，</p>
+<p>令 $y = Wx$ 为 $x$ 的压缩结果，并且令
+$$\tilde{x} \in \arg \min_{{v}: W{v}=y} ||{v}||_0$$ 为重构向量。那么，$\tilde{x} = x$。</p>
+</blockquote>
+<p>这个定理告诉我们对于RIP的矩阵，如果我们能够通过找到符合$Wv=y$的$v$的l0-norm最小的向量，我们就能够成功的(无损)重建出$x$。</p>
+<p><strong>Pf.</strong>
+令 $h = \tilde{x} - x$</p>
+<p>$$
+|\tilde{x}|_0 \leq |x|_0 \leq s
+$$</p>
+<p>因此 $h$ 是 $2s$-sparse的。</p>
+<p>$$
+(1 - \epsilon) |h|^2 \leq |Wh|^2 \leq (1 + \epsilon) |h|^2
+$$</p>
+<p>由于 $Wh = W(\tilde{x} - x) = 0$</p>
+<p>$$
+\Rightarrow |h|^2 = 0
+$$</p>
+<p>因此 $\tilde{x} = x$。$\blacksquare$</p>
+<p>但问题是，我们没有一个polytime求解l0-norm最小值的算法，所以这个定理在实际应用中没有意义，我们在实际应用中尝试吧l0-norm relax到 l1-norm，下面的thm2和3便是l1-norm下重建结果相似性的保证。</p>
+<h3 id="thm2">Thm.2<a hidden class="anchor" aria-hidden="true" href="#thm2">#</a></h3>
+<blockquote>
+<p><strong>Thm.2</strong> 假设 $W$ 为 $(\epsilon, 2s)$-RIP 矩阵。$x$ 为一个满足 $|x|_0 \leq s$ 的向量，</p>
+<p>令 $y = Wx$ 为 $x$ 的压缩结果，并且 $\epsilon &lt; \frac{1}{1 + \sqrt{2}}$，那么,</p>
+<p>$$x=\arg \min_{v: Wv = y} ||v||_ {0}=\arg \min_{v:Wv = y}||v||_1$$</p>
+</blockquote>
+<p>这个定理说明在s-sparse的情况下，Relax 到l1-norm也可以重构出一样的向量。</p>
+<p>事实上，我们将证明一个更强的结果，该结果即使在 $x$ 不是一个稀疏向量的情况下也成立，即Thm.3。</p>
+<h3 id="thm3">Thm.3<a hidden class="anchor" aria-hidden="true" href="#thm3">#</a></h3>
+<blockquote>
+<p><strong>Thm.3</strong> 设 $\epsilon &lt; \frac{1}{1 + \sqrt{2}}$ 并且 $W$ 是一个 $(\epsilon, 2s)$-RIP 矩阵。设 $x$ 是任意向量，并定义
+$$x_s \in \arg \min_{v: ||v|| _ 0 \leq s} ||x - v||_ 1 $$
+也就是说，$x_s$ 是一个在 $x$ 的 $s$ 个最大元素处等于 $x$ 并在其他地方等于 $0$ 的向量。设 $y = Wx$ ，并令
+$$x^* \in \arg \min_{v: Wv = y} |v|_1$$
+为重构的向量。那么，
+$$|x^* - x|_2 \leq 2 \frac{1 + \rho}{1 - \rho} s^{-1/2} |x - x_s|_1,$$
+其中 $\rho = \sqrt{2\epsilon}/(1 - \epsilon)$。</p>
+</blockquote>
+<p><strong>Pf.</strong></p>
+<p>这个定理的证明相对比较复杂，主要是证明以下两个Claim:</p>
+<blockquote>
+<p><strong>Claim 1：</strong>
+$$
+|h_{T_{0,1}}|_ 2 \leq |h _{T_0}|_2 + 2s^{-1/2}|x - x_s|_1。
+$$</p>
+</blockquote>
+<blockquote>
+<p><strong>Claim 2：</strong>
+$$
+|h_{T_{0,1}}|_ 2 \leq \frac{2\rho}{1 - \rho}s^{-1/2}|x - x_s|_1。
+$$
+<strong>符号说明：</strong> 给定一个向量 $v$ 和一组索引 $I$，我们用 $v_I$ 表示向量，其第 $i$ 个元素为 $v_i$ 如果 $i \in I$，否则其第 $i$ 个元素为 0。令 $h = x^* - x$。</p>
+</blockquote>
+<p>我们使用的第一个技巧是将索引集合 $[d] = {1, \ldots, d}$ 划分为大小为 $s$ 的不相交集合。也就是说，我们写作 $[d] = T_0 \cup T_1 \cup T_2 \ldots T_{d/s-1}$，对于所有 $i$，我们有 $|T_i| = s$，并且我们为简便起见假设 $d/s$ 是一个整数。我们如下定义划分。在 $T_0$ 中，我们放置 $s$ 个对应于 $x$ 的绝对值中最大的元素的索引（如果有并列的情况，则任意打破平局）。设 $T_0^c = [d] \setminus T_0$。接下来，$T_1$ 将是对应于 $h_{T_0^c}$ 绝对值中最大的 $s$ 个元素的索引。设 $T_{0,1} = T_0 \cup T_1$，并令 $T_{0,1}^c = [d] \setminus T_{0,1}$。接下来，$T_2$ 将是对应于 $h_{T_{0,1}^c}$ 绝对值中最大的 $s$ 个元素的索引。我们将继续构造 $T_3, T_4, \ldots$ 以相同的方式。</p>
+<p><strong>Pf of Claim 1</strong>，我们不使用RIP条件，仅仅使用$x^*$最小化$\ell_1$范数这一事实。设$j &gt; 1$。对于每个$i \in T_j$和$i&rsquo; \in T_{j-1}$，我们有$|h_i| \leq |h_{i&rsquo;}|$。因此，$|h_ {T_j}|_ \infty \leq |h_ {T_ {j-1}}|_ 1/s$。由此可以得到：</p>
+<p>$$
+||h_{T_j}||_ 2 \leq s^{-1/2} ||h_{T_{j-1}}||_1
+$$</p>
+<p>对$j = 2, 3, \ldots$求和，并使用三角不等式，可以得到：</p>
+<p>$$
+||h_{T_{0,1}^c}||_ 2 \leq \sum_{j \geq 2} ||h_{T_j}||_ 2 \leq s^{-1/2} ||h_{T_{0,1}^c}||_1
+$$</p>
+<p>接下来，我们证明$|h_{T_0}|_1$不能太大。实际上，由于$x^* = x + h$具有最小的$\ell_1$范数，并且$x$满足$x^*$的定义中的约束条件，我们有$|x|_1 \geq |x + h|_1$。因此，利用三角不等式我们可以得到：</p>
+<p>$$
+||x||_ 1 \geq \sum_{i \in T_0} |x_i + h_i| + \sum_{i \in T_{0,1}^c} |x_i + h_i| \geq ||x_{T_0}||_ 1 - ||h_{T_0}||_ 1 + ||x_{T_{0,1}^c}||_ 1 - ||h_{T_{0,1}^c}||_1
+$$</p>
+<p>由于$|x_ {T_ {0,1}^c}|_ 1 = |x - x_s|_ 1 = |x|_ 1 - |x_ {T_ 0}|_ 1$，我们得到：</p>
+<p>$$
+|h_{T_0}|_ 1 \leq |h_{T_0}|_ 1 + 2|x_{T_{0,1}^c}|_1。
+$$</p>
+<p>结合上述等式可以得到：</p>
+<p>$$
+|h_{T_{0,1}^c}|_ 2 \leq s^{-1/2} (|h_{T_0}|_ 1 + 2|x_{T_{0,1}^c}|_1)。\blacksquare
+$$</p>
+<p><strong>Pf of Claim 2</strong></p>
+<p>对于2s-稀疏的向量$h_{T_{0,1}}$，我们有：</p>
+<p>$$(1 - \epsilon) ||h_{T_{0,1}}||_ 2^2 \leq ||Wh_{T_{0,1}}||_2^2$$</p>
+<p>而</p>
+<p>$$Wh_{T_{0,1}} = Wh - \sum_{j \geq 2} Wh_{T_j} = -\sum_{j \geq 2} Wh_{T_j}$$</p>
+<p>因此</p>
+<p>$$||Wh_{T_{0,1}}||_ 2^2 = -\sum_{j \geq 2} \langle Wh_{T_{0,1}}, Wh_{T_j} \rangle$$</p>
+<blockquote>
+<p><strong>Lemma</strong>：如果$W$是$(\epsilon, 2s)$-RIP矩阵，对于任意不相交的$I, J$集合，若$|I| \leq s, |J| \leq s$，则
+$$
+\langle W u_{I}, W u_{J} \rangle \leq \epsilon |u_{I}| |u_{J}|
+$$</p>
+</blockquote>
+<p><strong>Pf.</strong></p>
+<p>$$\langle W u_{I}, W u_{J} \rangle = \frac{|W(u_I + u_J)|^2 - |W(u_I - u_J)|^2}{4}$$</p>
+<p>$$
+\leq \frac{(1 + \epsilon) |u_I + u_J|^2 - (1 - \epsilon) |u_I - u_J|^2}{4}
+$$</p>
+<p>由于$I, J$是不相交的集合：</p>
+<p>$$
+= \frac{(1 + \epsilon) (|u_I|^2 + |u_J|^2) - (1 - \epsilon) (|u_I|^2 + |u_J|^2)}{4}
+$$</p>
+<p>$$
+= \frac{\epsilon}{2} ((|u_I|^2 + |u_J|^2) \leq \epsilon |u_I||u_J|.\blacksquare
+$$</p>
+<p>原式代入Lemma，我们有：</p>
+<p>$$||Wh_{T_{0,1}}||_ 2^2 \leq \epsilon (||h_{T_0}||_ 2 + ||h_{T_{1}}||_ 2) \cdot \sum_{j \geq 2} ||h_{T_j}||_ 2
+$$
+利用$2(a^2 + b^2) \geq (a + b)^2$:
+$$||h_{T_0}||_ 2 + ||h_{T_1}||_ 2 \leq \sqrt{2} ||h_ {T_{0,1}}|| _2$$</p>
+<p>所以</p>
+<p>$$
+|Wh_{T_{0,1}}|_ 2^2 \leq \sqrt{2} \epsilon |h_{T_{0,1}}| _ 2 \cdot \sum_{j \geq 2} |h_{T_j}|_ 2
+$$</p>
+<p>$$
+\leq \sqrt{2} \epsilon \cdot s^{-1/2} |h_{T_ {0,1}}| _ 2 \cdot |h _{T _{0,1}^C}| _1
+$$</p>
+<p>因此</p>
+<p>$$
+|h_{T_0,1}|_ 2 \leq \frac{\sqrt{2} \epsilon}{1 - \epsilon} s^{-1/2} |h_{T_0^C}|_1
+$$</p>
+<p>$$
+|h_{T_0,1}|_ 2 \leq \frac{\sqrt{2} \epsilon}{1 - \epsilon} s^{-1/2} (|h_{T_0}|_ 1 + 2|x_{T_0^C}|_1)
+$$</p>
+<p>$$
+\leq \rho ||h_ {T_{0}}|| _{2} + 2 \rho s^{-1/2} ||x _{T _{0}^{C}}|| _{1}
+$$</p>
+<p>由于</p>
+<p>$$||h_{T_ {1}}|| _ 2 \leq ||h_{T _{0,1}}|| _2$$</p>
+<p>因此</p>
+<p>$$
+||h_{T_{0,1}}||_2 \leq \frac{2 \rho}{1 - \rho} s^{-1/2} ||x - x_s||_1\blacksquare
+$$</p>
+<p>回到<em>Thm.3</em>的证明:</p>
+<p>$$
+|h|_ 2 \leq |h_{T _{0,1}}| _2 + |h _{T _{0,1}^C}| _2
+$$</p>
+<p>$$
+\leq 2 |h_{T_0,1}|_2 + 2s^{-1/2} |x - x_s|_1
+$$</p>
+<p>$$
+\leq \left( \frac{4 \rho}{1 - \rho} s^{-1/2} + 2s^{-1/2} \right) |x - x_s|_1
+$$</p>
+<p>$$
+= 2 \frac{1 + \rho}{1 - \rho} s^{-1/2} |x - x_s|_1. \blacksquare
+$$</p>
+<h3 id="thm4">Thm.4<a hidden class="anchor" aria-hidden="true" href="#thm4">#</a></h3>
+<p>最后我们就剩下Thm.4了，</p>
+<blockquote>
+<p><strong>Thm.4</strong><br>
+设 $U$ 为任意固定的 $d \times d$ 正交矩阵，设 $\epsilon, \delta$ 为在 $(0, 1)$ 之间的标量，设 $s$ 是 $[d]$ 中的一个整数，且设 $n$ 为满足以下条件的整数
+$$
+n \geq 100 \frac{s \ln(40d/(\delta \epsilon))}{\epsilon^2}.$$
+设 $W \in \mathbb{R}^{n, d}$ 为一个矩阵，其每个元素均以零均值和方差 $1/n$ 正态分布。则，对于至少 $1 - \delta$ 的概率而言，矩阵 $WU$ 是 $(\epsilon, s)$-RIP。</p>
+</blockquote>
+<p>这里的常数项可能有一些问题，证明也比较复杂，这里就不展开了。大体的Proof Sketch是:</p>
+<ul>
+<li>
+<p>将连续空间映射到有限个点上</p>
+</li>
+<li>
+<p>考虑一个特定的大小为 $s$的索引集 $I$</p>
+</li>
+<li>
+<p>使用这个索引集进入稀疏空间</p>
+</li>
+<li>
+<p>对所有可能的 $I$ 应用union bound
+具体可以参考<em>Shai Shalev-Shwartz</em>的paper: <a href="https://www.cs.huji.ac.il/~shais/compressedSensing.pdf">Compressed Sensing:
+Basic results and self contained proofs*</a>.</p>
+</li>
+</ul>
+<h1 id="4-后记">4. 后记<a hidden class="anchor" aria-hidden="true" href="#4-后记">#</a></h1>
+<blockquote>
+<p>“The people who are crazy enough to think they can change the world, are the ones who do.”</p>
+</blockquote>
+<p>期中之前的内容大概是这些。在写作的过程中，我发现我往往会忽略一些我不那么感兴趣的部分而只是去写自认为有趣的部分，这一点亦如我的复习，其中植入了太多的个人理解而忽视掉了老师或者学界主流想让人关注的框架，形成的Map of Machine Learning World自然也会是不同的。这大抵也能解释考试为什么会寄的一部分原因吧。后半学期争取让自己学会的东西的分布和课上的分布接近一些，或者搞一个generative model,从自己的分布里采样，经过一些变换能够接近他的分布吧。
+<img loading="lazy" src="../img/ml1/image5.png#center"></p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/blog/tags/machine-learning/">Machine-Learning</a></li>
+      <li><a href="http://localhost:1313/blog/tags/computer-science/">Computer-Science</a></li>
+      <li><a href="http://localhost:1313/blog/tags/optimization/">Optimization</a></li>
+      <li><a href="http://localhost:1313/blog/tags/math/">Math</a></li>
+      <li><a href="http://localhost:1313/blog/tags/artificial-intelligence/">Artificial-Intelligence</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/blog/posts/ml2/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Machine Learning Series: 2.Unsupervised Learning(I)</span>
+  </a>
+  <a class="next" href="http://localhost:1313/blog/posts/blogpost/">
+    <span class="title">Next »</span>
+    <br>
+    <span>复变笔记及其在静电场的应用</span>
+  </a>
+</nav>
+
+
+<ul class="share-buttons">
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Machine Learning Series: 1.Optimization, Generalization and Supervised Learning on x"
+            href="https://x.com/intent/tweet/?text=Machine%20Learning%20Series%3a%201.Optimization%2c%20Generalization%20and%20Supervised%20Learning&amp;url=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fml1%2f&amp;hashtags=machine-learning%2ccomputer-science%2coptimization%2cmath%2cartificial-intelligence">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Machine Learning Series: 1.Optimization, Generalization and Supervised Learning on linkedin"
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fml1%2f&amp;title=Machine%20Learning%20Series%3a%201.Optimization%2c%20Generalization%20and%20Supervised%20Learning&amp;summary=Machine%20Learning%20Series%3a%201.Optimization%2c%20Generalization%20and%20Supervised%20Learning&amp;source=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fml1%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Machine Learning Series: 1.Optimization, Generalization and Supervised Learning on reddit"
+            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fml1%2f&title=Machine%20Learning%20Series%3a%201.Optimization%2c%20Generalization%20and%20Supervised%20Learning">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Machine Learning Series: 1.Optimization, Generalization and Supervised Learning on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fml1%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Machine Learning Series: 1.Optimization, Generalization and Supervised Learning on whatsapp"
+            href="https://api.whatsapp.com/send?text=Machine%20Learning%20Series%3a%201.Optimization%2c%20Generalization%20and%20Supervised%20Learning%20-%20http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fml1%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Machine Learning Series: 1.Optimization, Generalization and Supervised Learning on telegram"
+            href="https://telegram.me/share/url?text=Machine%20Learning%20Series%3a%201.Optimization%2c%20Generalization%20and%20Supervised%20Learning&amp;url=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fml1%2f">
+            <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Machine Learning Series: 1.Optimization, Generalization and Supervised Learning on ycombinator"
+            href="https://news.ycombinator.com/submitlink?t=Machine%20Learning%20Series%3a%201.Optimization%2c%20Generalization%20and%20Supervised%20Learning&u=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fml1%2f">
+            <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
+                xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                <path
+                    d="M449.446 0C483.971 0 512 28.03 512 62.554L512 449.446C512 483.97 483.97 512 449.446 512L62.554 512C28.03 512 0 483.97 0 449.446L0 62.554C0 28.03 28.029 0 62.554 0L449.446 0ZM183.8767 87.9921H121.8427L230.6673 292.4508V424.0079H281.3328V292.4508L390.1575 87.9921H328.1233L256 238.2489z" />
+            </svg>
+        </a>
+    </li>
+</ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/blog/">Nemo&#39;s Blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
