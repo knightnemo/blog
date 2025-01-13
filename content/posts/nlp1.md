@@ -6,8 +6,9 @@ ShowToc: true
 tags: ["natural-language-processing", "computer-science", "math", "artificial-intelligence", "algorithm"]
 summary: "This is the first part of the Natural Language Processing Series. It covers classical methods in natural language processing, including CFG, LSA, HMM, N-gram, Word2Vec, etc."
 ---
+## A Brief Introduction
 This semester, I was fortunate enough to be enrolled in the NLP course offered by [Prof. Tianxing He](https://cloudygoose.github.io) at [IIIS](https://iiis.tsinghua.edu.cn/en/), [Tsinghua University](https://www.tsinghua.edu.cn/en/). I find this course and it's related topics quite intriguing. This course combines both theory and technology, with intuition and tricks being equally prominent. As a result, I decided to organize my notes to outline the key points in hopes that it will help deepen my understanding.
-
+## Part A: Classical Methods
 PART A lists some classic natural language processing methods that predate the era of LLMs. It mainly includes CFG, LSA, HMM, N-Gram, and Word2Vec. Although these techniques may seem somewhat outdated today, they still possess a certain elegance and may even come back to haunt you. The use of CFG Parsing in Zeyuan Zhu's [Physics of Language Models](https://physics.allen-zhu.com) series of papers is a great example.
 
 ![](../img/NLP_Notes/image.png#center)

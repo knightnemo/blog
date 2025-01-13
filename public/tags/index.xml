@@ -72,6 +72,27 @@
       <description></description>
     </item>
     <item>
+      <title>Deep-Learning</title>
+      <link>http://localhost:1313/blog/tags/deep-learning/</link>
+      <pubDate>Wed, 13 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/deep-learning/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Foundation-Models</title>
+      <link>http://localhost:1313/blog/tags/foundation-models/</link>
+      <pubDate>Wed, 13 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/foundation-models/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Natural-Language-Processing</title>
+      <link>http://localhost:1313/blog/tags/natural-language-processing/</link>
+      <pubDate>Wed, 13 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/natural-language-processing/</guid>
+      <description></description>
+    </item>
+    <item>
       <title>Complex-Analysis</title>
       <link>http://localhost:1313/blog/tags/complex-analysis/</link>
       <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
@@ -83,13 +104,6 @@
       <link>http://localhost:1313/blog/tags/physics/</link>
       <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/physics/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Natural-Language-Processing</title>
-      <link>http://localhost:1313/blog/tags/natural-language-processing/</link>
-      <pubDate>Thu, 26 Sep 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/natural-language-processing/</guid>
       <description></description>
     </item>
   </channel>

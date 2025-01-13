@@ -50,6 +50,18 @@
     <loc>http://localhost:1313/blog/posts/ml2/</loc>
     <lastmod>2024-12-02T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/blog/tags/deep-learning/</loc>
+    <lastmod>2024-11-13T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/foundation-models/</loc>
+    <lastmod>2024-11-13T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/posts/nlp2/</loc>
+    <lastmod>2024-11-13T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/natural-language-processing/</loc>
+    <lastmod>2024-11-13T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/blog/posts/ml1/</loc>
     <lastmod>2024-11-09T00:00:00+00:00</lastmod>
   </url><url>
@@ -63,9 +75,6 @@
     <lastmod>2024-10-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/posts/nlp1/</loc>
-    <lastmod>2024-09-26T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/tags/natural-language-processing/</loc>
     <lastmod>2024-09-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/archives/</loc>
