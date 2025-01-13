@@ -83,8 +83,8 @@ document.addEventListener("DOMContentLoaded", function() {
   <meta property="og:locale" content="en-us">
   <meta property="og:type" content="article">
     <meta property="article:section" content="posts">
-    <meta property="article:published_time" content="2025-01-02T00:00:00+00:00">
-    <meta property="article:modified_time" content="2025-01-02T00:00:00+00:00">
+    <meta property="article:published_time" content="2024-12-02T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-12-02T00:00:00+00:00">
     <meta property="article:tag" content="Machine-Learning">
     <meta property="article:tag" content="Computer-Science">
     <meta property="article:tag" content="Algebra">
@@ -129,8 +129,8 @@ document.addEventListener("DOMContentLoaded", function() {
   "articleBody": "Dimension Reduction 对于输入的一系列点: $x_ 1,…,x_ n\\in \\mathbb{R}^d$,我们想要在一个更低维度的空间研究他们，一种常见的方法就是Random Projection。\n这里我们应用JL-Lemma的结论，也就是说如果我们关心的是Pairwise Distance的话，我们可以通过一个随机矩阵$A\\in \\mathbb{R}^{d \\times m}\\sim \\frac{1}{\\sqrt{d}}\\mathcal{N}(0,1)$来构造一个映射：$f(x)=Ax$，$f: \\mathbb{R}^d\\rightarrow \\mathbb{R}^m$，对于$$m=\\Omega(\\frac{\\log n}{\\epsilon^2})$$ 我们可以保障pairwise distance的误差在$\\epsilon$之内，即 $$ (1 - \\epsilon) |v^i - v^j|_ 2 \\leq |f(v^i) - f(v^j)|_ 2 \\leq (1 + \\epsilon) |v^i - v^j|_ 2. $$\nPCA 但有的时候我们不关心pairwise distance, 这里我们将另外一种非常流行的数据降维方法: 主成分分析。\nKeep Most Variance 主成分分析的第一种解读方式是我们想要找到一个方向$v$，使得它能够保留和数据点之间最大的方差。首先得定义下方差： $$\\mathbb{E}_ {x_ i}[\\langle x_ i, v\\rangle^2]$$\n那么对于n个数据点$x\\in \\mathbb{R}^d$构成的矩阵$X\\in \\mathbb{R}^{n \\times d}$(每行对应一个数据点): $$\\frac{1}{n}\\sum_ {i=1}^n(v^T x_ i)^2=\\frac{1}{n}v^T X X^T v$$\n这里的$X^T v$获得更多维度$X^T V\\in \\mathbb{R}^{n \\times k}$就是数据降维后的结果。\nMinimize Reconstruction Error 由于勾股定理，这里还有另一种理解方法：\n就是原来的$||x||$长度不变，你在最大化投影距离: $\\max||v^T x \\cdot v||$，那么由于勾股定理，你同时就在最小化$||x-(v^T x)\\cdot v||$\n也就是说当我们找到了$v_ 1,…,v_ k$之后，我们将原来的数据点投影到这个线性生成的子空间中，没有损失太多的信息。\n所以我们想要的就是: $$\\max_ v v^T X X^T v\\quad s.t. ||v||=1.$$ 学过线性代数的我们一看就知道我们要找的是最大的特征向量啊，那么怎么去算呢？\nPower Method 取$b_ 0$为$\\mathbb{R}^d$空间上的一个随机向量，那么因为实对称矩阵能够特征值分解，所以$$b_ 0=\\sum_ i \\alpha_ i v_ i$$ 其中$v_ i$代表$X X^T$的特征向量。\n然后我们用这种方法更新$b$:\n$$b_ {t+1}=\\frac{(X X^T)b_ t}{||X X^T b_ t||}$$ 这个时候呢，因为特征值的定义，就会发生： $$b_ t=\\sum_ i \\lambda_ i^t \\alpha_ i v_ i$$ 不同分量之间的magnitude以指数的形式被拉开，在$t$足够大的时候，我们就可以认为: $b_ t=v_ 1$了。\n当我们知道了$v_ 1$之后，我们可以通过$b_ 0=b_ 0-\\langle v_ 1, b_ 0 \\rangle \\cdot v_ 1$来获得剔除了$v_ 1$的向量，然后就可以算出$v_ 2$，依次类推。\n学过线性代数的我们知道$X=U \\Sigma V^T$，所以其实我们找的$X X^T$的特征值就是$U$的前k列。\nNearest Neighbor 接下来继续讲一个非常有趣的问题，这个问题是Supervised Learning的问题，但是和后面Clustering之类的关系挺密切，所以也放在这一章讲了。\nk-NN Algorithm 这里我们考虑一个分类问题，我们的假设是我的label由我的neighbor的label决定，这是一个non-parametric的方法，没有模型参数，取决于数据集。\n一个empirical的观察是随着k越来越大，模型的分界线也变得越来越平滑。\n现在一个核心问题是：我怎么找到一个query point附近的邻居呢？\nLSH Algorithm 准确的neighbor search是困难的，而且我们也没那么关心，我们想要的是一个Approximate的算法。\n这里我们考虑刚才这个问题的等价问题：\nNearest Neighbor Problem(原问题):\nFind closest $p\\in P$ (L2 norm)\nR-Near Neighbor Problem(转化的问题):\nFind $p\\in P$ s.t. $||p-q||",
   "wordCount" : "864",
   "inLanguage": "en",
-  "datePublished": "2025-01-02T00:00:00Z",
-  "dateModified": "2025-01-02T00:00:00Z",
+  "datePublished": "2024-12-02T00:00:00Z",
+  "dateModified": "2024-12-02T00:00:00Z",
   "author":[{
     "@type": "Person",
     "name": "Nemo"
@@ -238,7 +238,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <h1 class="post-title entry-hint-parent">
       Machine Learning Series: 2.Unsupervised Learning(I)
     </h1>
-    <div class="post-meta"><span title='2025-01-02 00:00:00 +0000 UTC'>January 2, 2025</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;Nemo
+    <div class="post-meta"><span title='2024-12-02 00:00:00 +0000 UTC'>December 2, 2024</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;Nemo
 
 </div>
   </header> <div class="toc">

@@ -1,9 +1,10 @@
 ---
-title: "复变笔记及其在静电场的应用"
+title: "Complex Analysis and its application in Electrostatics"
 date: 2024-10-15
 draft: false
 ShowToc: true
 TocOpen: true
+summary: "This blog post is a summary of my notes on complex analysis and its application in electrostatics."
 tags: ["physics","math","complex-analysis"]
 ---
 
