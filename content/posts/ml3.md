@@ -197,7 +197,7 @@ $$\min_ v v^T L v \quad \text{s.t. } \langle v, I_ V \rangle=0, ||v||=\sqrt{n}$$
 - naive way: $i \in A \text{ iff } v_ i>\alpha$，其中$\alpha$是某个threshold。
 - Run 2-means on $\{v_ i\}$:
 
-诶，我们仔细一看，**这种方式Run 2-mean是和在$(1,v_ i)$上跑2-means是完全一样的，再一想，这不就是我们 Spectral Graph Clustering的算法吗？**至此，豁然开朗。
+诶，我们仔细一看，**这种方式Run 2-mean是和在$(1,v_ i)$上跑2-means是完全一样的，再一想，这不就是我们 Spectral Graph Clustering的算法吗?** 至此，豁然开朗。
 
 但是我们还是没完呢，这个只是$k=2$的情况，**对于$k>2$呢？**
 
