@@ -6,8 +6,15 @@
     <description>Recent content in Artificial-Intelligence on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 01 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 15 Jan 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/tags/artificial-intelligence/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Life Hacks Series: 1. How to manage your Python Environment</title>
+      <link>http://localhost:1313/blog/posts/condapack/</link>
+      <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/posts/condapack/</guid>
+      <description>This is the first article in the Life Hacks Series. It covers how to manage your Python environment. Basically, it covers how to install packages, how to create a new environment, how to clone an environment, and how to pack an environment. A special mention is Conda-Pack, which really made my life a lot easier.</description>
+    </item>
     <item>
       <title>Machine Learning Series: 5.Hyperparameter Selection</title>
       <link>http://localhost:1313/blog/posts/ml5/</link>
