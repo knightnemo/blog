@@ -25,6 +25,12 @@
       {{- partial "translation_list.html" . -}}
       {{- partial "edit_post.html" . -}}
       {{- partial "post_canonical.html" . -}}
+          <!-- busuanzi -->
+      {{ if .Site.Params.busuanzi.enable -}}
+      <div  class="meta-item">&nbsp·&nbsp
+        <span id="busuanzi_container_page_pv"> Reads: <span id="busuanzi_value_page_pv"></span> times</span>
+      </div>
+      {{- end }}
     </div>
     {{- end }}
   </header>
@@ -39,10 +45,6 @@
     {{- if not (.Param "disableAnchoredHeadings") }}
     {{- partial "anchored_headings.html" .Content -}}
     {{- else }}{{ .Content }}{{ end }}
-    <!-- busuanzi -->
-    {{ if .Site.Params.busuanzi.enable -}}
-    <span id="busuanzi_container_page_pv">Reads: <span id="busuanzi_value_page_pv"></span> times</span>
-    {{- end }}
   </div>
   {{- end }}
 
