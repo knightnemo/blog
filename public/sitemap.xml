@@ -108,8 +108,6 @@
   </url><url>
     <loc>http://localhost:1313/blog/categories/</loc>
   </url><url>
-    <loc>http://localhost:1313/blog/tags/life/</loc>
-  </url><url>
     <loc>http://localhost:1313/blog/search/</loc>
   </url>
 </urlset>
