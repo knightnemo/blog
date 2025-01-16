@@ -36,6 +36,8 @@ params:
     - name: twitter
       url: https://x.com/knightnemo_
   math: true
+  busuanzi:
+    enable: true
   # katex: true
   markup:
     goldmark:
