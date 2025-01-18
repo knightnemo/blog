@@ -6,20 +6,55 @@
     <description>Recent content in Tags on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 15 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 18 Jan 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Artificial-Intelligence</title>
-      <link>http://localhost:1313/blog/tags/artificial-intelligence/</link>
-      <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/artificial-intelligence/</guid>
+      <title>Aritificial-Intelligence</title>
+      <link>http://localhost:1313/blog/tags/aritificial-intelligence/</link>
+      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/aritificial-intelligence/</guid>
       <description></description>
     </item>
     <item>
       <title>Computer-Science</title>
       <link>http://localhost:1313/blog/tags/computer-science/</link>
-      <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
+      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/computer-science/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Deep-Learning</title>
+      <link>http://localhost:1313/blog/tags/deep-learning/</link>
+      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/deep-learning/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Machine-Learning</title>
+      <link>http://localhost:1313/blog/tags/machine-learning/</link>
+      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/machine-learning/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Nlp</title>
+      <link>http://localhost:1313/blog/tags/nlp/</link>
+      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/nlp/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Transformer</title>
+      <link>http://localhost:1313/blog/tags/transformer/</link>
+      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/transformer/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Artificial-Intelligence</title>
+      <link>http://localhost:1313/blog/tags/artificial-intelligence/</link>
+      <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/artificial-intelligence/</guid>
       <description></description>
     </item>
     <item>
@@ -86,13 +121,6 @@
       <description></description>
     </item>
     <item>
-      <title>Machine-Learning</title>
-      <link>http://localhost:1313/blog/tags/machine-learning/</link>
-      <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/machine-learning/</guid>
-      <description></description>
-    </item>
-    <item>
       <title>Math</title>
       <link>http://localhost:1313/blog/tags/math/</link>
       <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
@@ -125,13 +153,6 @@
       <link>http://localhost:1313/blog/tags/algebra/</link>
       <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/algebra/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Deep-Learning</title>
-      <link>http://localhost:1313/blog/tags/deep-learning/</link>
-      <pubDate>Wed, 13 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/deep-learning/</guid>
       <description></description>
     </item>
     <item>
