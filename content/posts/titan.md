@@ -8,7 +8,7 @@ summary: "Just like the famous 'Jordan Stoppers' in basketball, there are a numb
 ---
 
 # 1. Mamba
-
+Mamba is a new architecture that is claimed to be faster than the Transformer. It is based on the idea of using a more efficient attention mechanism, which is claimed to be faster and more memory-efficient.
 
 # 2. Titans
 
