@@ -1,6 +1,6 @@
 ---
 title: "The Transformer Stoppers"
-date: 2025-01-18
+date: 2025-01-29
 draft: true
 ShowToc: true
 tags: ["machine-learning", "computer-science", "deep-learning", "transformer", "nlp", "aritificial-intelligence"]
