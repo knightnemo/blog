@@ -19,3 +19,12 @@ Mamba is a new architecture that is claimed to be faster than the Transformer. I
 # 5. Infini-Transformer
 
 # 6. RetNet
+
+# RWKV
+
+
+'''
+https://zhuanlan.zhihu.com/p/673781418
+https://github.com/fla-org/flash-linear-attention
+
+'''
