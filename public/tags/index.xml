@@ -2,213 +2,213 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Tags on Nemo&#39;s Blog</title>
-    <link>http://localhost:1313/blog/tags/</link>
+    <link>http://localhost:55186/blog/tags/</link>
     <description>Recent content in Tags on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
     <lastBuildDate>Mon, 03 Feb 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/blog/tags/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:55186/blog/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Aritificial-Intelligence</title>
-      <link>http://localhost:1313/blog/tags/aritificial-intelligence/</link>
+      <link>http://localhost:55186/blog/tags/aritificial-intelligence/</link>
       <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/aritificial-intelligence/</guid>
+      <guid>http://localhost:55186/blog/tags/aritificial-intelligence/</guid>
       <description></description>
     </item>
     <item>
       <title>Computer-Science</title>
-      <link>http://localhost:1313/blog/tags/computer-science/</link>
+      <link>http://localhost:55186/blog/tags/computer-science/</link>
       <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/computer-science/</guid>
+      <guid>http://localhost:55186/blog/tags/computer-science/</guid>
       <description></description>
     </item>
     <item>
       <title>Deep-Learning</title>
-      <link>http://localhost:1313/blog/tags/deep-learning/</link>
+      <link>http://localhost:55186/blog/tags/deep-learning/</link>
       <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/deep-learning/</guid>
+      <guid>http://localhost:55186/blog/tags/deep-learning/</guid>
       <description></description>
     </item>
     <item>
       <title>Machine-Learning</title>
-      <link>http://localhost:1313/blog/tags/machine-learning/</link>
+      <link>http://localhost:55186/blog/tags/machine-learning/</link>
       <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/machine-learning/</guid>
+      <guid>http://localhost:55186/blog/tags/machine-learning/</guid>
       <description></description>
     </item>
     <item>
       <title>Memory</title>
-      <link>http://localhost:1313/blog/tags/memory/</link>
+      <link>http://localhost:55186/blog/tags/memory/</link>
       <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/memory/</guid>
+      <guid>http://localhost:55186/blog/tags/memory/</guid>
       <description></description>
     </item>
     <item>
       <title>Nlp</title>
-      <link>http://localhost:1313/blog/tags/nlp/</link>
+      <link>http://localhost:55186/blog/tags/nlp/</link>
       <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/nlp/</guid>
+      <guid>http://localhost:55186/blog/tags/nlp/</guid>
       <description></description>
     </item>
     <item>
       <title>Paper-Reading</title>
-      <link>http://localhost:1313/blog/tags/paper-reading/</link>
+      <link>http://localhost:55186/blog/tags/paper-reading/</link>
       <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/paper-reading/</guid>
+      <guid>http://localhost:55186/blog/tags/paper-reading/</guid>
       <description></description>
     </item>
     <item>
       <title>Test-Time-Scaling</title>
-      <link>http://localhost:1313/blog/tags/test-time-scaling/</link>
+      <link>http://localhost:55186/blog/tags/test-time-scaling/</link>
       <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/test-time-scaling/</guid>
+      <guid>http://localhost:55186/blog/tags/test-time-scaling/</guid>
       <description></description>
     </item>
     <item>
       <title>Time-Series</title>
-      <link>http://localhost:1313/blog/tags/time-series/</link>
+      <link>http://localhost:55186/blog/tags/time-series/</link>
       <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/time-series/</guid>
+      <guid>http://localhost:55186/blog/tags/time-series/</guid>
       <description></description>
     </item>
     <item>
       <title>Transformer</title>
-      <link>http://localhost:1313/blog/tags/transformer/</link>
+      <link>http://localhost:55186/blog/tags/transformer/</link>
       <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/transformer/</guid>
+      <guid>http://localhost:55186/blog/tags/transformer/</guid>
       <description></description>
     </item>
     <item>
       <title>Artificial-Intelligence</title>
-      <link>http://localhost:1313/blog/tags/artificial-intelligence/</link>
+      <link>http://localhost:55186/blog/tags/artificial-intelligence/</link>
       <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/artificial-intelligence/</guid>
+      <guid>http://localhost:55186/blog/tags/artificial-intelligence/</guid>
       <description></description>
     </item>
     <item>
       <title>Conda</title>
-      <link>http://localhost:1313/blog/tags/conda/</link>
+      <link>http://localhost:55186/blog/tags/conda/</link>
       <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/conda/</guid>
+      <guid>http://localhost:55186/blog/tags/conda/</guid>
       <description></description>
     </item>
     <item>
       <title>Environment-Management</title>
-      <link>http://localhost:1313/blog/tags/environment-management/</link>
+      <link>http://localhost:55186/blog/tags/environment-management/</link>
       <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/environment-management/</guid>
+      <guid>http://localhost:55186/blog/tags/environment-management/</guid>
       <description></description>
     </item>
     <item>
       <title>Life-Hacks</title>
-      <link>http://localhost:1313/blog/tags/life-hacks/</link>
+      <link>http://localhost:55186/blog/tags/life-hacks/</link>
       <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/life-hacks/</guid>
+      <guid>http://localhost:55186/blog/tags/life-hacks/</guid>
       <description></description>
     </item>
     <item>
       <title>Pip</title>
-      <link>http://localhost:1313/blog/tags/pip/</link>
+      <link>http://localhost:55186/blog/tags/pip/</link>
       <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/pip/</guid>
+      <guid>http://localhost:55186/blog/tags/pip/</guid>
       <description></description>
     </item>
     <item>
       <title>Programming</title>
-      <link>http://localhost:1313/blog/tags/programming/</link>
+      <link>http://localhost:55186/blog/tags/programming/</link>
       <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/programming/</guid>
+      <guid>http://localhost:55186/blog/tags/programming/</guid>
       <description></description>
     </item>
     <item>
       <title>Python</title>
-      <link>http://localhost:1313/blog/tags/python/</link>
+      <link>http://localhost:55186/blog/tags/python/</link>
       <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/python/</guid>
+      <guid>http://localhost:55186/blog/tags/python/</guid>
       <description></description>
     </item>
     <item>
       <title>Tools</title>
-      <link>http://localhost:1313/blog/tags/tools/</link>
+      <link>http://localhost:55186/blog/tags/tools/</link>
       <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/tools/</guid>
+      <guid>http://localhost:55186/blog/tags/tools/</guid>
       <description></description>
     </item>
     <item>
       <title>Virtual-Environment</title>
-      <link>http://localhost:1313/blog/tags/virtual-environment/</link>
+      <link>http://localhost:55186/blog/tags/virtual-environment/</link>
       <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/virtual-environment/</guid>
+      <guid>http://localhost:55186/blog/tags/virtual-environment/</guid>
       <description></description>
     </item>
     <item>
       <title>Algorithm</title>
-      <link>http://localhost:1313/blog/tags/algorithm/</link>
+      <link>http://localhost:55186/blog/tags/algorithm/</link>
       <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/algorithm/</guid>
+      <guid>http://localhost:55186/blog/tags/algorithm/</guid>
       <description></description>
     </item>
     <item>
       <title>Math</title>
-      <link>http://localhost:1313/blog/tags/math/</link>
+      <link>http://localhost:55186/blog/tags/math/</link>
       <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/math/</guid>
+      <guid>http://localhost:55186/blog/tags/math/</guid>
       <description></description>
     </item>
     <item>
       <title>Multi-Arm-Bandit</title>
-      <link>http://localhost:1313/blog/tags/multi-arm-bandit/</link>
+      <link>http://localhost:55186/blog/tags/multi-arm-bandit/</link>
       <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/multi-arm-bandit/</guid>
+      <guid>http://localhost:55186/blog/tags/multi-arm-bandit/</guid>
       <description></description>
     </item>
     <item>
       <title>Optimization</title>
-      <link>http://localhost:1313/blog/tags/optimization/</link>
+      <link>http://localhost:55186/blog/tags/optimization/</link>
       <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/optimization/</guid>
+      <guid>http://localhost:55186/blog/tags/optimization/</guid>
       <description></description>
     </item>
     <item>
       <title>Random-Process</title>
-      <link>http://localhost:1313/blog/tags/random-process/</link>
+      <link>http://localhost:55186/blog/tags/random-process/</link>
       <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/random-process/</guid>
+      <guid>http://localhost:55186/blog/tags/random-process/</guid>
       <description></description>
     </item>
     <item>
       <title>Algebra</title>
-      <link>http://localhost:1313/blog/tags/algebra/</link>
+      <link>http://localhost:55186/blog/tags/algebra/</link>
       <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/algebra/</guid>
+      <guid>http://localhost:55186/blog/tags/algebra/</guid>
       <description></description>
     </item>
     <item>
       <title>Foundation-Models</title>
-      <link>http://localhost:1313/blog/tags/foundation-models/</link>
+      <link>http://localhost:55186/blog/tags/foundation-models/</link>
       <pubDate>Wed, 13 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/foundation-models/</guid>
+      <guid>http://localhost:55186/blog/tags/foundation-models/</guid>
       <description></description>
     </item>
     <item>
       <title>Natural-Language-Processing</title>
-      <link>http://localhost:1313/blog/tags/natural-language-processing/</link>
+      <link>http://localhost:55186/blog/tags/natural-language-processing/</link>
       <pubDate>Wed, 13 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/natural-language-processing/</guid>
+      <guid>http://localhost:55186/blog/tags/natural-language-processing/</guid>
       <description></description>
     </item>
     <item>
       <title>Complex-Analysis</title>
-      <link>http://localhost:1313/blog/tags/complex-analysis/</link>
+      <link>http://localhost:55186/blog/tags/complex-analysis/</link>
       <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/complex-analysis/</guid>
+      <guid>http://localhost:55186/blog/tags/complex-analysis/</guid>
       <description></description>
     </item>
     <item>
       <title>Physics</title>
-      <link>http://localhost:1313/blog/tags/physics/</link>
+      <link>http://localhost:55186/blog/tags/physics/</link>
       <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/physics/</guid>
+      <guid>http://localhost:55186/blog/tags/physics/</guid>
       <description></description>
     </item>
   </channel>

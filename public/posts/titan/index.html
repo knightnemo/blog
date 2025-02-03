@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="auto">
 
-<head><script src="/blog/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=blog/livereload" data-no-instant defer></script><meta charset="utf-8">
+<head><script src="/blog/livereload.js?mindelay=10&amp;v=2&amp;port=55186&amp;path=blog/livereload" data-no-instant defer></script><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
@@ -9,18 +9,18 @@
 <meta name="keywords" content="machine-learning, computer-science, deep-learning, transformer, nlp, aritificial-intelligence, time-series, paper-reading, memory, test-time-scaling">
 <meta name="description" content="This article introduces Titans, a novel architecture that as a meta in-context learner, learns to memorize at test time. Through designing a long-term memory module, and proposing three variants of Titans (MAC, MAG, MAL), the model achieves superior performance compared to Transformers and other baselines, especially in long-context tasks.">
 <meta name="author" content="Nemo">
-<link rel="canonical" href="http://localhost:1313/blog/posts/titan/">
+<link rel="canonical" href="http://localhost:55186/blog/posts/titan/">
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <meta name="referrer" content="no-referrer-when-downgrade">
 <link crossorigin="anonymous" href="/blog/assets/css/stylesheet.861c79de57c9db7acb194fc40ad15b8fc78b954c4ce73dd6d09ff1b9ac5207f1.css" integrity="sha256-hhx53lfJ23rLGU/ECtFbj8eLlUxM5z3W0J/xuaxSB/E=" rel="preload stylesheet" as="style">
-<link rel="icon" href="http://localhost:1313/blog/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/blog/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/blog/favicon-32x32.png">
-<link rel="apple-touch-icon" href="http://localhost:1313/blog/apple-touch-icon.png">
-<link rel="mask-icon" href="http://localhost:1313/blog/safari-pinned-tab.svg">
+<link rel="icon" href="http://localhost:55186/blog/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:55186/blog/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:55186/blog/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:55186/blog/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:55186/blog/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/blog/posts/titan/">
+<link rel="alternate" hreflang="en" href="http://localhost:55186/blog/posts/titan/">
 <noscript>
     <style>
         #theme-toggle,
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
 
-<meta property="og:url" content="http://localhost:1313/blog/posts/titan/">
+<meta property="og:url" content="http://localhost:55186/blog/posts/titan/">
   <meta property="og:site_name" content="Nemo&#39;s Blog">
   <meta property="og:title" content="Titans: Learning to Memorize at Test Time">
   <meta property="og:description" content="This article introduces Titans, a novel architecture that as a meta in-context learner, learns to memorize at test time. Through designing a long-term memory module, and proposing three variants of Titans (MAC, MAG, MAL), the model achieves superior performance compared to Transformers and other baselines, especially in long-context tasks.">
@@ -107,13 +107,13 @@ document.addEventListener("DOMContentLoaded", function() {
       "@type": "ListItem",
       "position":  1 ,
       "name": "Posts",
-      "item": "http://localhost:1313/blog/posts/"
+      "item": "http://localhost:55186/blog/posts/"
     }, 
     {
       "@type": "ListItem",
       "position":  2 ,
       "name": "Titans: Learning to Memorize at Test Time",
-      "item": "http://localhost:1313/blog/posts/titan/"
+      "item": "http://localhost:55186/blog/posts/titan/"
     }
   ]
 }
@@ -128,8 +128,8 @@ document.addEventListener("DOMContentLoaded", function() {
   "keywords": [
     "machine-learning", "computer-science", "deep-learning", "transformer", "nlp", "aritificial-intelligence", "time-series", "paper-reading", "memory", "test-time-scaling"
   ],
-  "articleBody": " Original Paper: Titans: Learning to Memorize at Test Time1.\n1. Motivation Key question: How to make the model memorize the context?\nRecurrent models: compress the data into a fixed-size memory (called hidden state) Attention: attending to the entire context window, capturing the direct dependencies of all tokens. However, attention comes at a quadratic cost, therefore in pratice, the model is limited to a fixed context length. 1.1 What is Transformer (attention) good at? The short answer: short but accurate memory.\nTransformer Blocks function as associative memory blocks, where they learn to store key-value associations and retrieve them by computing pairwise similarity between queries (i.e., search signals) and keys (i.e., contexts). Accordingly, by design, the output of a Transformer is exclusively conditioned on the direct dependencies of tokens in the current context window.\nAttention due to its limited context but accurate dependency modeling performs as a short-term memory.\n1.2 The Dilemma of Linear Attention Schemes Despite efficiency and the ability to scale to longer context, linear Transformers do not show competitive performance compared to Transformers as the kernel trick makes the model a linear recurrent network, in which the data is compressed into a matrix-valued states.\nSo there emerges a dilemma:\nWe introduce Linear Attention Schemes to scale Transformers to long context Long context cannot be properly compressed in a small vector-valued or matrix-valued states 1.3 Understanding Memory of NNs “Most existing architectures consider memory as a neural update caused by an input, and define learning as a process for acquiring effective and useful memory, given an objective.” (Behrouz et al., 2024, p. 2)\n1.3.1 RNNs Memory Module: $M \\equiv$ Hidden State, Vector-valued, Fixed-Size At each timestep $t$: Update Memory: $M _ {t}\\leftarrow f(M _ {t-1},x _ t)$ Retrieve Output: $y _ t =g(M _ t,x _ t)$ 1.3.2 Transformer We consider the case of Causal Attention.\nMemory Module: Growing Memory of size $2\\times \\mathbb{R}^{N\\times d}$ At each token $t$: Update Memory: $\\texttt{Append}(k _ t,v _ t)$ Retrieve Output: $Y _ t\\in \\mathbb{R}^{N\\times d}$, where the $r$-th row is: $$y _ {r}=\\sum _ {i=1}^{r}\\frac{\\exp(q _ r^Tk _ i/\\sqrt{d})}{\\sum _ {j=1}^{r} \\exp(q _ r^Tk _ j/\\sqrt{d})} v _ i$$ 1.3.3 Linear Transformers Memory Module: $M$ Matrix-valued, Fixed-Size If we substitute $\\exp(q^T k/\\sqrt{d})$ in Transformers as a kernel function $\\phi(\\cdot,\\cdot)$ , s.t. $\\phi(x,y)=\\phi(x)\\cdot \\phi(y)$, we have: $$y _ {r}=\\sum _ {i=1}^{r}\\frac{\\phi(q _ r, k _ i)}{\\sum _ {j=1}^{r} \\phi(q _ r, k _ j)} v _ i=\\sum _ {i=1}^{r}\\frac{\\phi(q _ r)^T\\phi(k _ i)}{\\sum _ {j=1}^{r} \\phi(q _ r)^T \\phi(k _ j)} v _ i=\\frac{\\phi(q _ r)^T \\sum _ {i=1}^r \\phi(k _ i)v _ i}{\\phi(q _ r)^T \\sum _ {i=1}^r \\phi(k _ i)}$$ Then because $\\sum _ {i=1}^r \\phi(k _ i)v _ i, \\sum _ {i=1}^r \\phi(k _ i)$ can be re-used in each step, the computation efficiency is much better. An concrete example: $\\phi \\equiv Id$: $$M _ t=M _ {t-1}+k _ t^Tv _ t$$ $$y _ t=q _ t M _ t$$ In this perspective, linear Transformers’s memory update is equivalent to additively compress and write keys and values,$(k _ t, v _ t)$, into a matrix-valued memory unit $M _ t$. So, the key questions are:\n(Q1) What constitute a good structure for the memory? (Q2) What is a proper memory update mechanism? (Q3) What is a good memory retrieval process? 2. Long Term Memory We need an online meta-model that learns how to memorize/forget the data at test time. In this setup, the model is learning a function that is capable of memorization, but it is not overfitting to the training data, resulting in a better generalization at test time.\n2.1 Learning Process and Surprise Metric Intuitively, we treat the training as a online learning problem: $$M _ t\\leftarrow M _ {t-1}-\\theta _ t \\underbrace{\\nabla l(M _ {t-1};x _ t)} _ {\\text{suprise}}$$ However, if one is surprised at some moment, that person is less likely to be surprised for the upcoming moments. This, reflected in the model is that the gradient can be extremely small after some suprising steps, and get stuck at local minima.\nFrom the human memory perspective, an event might not consistently surprise us through a long-period of time although it is memorable. The reason is that the initial moment is surprising enough to get our attention through a long time frame, leading to memorizing the entire time frame.\nBuilding upon this idea, we break the surprise metric to: 1) past suprise and 2) momentary suprise. $$M _ t\\leftarrow M _ {t-1}+S _ t$$ $$S _ t\\leftarrow \\eta _ t \\underbrace{S _ {t-1}} _ {\\text{Past Suprise}}-\\theta _ t \\underbrace{\\nabla l(M _ {t-1};x _ t)} _ {\\text{Momentary Suprise}}$$ This formulation is similar to gradient descent with momentum. $S _ t$, the momentum, can be viewed as a memory of surprise across the sequence.\n2.2 Objective What is this $l(\\cdot,\\cdot)$?\nHere, we focus on associative memory, and the loss function is defined by: $$l(M _ {t-1};x _ t)=||M _ {t-1}(k _ t)-v _ t|| _ 2^2$$ Note that this is a meta-learning process, where in the inner loop, $M$ is updated fixing other parameters (e.g. $W _ k,W _ v$), and in the outer loop, other parameters are learnt. In this way, the model learns how to memorize the mapping between keys and values at test time.\n2.3 Forgetting Mechanism. When dealing with very large sequences (e.g., millions of tokens), it is crucial to manage which past information should be forgotten–even with a deep or a very large matrix-valued memory. Therefore, for the updating rules, we add a gating mechanism: $$M _ t\\leftarrow (1-\\alpha _ t)M _ {t-1}+S _ t\\quad \\alpha _ t \\in[0,1]$$ $$S _ t\\leftarrow\\eta _ t \\underbrace{S _ {t-1}} _ {\\text{Past Suprise}}-\\theta _ t \\underbrace{\\nabla l(M _ {t-1};x _ t)} _ {\\text{Momentary Suprise}}$$\n2.4 Model Architecture In this work, the long term memory module $M$ is implemented using MLPs with $L _ M$ layers.\n2.5 Retrieval We simply do $$y _ t=M^* (q _ t)$$ (You can try to convince yourself that this makes sense.)\n2.6 How to Parallelize the Long-term Memory Training Without parallelizing, the training of long-term memory module requires $O(N)$ FLOPs. This is similar to TTT’s method. If you are interested, check out Section 3.2 of the original paper. 2.7 Persistent Memory The Long Term Memory can be seen as Contextual Memory, as it is solely dependent on context. Therefore, in addition to the long-term memory, we also use a set of learnable but input-independent parameters to act as task-related memory (also referred to as meta memory in literature). Specifically, the input $x$ is modified to be : $$x _ {\\text{new}}=[p _ 1,…,p _ {N _ p}]||x$$ where $||$ is concatenation, the $p$ s are learnable parameters.\n3. Titans After designing the long-term neural memory, an important remaining question is how to effectively and efficiently incorporate memory into a deep learning architecture.\nThe essential parts of Titans include:\nCore: this module consists of the short-term memory, and is responsible for the main flow of processing the data (we use attention with limited window size); Long-term Memory: this branch is our neural long-term memory module that is responsible to store/remember long past; Persistent Memory: this is a set of learnable but date-independent parameters that encodes the knowledge about a task. As a proof of concept, we present three variants of Titans, in which we incorporate memory as: (i) a context, (ii) a layer, and (iii) a gated branch.\n3.1. MAC: Memory as a Context First, we segment the input $x$ into fixed-size segments: $S^{(i)}$ for $i=1,2,…,N/C$. Then we retrieve the long-term memory: $$h _ t=M _ {t-1}^* (q _ t)$$ where $q _ t=S^{(t)} W _ Q$ . Then we concat the input to: $$\\tilde{S}^{(t)}=[p _ 1,…,p _ N]\\ ||\\ h _ t\\ ||\\ S^{(t)}$$ and apply attention: $$y _ t=\\texttt{Attn}(\\tilde{S}^{(t)})$$ Then we update the long-term memory and get the final output: $$M _ t=M _ {t-1}(y _ t)$$ $$o _ t=y _ t \\otimes M _ t^*(y _ t)$$\n3.2 MAG: Memory as Gating This variant uses a sliding window attention (SWA). $$\\tilde{x}=[p _ 1,…,p _ {N _ p}] || x$$ $$y=\\texttt{SW-Attn}^*(\\tilde{x})$$ $$o=y\\otimes M(\\tilde{x})$$ Here $\\texttt{SW-Attn}^*$ denotes sliding window attention with prefix, and $\\otimes$ is a non-linear gating. In practice, it is set as normalizing the outputs $y$ and $M(\\tilde{x})$ using learnable vector-valued weights, followed by a non-linearity $\\sigma(\\cdot)$.\n3.3 MAL: Memory As a Layer The last variant uses the neural Memory As a Layer (MAL) of a deep neural network. $$\\tilde{x}=[p _ 1,…,p _ {N _ p}]\\ ||\\ x$$ $$y=M(\\tilde{x})$$ $$o=\\texttt{SW-Attn}(y)$$\nLastly, an interesting theorem:\nTheorem: Contrary to Transformers, diagonal linear recurrent models, and DeltaNet, all of which are limited to $\\texttt{TC}^0$ , Titans are capable of solving problems beyond $\\texttt{TC}^0$, meaning that Titans are theoretically more expressive than Transformers and most modern linear recurrent models in state tracking tasks.\n4. Experiments 4.1 Common-Sense Reasoning Benchmark 4.2 Needle in a Haystack The needle-in-a-haystack (NIAH) task is designed to measure the actual effective context length of models. In this task, we evaluate the model on retrieving a piece of information (i.e., the “needle”) from long distractor texts (i.e.,the “haystack”). In this part, we use Single NIAH (S-NIAH) task from RULER benchmark (Hsieh et al. 2024) and evaluate Titans and baselines on sequences with length 2K, 4K, 8K, and 16K. 4.3 BABILong Benchmark In this benchmark, the model needs to reason across facts distributed in extremely long documents. 4.4 The Effect of Deep Memory 4.5 Time Series Forecasting Simba framework for time series forecasting, and replace its Mamba module with our neural memory. 4.6 DNA Modeling 4.7 Efficiency 4.8 Ablation We consider our neural memory module as a base model and then changing one component at a time: (1) replacing deep memory with linear memory, removing (2) convolution, (3) momentum in the surprise measure, (4) weight decay (or forgot mechanism), and (5) persistent memory. The results are reported in Table 5. All components of neural memory design are positively contributing to its performance, where the greatest contribution comes from weight decay, momentum, convolution, and persistent memory, respectively. Ali Behrouz, Peilin Zhong, and Vahab Mirrokni. “Titans: Learning to Memorize at Test Time.” arXiv preprint arXiv: 2501.00663, 2024. ↩︎\n",
-  "wordCount" : "1692",
+  "articleBody": " Original Paper: Titans: Learning to Memorize at Test Time1.\n1. Motivation Key question: How to make the model memorize the context?\nRecurrent models: compress the data into a fixed-size memory (called hidden state) Attention: attending to the entire context window, capturing the direct dependencies of all tokens. However, attention comes at a quadratic cost, therefore in pratice, the model is limited to a fixed context length. 1.1 What is Transformer (attention) good at? The short answer: short but accurate memory.\nTransformer Blocks function as associative memory blocks, where they learn to store key-value associations and retrieve them by computing pairwise similarity between queries (i.e., search signals) and keys (i.e., contexts). Accordingly, by design, the output of a Transformer is exclusively conditioned on the direct dependencies of tokens in the current context window.\nAttention due to its limited context but accurate dependency modeling performs as a short-term memory.\n1.2 The Dilemma of Linear Attention Schemes Despite efficiency and the ability to scale to longer context, linear Transformers do not show competitive performance compared to Transformers as the kernel trick makes the model a linear recurrent network, in which the data is compressed into a matrix-valued states.\nSo there emerges a dilemma:\nWe introduce Linear Attention Schemes to scale Transformers to long context Long context cannot be properly compressed in a small vector-valued or matrix-valued states 1.3 Understanding Memory of NNs “Most existing architectures consider memory as a neural update caused by an input, and define learning as a process for acquiring effective and useful memory, given an objective.” (Behrouz et al., 2024, p. 2)\n1.3.1 RNNs Memory Module: $M \\equiv$ Hidden State, Vector-valued, Fixed-Size At each timestep $t$: Update Memory: $M _ {t}\\leftarrow f(M _ {t-1},x _ t)$ Retrieve Output: $y _ t =g(M _ t,x _ t)$ 1.3.2 Transformer We consider the case of Causal Attention.\nMemory Module: Growing Memory of size $2\\times \\mathbb{R}^{N\\times d}$ At each token $t$: Update Memory: $\\texttt{Append}(k _ t,v _ t)$ Retrieve Output: $Y _ t\\in \\mathbb{R}^{N\\times d}$, where the $r$-th row is: $$y _ {r}=\\sum _ {i=1}^{r}\\frac{\\exp(q _ r^Tk _ i/\\sqrt{d})}{\\sum _ {j=1}^{r} \\exp(q _ r^Tk _ j/\\sqrt{d})} v _ i$$ 1.3.3 Linear Transformers Memory Module: $M$ Matrix-valued, Fixed-Size If we substitute $\\exp(q^T k/\\sqrt{d})$ in Transformers as a kernel function $\\phi(\\cdot,\\cdot)$ , s.t. $\\phi(x,y)=\\phi(x)\\cdot \\phi(y)$, we have: $$y _ {r}=\\sum _ {i=1}^{r}\\frac{\\phi(q _ r, k _ i)}{\\sum _ {j=1}^{r} \\phi(q _ r, k _ j)} v _ i=\\sum _ {i=1}^{r}\\frac{\\phi(q _ r)^T\\phi(k _ i)}{\\sum _ {j=1}^{r} \\phi(q _ r)^T \\phi(k _ j)} v _ i=\\frac{\\phi(q _ r)^T \\sum _ {i=1}^r \\phi(k _ i)v _ i}{\\phi(q _ r)^T \\sum _ {i=1}^r \\phi(k _ i)}$$ Then because $\\sum _ {i=1}^r \\phi(k _ i)v _ i, \\sum _ {i=1}^r \\phi(k _ i)$ can be re-used in each step, the computation efficiency is much better. An concrete example: $\\phi \\equiv Id$: $$M _ t=M _ {t-1}+k _ t^Tv _ t$$ $$y _ t=q _ t M _ t$$ In this perspective, linear Transformers’s memory update is equivalent to additively compress and write keys and values,$(k _ t, v _ t)$, into a matrix-valued memory unit $M _ t$. So, the key questions are:\n(Q1) What constitute a good structure for the memory? (Q2) What is a proper memory update mechanism? (Q3) What is a good memory retrieval process? 2. Long Term Memory We need an online meta-model that learns how to memorize/forget the data at test time. In this setup, the model is learning a function that is capable of memorization, but it is not overfitting to the training data, resulting in a better generalization at test time.\n2.1 Learning Process and Surprise Metric Intuitively, we treat the training as a online learning problem: $$M _ t\\leftarrow M _ {t-1}-\\theta _ t \\underbrace{\\nabla l(M _ {t-1};x _ t)} _ {\\text{suprise}}$$ However, if one is surprised at some moment, that person is less likely to be surprised for the upcoming moments. This, reflected in the model is that the gradient can be extremely small after some suprising steps, and get stuck at local minima.\nFrom the human memory perspective, an event might not consistently surprise us through a long-period of time although it is memorable. The reason is that the initial moment is surprising enough to get our attention through a long time frame, leading to memorizing the entire time frame.\nBuilding upon this idea, we break the surprise metric to: 1) past suprise and 2) momentary suprise. $$M _ t\\leftarrow M _ {t-1}+S _ t$$ $$S _ t\\leftarrow \\eta _ t \\underbrace{S _ {t-1}} _ {\\text{Past Suprise}}-\\theta _ t \\underbrace{\\nabla l(M _ {t-1};x _ t)} _ {\\text{Momentary Suprise}}$$ This formulation is similar to gradient descent with momentum. $S _ t$, the momentum, can be viewed as a memory of surprise across the sequence.\n2.2 Objective What is this $l(\\cdot,\\cdot)$?\nHere, we focus on associative memory, and the loss function is defined by: $$l(M _ {t-1};x _ t)=||M _ {t-1}(k _ t)-v _ t|| _ 2^2$$ Note that this is a meta-learning process, where in the inner loop, $M$ is updated fixing other parameters (e.g. $W _ k,W _ v$), and in the outer loop, other parameters are learnt. In this way, the model learns how to memorize the mapping between keys and values at test time.\n2.3 Forgetting Mechanism. When dealing with very large sequences (e.g., millions of tokens), it is crucial to manage which past information should be forgotten–even with a deep or a very large matrix-valued memory. Therefore, for the updating rules, we add a gating mechanism: $$M _ t\\leftarrow (1-\\alpha _ t)M _ {t-1}+S _ t\\quad \\alpha _ t \\in[0,1]$$ $$S _ t\\leftarrow\\eta _ t \\underbrace{S _ {t-1}} _ {\\text{Past Suprise}}-\\theta _ t \\underbrace{\\nabla l(M _ {t-1};x _ t)} _ {\\text{Momentary Suprise}}$$\n2.4 Model Architecture In this work, the long term memory module $M$ is implemented using MLPs with $L _ M$ layers.\n2.5 Retrieval We simply do $$y _ t=M^* (q _ t)$$ (You can try to convince yourself that this makes sense.)\n2.6 How to Parallelize the Long-term Memory Training Without parallelizing, the training of long-term memory module requires $O(N)$ FLOPs. This is similar to TTT’s method. If you are interested, check out Section 3.2 of the original paper. 2.7 Persistent Memory The Long Term Memory can be seen as Contextual Memory, as it is solely dependent on context. Therefore, in addition to the long-term memory, we also use a set of learnable but input-independent parameters to act as task-related memory (also referred to as meta memory in literature). Specifically, the input $x$ is modified to be : $$x _ {\\text{new}}=[p _ 1,…,p _ {N _ p}]||x$$ where $||$ is concatenation, the $p$ s are learnable parameters.\n3. Titans After designing the long-term neural memory, an important remaining question is how to effectively and efficiently incorporate memory into a deep learning architecture.\nThe essential parts of Titans include:\nCore: this module consists of the short-term memory, and is responsible for the main flow of processing the data (we use attention with limited window size); Long-term Memory: this branch is our neural long-term memory module that is responsible to store/remember long past; Persistent Memory: this is a set of learnable but date-independent parameters that encodes the knowledge about a task. As a proof of concept, we present three variants of Titans, in which we incorporate memory as: (i) a context, (ii) a layer, and (iii) a gated branch.\n3.1. MAC: Memory as a Context First, we segment the input $x$ into fixed-size segments: $S^{(i)}$ for $i=1,2,…,N/C$. Then we retrieve the long-term memory: $$h _ t=M _ {t-1}^* (q _ t)$$ where $q _ t=S^{(t)} W _ Q$ . Then we concat the input to: $$\\tilde{S}^{(t)}=[p _ 1,…,p _ N]\\ ||\\ h _ t\\ ||\\ S^{(t)}$$ and apply attention: $$y _ t=\\texttt{Attn}(\\tilde{S}^{(t)})$$ Then we update the long-term memory and get the final output: $$M _ t=M _ {t-1}(y _ t)$$ $$o _ t=y _ t \\otimes M _ t^*(y _ t)$$\n3.2 MAG: Memory as Gating This variant uses a sliding window attention (SWA). $$\\tilde{x}=[p _ 1,…,p _ {N _ p}] || x$$ $$y=\\texttt{SW-Attn}^*(\\tilde{x})$$ $$o=y\\otimes M(\\tilde{x})$$ Here $\\texttt{SW-Attn}^*$ denotes sliding window attention with prefix, and $\\otimes$ is a non-linear gating. In practice, it is set as normalizing the outputs $y$ and $M(\\tilde{x})$ using learnable vector-valued weights, followed by a non-linearity $\\sigma(\\cdot)$.\nThe attention masks for the two architectures are shown below: 3.3 MAL: Memory As a Layer The last variant uses the neural Memory As a Layer (MAL) of a deep neural network. $$\\tilde{x}=[p _ 1,…,p _ {N _ p}]\\ ||\\ x$$ $$y=M(\\tilde{x})$$ $$o=\\texttt{SW-Attn}(y)$$\nLastly, an interesting theorem:\nTheorem: Contrary to Transformers, diagonal linear recurrent models, and DeltaNet, all of which are limited to $\\texttt{TC}^0$ , Titans are capable of solving problems beyond $\\texttt{TC}^0$, meaning that Titans are theoretically more expressive than Transformers and most modern linear recurrent models in state tracking tasks.\n4. Experiments 4.1 Common-Sense Reasoning Benchmark 4.2 Needle in a Haystack The needle-in-a-haystack (NIAH) task is designed to measure the actual effective context length of models. In this task, we evaluate the model on retrieving a piece of information (i.e., the “needle”) from long distractor texts (i.e.,the “haystack”). In this part, we use Single NIAH (S-NIAH) task from RULER benchmark (Hsieh et al. 2024) and evaluate Titans and baselines on sequences with length 2K, 4K, 8K, and 16K. 4.3 BABILong Benchmark In this benchmark, the model needs to reason across facts distributed in extremely long documents. 4.4 The Effect of Deep Memory 4.5 Time Series Forecasting Simba framework for time series forecasting, and replace its Mamba module with our neural memory. 4.6 DNA Modeling 4.7 Efficiency 4.8 Ablation We consider our neural memory module as a base model and then changing one component at a time: (1) replacing deep memory with linear memory, removing (2) convolution, (3) momentum in the surprise measure, (4) weight decay (or forgot mechanism), and (5) persistent memory. The results are reported in Table 5. All components of neural memory design are positively contributing to its performance, where the greatest contribution comes from weight decay, momentum, convolution, and persistent memory, respectively. Ali Behrouz, Peilin Zhong, and Vahab Mirrokni. “Titans: Learning to Memorize at Test Time.” arXiv preprint arXiv: 2501.00663, 2024. ↩︎\n",
+  "wordCount" : "1702",
   "inLanguage": "en",
   "datePublished": "2025-02-03T00:00:00Z",
   "dateModified": "2025-02-03T00:00:00Z",
@@ -139,14 +139,14 @@ document.addEventListener("DOMContentLoaded", function() {
   }],
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "http://localhost:1313/blog/posts/titan/"
+    "@id": "http://localhost:55186/blog/posts/titan/"
   },
   "publisher": {
     "@type": "Organization",
     "name": "Nemo's Blog",
     "logo": {
       "@type": "ImageObject",
-      "url": "http://localhost:1313/blog/favicon.ico"
+      "url": "http://localhost:55186/blog/favicon.ico"
     }
   }
 }
@@ -168,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function() {
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="http://localhost:1313/blog/" accesskey="h" title="Nemo&#39;s Blog (Alt + H)">Nemo&#39;s Blog</a>
+            <a href="http://localhost:55186/blog/" accesskey="h" title="Nemo&#39;s Blog (Alt + H)">Nemo&#39;s Blog</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -194,27 +194,27 @@ document.addEventListener("DOMContentLoaded", function() {
         </div>
         <ul id="menu">
             <li>
-                <a href="http://localhost:1313/blog/" title="Home">
+                <a href="http://localhost:55186/blog/" title="Home">
                     <span>Home</span>
                 </a>
             </li>
             <li>
-                <a href="http://localhost:1313/blog/posts/" title="Blog">
+                <a href="http://localhost:55186/blog/posts/" title="Blog">
                     <span>Blog</span>
                 </a>
             </li>
             <li>
-                <a href="http://localhost:1313/blog/archives/" title="Archive">
+                <a href="http://localhost:55186/blog/archives/" title="Archive">
                     <span>Archive</span>
                 </a>
             </li>
             <li>
-                <a href="http://localhost:1313/blog/search/" title="Search (Alt &#43; /)" accesskey=/>
+                <a href="http://localhost:55186/blog/search/" title="Search (Alt &#43; /)" accesskey=/>
                     <span>Search</span>
                 </a>
             </li>
             <li>
-                <a href="http://localhost:1313/blog/tags/" title="Tags">
+                <a href="http://localhost:55186/blog/tags/" title="Tags">
                     <span>Tags</span>
                 </a>
             </li>
@@ -236,7 +236,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 <article class="post-single">
   <header class="post-header">
-    <div class="breadcrumbs"><a href="http://localhost:1313/blog/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/blog/posts/">Posts</a></div>
+    <div class="breadcrumbs"><a href="http://localhost:55186/blog/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:55186/blog/posts/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
       Titans: Learning to Memorize at Test Time
     </h1>
@@ -451,6 +451,8 @@ $$\tilde{x}=[p _  1,&hellip;,p _  {N _  p}] || x$$
 $$y=\texttt{SW-Attn}^*(\tilde{x})$$
 $$o=y\otimes M(\tilde{x})$$
 Here $\texttt{SW-Attn}^*$ denotes sliding window attention with prefix, and $\otimes$ is a non-linear gating. In practice, it is set as normalizing the outputs $y$ and $M(\tilde{x})$ using learnable vector-valued weights, followed by a non-linearity $\sigma(\cdot)$.</p>
+<p>The attention masks for the two architectures are shown below:
+<img loading="lazy" src="../img/titans/image.png#center"></p>
 <h3 id="33-mal-memory-as-a-layer">3.3 MAL: Memory As a Layer<a hidden class="anchor" aria-hidden="true" href="#33-mal-memory-as-a-layer">#</a></h3>
 <p>The last variant uses the neural Memory As a Layer (MAL) of a deep neural network.
 <img loading="lazy" src="../img/titans/Pasted%20image%2020250203224403.png#center">
@@ -497,19 +499,19 @@ $$o=\texttt{SW-Attn}(y)$$</p>
 
   <footer class="post-footer">
     <ul class="post-tags">
-      <li><a href="http://localhost:1313/blog/tags/machine-learning/">Machine-Learning</a></li>
-      <li><a href="http://localhost:1313/blog/tags/computer-science/">Computer-Science</a></li>
-      <li><a href="http://localhost:1313/blog/tags/deep-learning/">Deep-Learning</a></li>
-      <li><a href="http://localhost:1313/blog/tags/transformer/">Transformer</a></li>
-      <li><a href="http://localhost:1313/blog/tags/nlp/">Nlp</a></li>
-      <li><a href="http://localhost:1313/blog/tags/aritificial-intelligence/">Aritificial-Intelligence</a></li>
-      <li><a href="http://localhost:1313/blog/tags/time-series/">Time-Series</a></li>
-      <li><a href="http://localhost:1313/blog/tags/paper-reading/">Paper-Reading</a></li>
-      <li><a href="http://localhost:1313/blog/tags/memory/">Memory</a></li>
-      <li><a href="http://localhost:1313/blog/tags/test-time-scaling/">Test-Time-Scaling</a></li>
+      <li><a href="http://localhost:55186/blog/tags/machine-learning/">Machine-Learning</a></li>
+      <li><a href="http://localhost:55186/blog/tags/computer-science/">Computer-Science</a></li>
+      <li><a href="http://localhost:55186/blog/tags/deep-learning/">Deep-Learning</a></li>
+      <li><a href="http://localhost:55186/blog/tags/transformer/">Transformer</a></li>
+      <li><a href="http://localhost:55186/blog/tags/nlp/">Nlp</a></li>
+      <li><a href="http://localhost:55186/blog/tags/aritificial-intelligence/">Aritificial-Intelligence</a></li>
+      <li><a href="http://localhost:55186/blog/tags/time-series/">Time-Series</a></li>
+      <li><a href="http://localhost:55186/blog/tags/paper-reading/">Paper-Reading</a></li>
+      <li><a href="http://localhost:55186/blog/tags/memory/">Memory</a></li>
+      <li><a href="http://localhost:55186/blog/tags/test-time-scaling/">Test-Time-Scaling</a></li>
     </ul>
 <nav class="paginav">
-  <a class="next" href="http://localhost:1313/blog/posts/condapack/">
+  <a class="next" href="http://localhost:55186/blog/posts/condapack/">
     <span class="title">Next »</span>
     <br>
     <span>Life Hacks Series: 1. How to manage your Python Environment</span>
@@ -520,7 +522,7 @@ $$o=\texttt{SW-Attn}(y)$$</p>
 <ul class="share-buttons">
     <li>
         <a target="_blank" rel="noopener noreferrer" aria-label="share Titans: Learning to Memorize at Test Time on x"
-            href="https://x.com/intent/tweet/?text=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time&amp;url=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2ftitan%2f&amp;hashtags=machine-learning%2ccomputer-science%2cdeep-learning%2ctransformer%2cnlp%2caritificial-intelligence%2ctime-series%2cpaper-reading%2cmemory%2ctest-time-scaling">
+            href="https://x.com/intent/tweet/?text=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time&amp;url=http%3a%2f%2flocalhost%3a55186%2fblog%2fposts%2ftitan%2f&amp;hashtags=machine-learning%2ccomputer-science%2cdeep-learning%2ctransformer%2cnlp%2caritificial-intelligence%2ctime-series%2cpaper-reading%2cmemory%2ctest-time-scaling">
             <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
                 <path
                     d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
@@ -529,7 +531,7 @@ $$o=\texttt{SW-Attn}(y)$$</p>
     </li>
     <li>
         <a target="_blank" rel="noopener noreferrer" aria-label="share Titans: Learning to Memorize at Test Time on linkedin"
-            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2ftitan%2f&amp;title=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time&amp;summary=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time&amp;source=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2ftitan%2f">
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a55186%2fblog%2fposts%2ftitan%2f&amp;title=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time&amp;summary=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time&amp;source=http%3a%2f%2flocalhost%3a55186%2fblog%2fposts%2ftitan%2f">
             <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
                 <path
                     d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
@@ -538,7 +540,7 @@ $$o=\texttt{SW-Attn}(y)$$</p>
     </li>
     <li>
         <a target="_blank" rel="noopener noreferrer" aria-label="share Titans: Learning to Memorize at Test Time on reddit"
-            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2ftitan%2f&title=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time">
+            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a55186%2fblog%2fposts%2ftitan%2f&title=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time">
             <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
                 <path
                     d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
@@ -547,7 +549,7 @@ $$o=\texttt{SW-Attn}(y)$$</p>
     </li>
     <li>
         <a target="_blank" rel="noopener noreferrer" aria-label="share Titans: Learning to Memorize at Test Time on facebook"
-            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2ftitan%2f">
+            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a55186%2fblog%2fposts%2ftitan%2f">
             <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
                 <path
                     d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
@@ -556,7 +558,7 @@ $$o=\texttt{SW-Attn}(y)$$</p>
     </li>
     <li>
         <a target="_blank" rel="noopener noreferrer" aria-label="share Titans: Learning to Memorize at Test Time on whatsapp"
-            href="https://api.whatsapp.com/send?text=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time%20-%20http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2ftitan%2f">
+            href="https://api.whatsapp.com/send?text=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time%20-%20http%3a%2f%2flocalhost%3a55186%2fblog%2fposts%2ftitan%2f">
             <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
                 <path
                     d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
@@ -565,7 +567,7 @@ $$o=\texttt{SW-Attn}(y)$$</p>
     </li>
     <li>
         <a target="_blank" rel="noopener noreferrer" aria-label="share Titans: Learning to Memorize at Test Time on telegram"
-            href="https://telegram.me/share/url?text=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time&amp;url=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2ftitan%2f">
+            href="https://telegram.me/share/url?text=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time&amp;url=http%3a%2f%2flocalhost%3a55186%2fblog%2fposts%2ftitan%2f">
             <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
                 <path
                     d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
@@ -574,7 +576,7 @@ $$o=\texttt{SW-Attn}(y)$$</p>
     </li>
     <li>
         <a target="_blank" rel="noopener noreferrer" aria-label="share Titans: Learning to Memorize at Test Time on ycombinator"
-            href="https://news.ycombinator.com/submitlink?t=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time&u=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2ftitan%2f">
+            href="https://news.ycombinator.com/submitlink?t=Titans%3a%20Learning%20to%20Memorize%20at%20Test%20Time&u=http%3a%2f%2flocalhost%3a55186%2fblog%2fposts%2ftitan%2f">
             <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
                 xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
                 <path
@@ -589,7 +591,7 @@ $$o=\texttt{SW-Attn}(y)$$</p>
     </main>
     
 <footer class="footer">
-        <span>&copy; 2025 <a href="http://localhost:1313/blog/">Nemo&#39;s Blog</a></span> · 
+        <span>&copy; 2025 <a href="http://localhost:55186/blog/">Nemo&#39;s Blog</a></span> · 
 
     <span>
         Powered by

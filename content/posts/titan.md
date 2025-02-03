@@ -118,6 +118,9 @@ $$\tilde{x}=[p _  1,...,p _  {N _  p}] || x$$
 $$y=\texttt{SW-Attn}^\*(\tilde{x})$$
 $$o=y\otimes M(\tilde{x})$$
 Here $\texttt{SW-Attn}^*$ denotes sliding window attention with prefix, and $\otimes$ is a non-linear gating. In practice, it is set as normalizing the outputs $y$ and $M(\tilde{x})$ using learnable vector-valued weights, followed by a non-linearity $\sigma(\cdot)$.
+
+The attention masks for the two architectures are shown below:
+![](../img/titans/image.png#center)
 ### 3.3 MAL: Memory As a Layer
 The last variant uses the neural Memory As a Layer (MAL) of a deep neural network.
 ![](../img/titans/Pasted%20image%2020250203224403.png#center)

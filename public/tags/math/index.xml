@@ -2,66 +2,66 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Math on Nemo&#39;s Blog</title>
-    <link>http://localhost:1313/blog/tags/math/</link>
+    <link>http://localhost:55186/blog/tags/math/</link>
     <description>Recent content in Math on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 01 Jan 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/blog/tags/math/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:55186/blog/tags/math/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Machine Learning Series: 5.Hyperparameter Selection</title>
-      <link>http://localhost:1313/blog/posts/ml5/</link>
+      <link>http://localhost:55186/blog/posts/ml5/</link>
       <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/posts/ml5/</guid>
+      <guid>http://localhost:55186/blog/posts/ml5/</guid>
       <description>This is the fifth article in the Machine Learning Series. It covers classic approaches to Hyperparameter Selection, including Bayesian Optimization, Gradient Optimization, Random Search, Multi-Arm Bandits and Neural Architecture Search.</description>
     </item>
     <item>
       <title>Machine Learning Series: 4.Robust Machine Learning</title>
-      <link>http://localhost:1313/blog/posts/ml4/</link>
+      <link>http://localhost:55186/blog/posts/ml4/</link>
       <pubDate>Sun, 29 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/posts/ml4/</guid>
+      <guid>http://localhost:55186/blog/posts/ml4/</guid>
       <description>This is the fourth article in the Machine Learning Series. It covers classic approaches to Robust Machine Learning, including Adversial Attacks, Adversial Training, Robust Features, Obfuscated Gradients and Provable Robust Certificates.</description>
     </item>
     <item>
       <title>Machine Learning Series: 3.Unsupervised Learning(II)</title>
-      <link>http://localhost:1313/blog/posts/ml3/</link>
+      <link>http://localhost:55186/blog/posts/ml3/</link>
       <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/posts/ml3/</guid>
+      <guid>http://localhost:55186/blog/posts/ml3/</guid>
       <description>This is the third article in the Machine Learning Series. It covers the second part of unsupervised learning, including topics like Clustering, Spectral Graph Clustering, SimCLR, SNE and t-SNE.</description>
     </item>
     <item>
       <title>Machine Learning Series: 2.Unsupervised Learning(I)</title>
-      <link>http://localhost:1313/blog/posts/ml2/</link>
+      <link>http://localhost:55186/blog/posts/ml2/</link>
       <pubDate>Mon, 02 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/posts/ml2/</guid>
+      <guid>http://localhost:55186/blog/posts/ml2/</guid>
       <description>This is the second article in the Machine Learning Series. It covers the first part of unsupervised learning, including topics like Dimension Reduction, PCA, k-NN, LSH and Metric Learning.</description>
     </item>
     <item>
       <title>Natural Language Processing: Part B. Modern Approaches</title>
-      <link>http://localhost:1313/blog/posts/nlp2/</link>
+      <link>http://localhost:55186/blog/posts/nlp2/</link>
       <pubDate>Wed, 13 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/posts/nlp2/</guid>
+      <guid>http://localhost:55186/blog/posts/nlp2/</guid>
       <description>This is the second part of the Natural Language Processing Series. It covers modern approaches in natural language processing, including RNNs, VAE-LMs, Transformer, BERT, GPT, GAN-LMs, In-Context Learning, CoT, RLHF, DPO, etc.</description>
     </item>
     <item>
       <title>Machine Learning Series: 1.Optimization, Generalization and Supervised Learning</title>
-      <link>http://localhost:1313/blog/posts/ml1/</link>
+      <link>http://localhost:55186/blog/posts/ml1/</link>
       <pubDate>Sat, 09 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/posts/ml1/</guid>
+      <guid>http://localhost:55186/blog/posts/ml1/</guid>
       <description>This is the first article in the Machine Learning Series. It covers the basics of optimization(GD,SGD,SVRG,Mirror Descent,Linear Coupling), generalization(No Free Lunch, PAC Learning, VC Dimension), and supervised learning(Linear Regression, Logistic Regression, Compressed Sensing).</description>
     </item>
     <item>
       <title>Complex Analysis and its application in Electrostatics</title>
-      <link>http://localhost:1313/blog/posts/blogpost/</link>
+      <link>http://localhost:55186/blog/posts/blogpost/</link>
       <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/posts/blogpost/</guid>
+      <guid>http://localhost:55186/blog/posts/blogpost/</guid>
       <description>This blog post is a summary of my notes on complex analysis and its application in electrostatics.</description>
     </item>
     <item>
       <title>Natural Language Processing: Part A. Classical Methods</title>
-      <link>http://localhost:1313/blog/posts/nlp1/</link>
+      <link>http://localhost:55186/blog/posts/nlp1/</link>
       <pubDate>Thu, 26 Sep 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/posts/nlp1/</guid>
+      <guid>http://localhost:55186/blog/posts/nlp1/</guid>
       <description>This is the first part of the Natural Language Processing Series. It covers classical methods in natural language processing, including CFG, LSA, HMM, N-gram, Word2Vec, etc.</description>
     </item>
   </channel>
