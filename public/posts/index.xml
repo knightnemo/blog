@@ -6,8 +6,15 @@
     <description>Recent content in Posts on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 15 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 03 Feb 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Titans: Learning to Memorize at Test Time</title>
+      <link>http://localhost:1313/blog/posts/titan/</link>
+      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/posts/titan/</guid>
+      <description>This article introduces Titans, a novel architecture that as a meta in-context learner, learns to memorize at test time. Through designing a long-term memory module, and proposing three variants of Titans (MAC, MAG, MAL), the model achieves superior performance compared to Transformers and other baselines, especially in long-context tasks.</description>
+    </item>
     <item>
       <title>Life Hacks Series: 1. How to manage your Python Environment</title>
       <link>http://localhost:1313/blog/posts/condapack/</link>

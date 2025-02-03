@@ -6,47 +6,75 @@
     <description>Recent content in Tags on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 18 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 03 Feb 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Aritificial-Intelligence</title>
       <link>http://localhost:1313/blog/tags/aritificial-intelligence/</link>
-      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/aritificial-intelligence/</guid>
       <description></description>
     </item>
     <item>
       <title>Computer-Science</title>
       <link>http://localhost:1313/blog/tags/computer-science/</link>
-      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/computer-science/</guid>
       <description></description>
     </item>
     <item>
       <title>Deep-Learning</title>
       <link>http://localhost:1313/blog/tags/deep-learning/</link>
-      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/deep-learning/</guid>
       <description></description>
     </item>
     <item>
       <title>Machine-Learning</title>
       <link>http://localhost:1313/blog/tags/machine-learning/</link>
-      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/machine-learning/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Memory</title>
+      <link>http://localhost:1313/blog/tags/memory/</link>
+      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/memory/</guid>
       <description></description>
     </item>
     <item>
       <title>Nlp</title>
       <link>http://localhost:1313/blog/tags/nlp/</link>
-      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/nlp/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Paper-Reading</title>
+      <link>http://localhost:1313/blog/tags/paper-reading/</link>
+      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/paper-reading/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Test-Time-Scaling</title>
+      <link>http://localhost:1313/blog/tags/test-time-scaling/</link>
+      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/test-time-scaling/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Time-Series</title>
+      <link>http://localhost:1313/blog/tags/time-series/</link>
+      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/time-series/</guid>
       <description></description>
     </item>
     <item>
       <title>Transformer</title>
       <link>http://localhost:1313/blog/tags/transformer/</link>
-      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/transformer/</guid>
       <description></description>
     </item>

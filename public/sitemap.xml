@@ -2,16 +2,49 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://localhost:1313/blog/</loc>
-    <lastmod>2025-01-18T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/posts/</loc>
-    <lastmod>2025-01-18T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/tags/artificial-intelligence/</loc>
-    <lastmod>2025-01-15T00:00:00+00:00</lastmod>
+    <loc>http://localhost:1313/blog/tags/aritificial-intelligence/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/computer-science/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/deep-learning/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/machine-learning/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/memory/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/nlp/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/paper-reading/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/posts/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/test-time-scaling/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/time-series/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/posts/titan/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/transformer/</loc>
+    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/artificial-intelligence/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/conda/</loc>
@@ -35,9 +68,6 @@
     <loc>http://localhost:1313/blog/tags/python/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/blog/tags/</loc>
-    <lastmod>2025-01-15T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>http://localhost:1313/blog/tags/tools/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
@@ -48,9 +78,6 @@
     <lastmod>2025-01-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/posts/ml5/</loc>
-    <lastmod>2025-01-01T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/tags/machine-learning/</loc>
     <lastmod>2025-01-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/math/</loc>
@@ -76,9 +103,6 @@
   </url><url>
     <loc>http://localhost:1313/blog/posts/ml2/</loc>
     <lastmod>2024-12-02T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/tags/deep-learning/</loc>
-    <lastmod>2024-11-13T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/foundation-models/</loc>
     <lastmod>2024-11-13T00:00:00+00:00</lastmod>
@@ -106,14 +130,8 @@
   </url><url>
     <loc>http://localhost:1313/blog/archives/</loc>
   </url><url>
-    <loc>http://localhost:1313/blog/tags/aritificial-intelligence/</loc>
-  </url><url>
     <loc>http://localhost:1313/blog/categories/</loc>
   </url><url>
-    <loc>http://localhost:1313/blog/tags/nlp/</loc>
-  </url><url>
     <loc>http://localhost:1313/blog/search/</loc>
-  </url><url>
-    <loc>http://localhost:1313/blog/tags/transformer/</loc>
   </url>
 </urlset>
