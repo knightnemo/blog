@@ -1,25 +1,25 @@
 ---
-title: "🎮 你发现了秘密!"
+title: "Easter Egg"
 layout: "secret"
-url: "/secret-page"
-summary: "secret"
+url: "/secret-page/"
+summary: secret
 ---
 
-### 🎮 恭喜! 
+### 🎮 Congratulations!
 
-你发现了这个网站的彩蛋! 作为一个懂得经典游戏秘技的玩家，你值得获得这个发现。
+You've discovered the Easter egg on this website! As a player who knows classic game cheat codes, you deserve this discovery.
 
-这个秘密页面是对经典的Konami Code（↑↑↓↓←→←→BA）的致敬。这个秘技最早出现在1986年的《魂斗罗》游戏中，后来成为了游戏文化中的一个重要象征。
+This secret page is a tribute to the Konami Code (↑↑↓↓←→←→BA). This cheat code first appeared in the game Contra in 1986 and has since become an iconic symbol in gaming culture.
 
-### 🏆 你的成就
+### 🏆 Your Achievements
 
-- 发现者勋章 🎖️
-- 游戏文化传承者称号 👑
-- 网站探索大师认证 🔍
+- Discoverer's Medal 🎖️
+- Gaming Culture Heritage Bearer 👑
+- Website Explorer Master 🔍
 
-### 💫 接下来？
+### 💫 What's Next?
 
-既然你已经找到了这里，为什么不：
-- 在网站上继续寻找其他彩蛋？
-- 分享这个发现给其他极客朋友？
-- 探索网站的其他内容？ 
+Now that you're here, why not:
+- Look for other Easter eggs on the website?
+- Share this discovery with other geek friends?
+- Explore other content on the site? 
