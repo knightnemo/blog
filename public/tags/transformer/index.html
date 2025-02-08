@@ -109,6 +109,32 @@ document.addEventListener("DOMContentLoaded", function() {
             konamiCodePosition = 0;
         }
     });
+
+    
+    let clickCount = 0;
+    let lastClickTime = 0;
+    const CLICK_TIMEOUT = 1000; 
+    
+    document.addEventListener('click', function(e) {
+        
+        if (e.button !== 0) return;
+        
+        const currentTime = new Date().getTime();
+        
+        
+        if (currentTime - lastClickTime > CLICK_TIMEOUT) {
+            clickCount = 0;
+        }
+        
+        clickCount++;
+        lastClickTime = currentTime;
+        
+        
+        if (clickCount === 5) {
+            clickCount = 0;
+            window.location.href = '/blog/collaborators/';
+        }
+    });
 </script><meta property="og:url" content="http://localhost:1313/blog/tags/transformer/">
   <meta property="og:site_name" content="Nemo&#39;s Blog">
   <meta property="og:title" content="Transformer">

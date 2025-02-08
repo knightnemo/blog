@@ -1,5 +1,5 @@
 ---
-title: "Easter Egg"
+title: "Congratulations!"
 layout: "secret"
 url: "/secret-page/"
 summary: secret
@@ -7,7 +7,7 @@ summary: secret
 
 ### 🎮 Congratulations!
 
-You've discovered the Easter egg on this website! As a player who knows classic game cheat codes, you deserve this discovery.
+You've discovered an Easter egg (Easter Egg ID: No.1) on this website! As a player who knows classic game cheat codes, you deserve this discovery.
 
 This secret page is a tribute to the Konami Code (↑↑↓↓←→←→BA). This cheat code first appeared in the game Contra in 1986 and has since become an iconic symbol in gaming culture.
 

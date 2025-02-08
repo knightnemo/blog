@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Easter Egg | Nemo&#39;s Blog</title>
+<title>Congratulations! | Nemo&#39;s Blog</title>
 <meta name="keywords" content="">
 <meta name="description" content="secret">
 <meta name="author" content="Nemo">
@@ -108,14 +108,40 @@ document.addEventListener("DOMContentLoaded", function() {
             konamiCodePosition = 0;
         }
     });
+
+    
+    let clickCount = 0;
+    let lastClickTime = 0;
+    const CLICK_TIMEOUT = 1000; 
+    
+    document.addEventListener('click', function(e) {
+        
+        if (e.button !== 0) return;
+        
+        const currentTime = new Date().getTime();
+        
+        
+        if (currentTime - lastClickTime > CLICK_TIMEOUT) {
+            clickCount = 0;
+        }
+        
+        clickCount++;
+        lastClickTime = currentTime;
+        
+        
+        if (clickCount === 5) {
+            clickCount = 0;
+            window.location.href = '/blog/collaborators/';
+        }
+    });
 </script><meta property="og:url" content="http://localhost:1313/blog/secret-page/">
   <meta property="og:site_name" content="Nemo&#39;s Blog">
-  <meta property="og:title" content="Easter Egg">
+  <meta property="og:title" content="Congratulations!">
   <meta property="og:description" content="secret">
   <meta property="og:locale" content="en-us">
   <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Easter Egg">
+<meta name="twitter:title" content="Congratulations!">
 <meta name="twitter:description" content="secret">
 
 
@@ -127,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function() {
     {
       "@type": "ListItem",
       "position":  1 ,
-      "name": "Easter Egg",
+      "name": "Congratulations!",
       "item": "http://localhost:1313/blog/secret-page/"
     }
   ]
@@ -137,14 +163,14 @@ document.addEventListener("DOMContentLoaded", function() {
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Easter Egg",
-  "name": "Easter Egg",
+  "headline": "Congratulations!",
+  "name": "Congratulations!",
   "description": "secret",
   "keywords": [
     
   ],
-  "articleBody": "🎮 Congratulations! You’ve discovered the Easter egg on this website! As a player who knows classic game cheat codes, you deserve this discovery.\nThis secret page is a tribute to the Konami Code (↑↑↓↓←→←→BA). This cheat code first appeared in the game Contra in 1986 and has since become an iconic symbol in gaming culture.\n🏆 Your Achievements Discoverer’s Medal 🎖️ Gaming Culture Heritage Bearer 👑 Website Explorer Master 🔍 💫 What’s Next? Now that you’re here, why not:\nLook for other Easter eggs on the website? Share this discovery with other geek friends? Explore other content on the site? ",
-  "wordCount" : "100",
+  "articleBody": "🎮 Congratulations! You’ve discovered an Easter egg (Easter Egg ID: No.1) on this website! As a player who knows classic game cheat codes, you deserve this discovery.\nThis secret page is a tribute to the Konami Code (↑↑↓↓←→←→BA). This cheat code first appeared in the game Contra in 1986 and has since become an iconic symbol in gaming culture.\n🏆 Your Achievements Discoverer’s Medal 🎖️ Gaming Culture Heritage Bearer 👑 Website Explorer Master 🔍 💫 What’s Next? Now that you’re here, why not:\nLook for other Easter eggs on the website? Share this discovery with other geek friends? Explore other content on the site? ",
+  "wordCount" : "104",
   "inLanguage": "en",
   "datePublished": "0001-01-01T00:00:00Z",
   "dateModified": "0001-01-01T00:00:00Z",
@@ -298,12 +324,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
     <article class="post-single">
         <header class="post-header">
-            <h1 class="post-title">Easter Egg</h1>
+            <h1 class="post-title">Congratulations!</h1>
         </header>
         
         <div class="post-content">
             <h3 id="-congratulations">🎮 Congratulations!</h3>
-<p>You&rsquo;ve discovered the Easter egg on this website! As a player who knows classic game cheat codes, you deserve this discovery.</p>
+<p>You&rsquo;ve discovered an Easter egg (Easter Egg ID: No.1) on this website! As a player who knows classic game cheat codes, you deserve this discovery.</p>
 <p>This secret page is a tribute to the Konami Code (↑↑↓↓←→←→BA). This cheat code first appeared in the game Contra in 1986 and has since become an iconic symbol in gaming culture.</p>
 <h3 id="-your-achievements">🏆 Your Achievements</h3>
 <ul>

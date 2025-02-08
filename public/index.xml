@@ -79,7 +79,14 @@
       <description>This is the first part of the Natural Language Processing Series. It covers classical methods in natural language processing, including CFG, LSA, HMM, N-gram, Word2Vec, etc.</description>
     </item>
     <item>
-      <title>Easter Egg</title>
+      <title>🎉 Congratulations!</title>
+      <link>http://localhost:1313/blog/collaborators/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/collaborators/</guid>
+      <description>People I&amp;rsquo;ve worked with</description>
+    </item>
+    <item>
+      <title>Congratulations!</title>
       <link>http://localhost:1313/blog/secret-page/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/secret-page/</guid>
