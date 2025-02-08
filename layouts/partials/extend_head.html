@@ -19,3 +19,34 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 {{ end }}
 
+<script>
+    // Konami Code sequence
+    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    let konamiCodePosition = 0;
+    
+    document.addEventListener('keydown', function(e) {
+        // Get the key that was pressed
+        const key = e.key;
+        
+        // Get the expected key in the sequence
+        const expectedKey = konamiCode[konamiCodePosition];
+        
+        // Check if the key matches what we're expecting
+        if (key.toLowerCase() === expectedKey.toLowerCase()) {
+            // Move to the next key in the sequence
+            konamiCodePosition++;
+            
+            // If the full sequence is completed
+            if (konamiCodePosition === konamiCode.length) {
+                // Reset the sequence position
+                konamiCodePosition = 0;
+                
+                // Redirect to your secret page
+                window.location.href = '/secret-page';
+            }
+        } else {
+            // Reset if the sequence is broken
+            konamiCodePosition = 0;
+        }
+    });
+</script>

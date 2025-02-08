@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Physics on Nemo&#39;s Blog</title>
-    <link>http://localhost:55186/blog/tags/physics/</link>
+    <link>http://localhost:1313/blog/tags/physics/</link>
     <description>Recent content in Physics on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 15 Oct 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:55186/blog/tags/physics/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/blog/tags/physics/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Complex Analysis and its application in Electrostatics</title>
-      <link>http://localhost:55186/blog/posts/blogpost/</link>
+      <link>http://localhost:1313/blog/posts/blogpost/</link>
       <pubDate>Tue, 15 Oct 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:55186/blog/posts/blogpost/</guid>
+      <guid>http://localhost:1313/blog/posts/blogpost/</guid>
       <description>This blog post is a summary of my notes on complex analysis and its application in electrostatics.</description>
     </item>
   </channel>

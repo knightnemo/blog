@@ -2,136 +2,138 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://localhost:55186/blog/tags/aritificial-intelligence/</loc>
+    <loc>http://localhost:1313/blog/tags/aritificial-intelligence/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/computer-science/</loc>
+    <loc>http://localhost:1313/blog/tags/computer-science/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/deep-learning/</loc>
+    <loc>http://localhost:1313/blog/tags/deep-learning/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/machine-learning/</loc>
+    <loc>http://localhost:1313/blog/tags/machine-learning/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/memory/</loc>
+    <loc>http://localhost:1313/blog/tags/memory/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/</loc>
+    <loc>http://localhost:1313/blog/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/nlp/</loc>
+    <loc>http://localhost:1313/blog/tags/nlp/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/paper-reading/</loc>
+    <loc>http://localhost:1313/blog/tags/paper-reading/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/posts/</loc>
+    <loc>http://localhost:1313/blog/posts/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/</loc>
+    <loc>http://localhost:1313/blog/tags/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/test-time-scaling/</loc>
+    <loc>http://localhost:1313/blog/tags/test-time-scaling/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/time-series/</loc>
+    <loc>http://localhost:1313/blog/tags/time-series/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/posts/titan/</loc>
+    <loc>http://localhost:1313/blog/posts/titan/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/transformer/</loc>
+    <loc>http://localhost:1313/blog/tags/transformer/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/artificial-intelligence/</loc>
+    <loc>http://localhost:1313/blog/tags/artificial-intelligence/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/conda/</loc>
+    <loc>http://localhost:1313/blog/tags/conda/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/environment-management/</loc>
+    <loc>http://localhost:1313/blog/tags/environment-management/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/posts/condapack/</loc>
+    <loc>http://localhost:1313/blog/posts/condapack/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/life-hacks/</loc>
+    <loc>http://localhost:1313/blog/tags/life-hacks/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/pip/</loc>
+    <loc>http://localhost:1313/blog/tags/pip/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/programming/</loc>
+    <loc>http://localhost:1313/blog/tags/programming/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/python/</loc>
+    <loc>http://localhost:1313/blog/tags/python/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/tools/</loc>
+    <loc>http://localhost:1313/blog/tags/tools/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/virtual-environment/</loc>
+    <loc>http://localhost:1313/blog/tags/virtual-environment/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/algorithm/</loc>
+    <loc>http://localhost:1313/blog/tags/algorithm/</loc>
     <lastmod>2025-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/posts/ml5/</loc>
+    <loc>http://localhost:1313/blog/posts/ml5/</loc>
     <lastmod>2025-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/math/</loc>
+    <loc>http://localhost:1313/blog/tags/math/</loc>
     <lastmod>2025-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/multi-arm-bandit/</loc>
+    <loc>http://localhost:1313/blog/tags/multi-arm-bandit/</loc>
     <lastmod>2025-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/optimization/</loc>
+    <loc>http://localhost:1313/blog/tags/optimization/</loc>
     <lastmod>2025-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/random-process/</loc>
+    <loc>http://localhost:1313/blog/tags/random-process/</loc>
     <lastmod>2025-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/posts/ml4/</loc>
+    <loc>http://localhost:1313/blog/posts/ml4/</loc>
     <lastmod>2024-12-29T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/algebra/</loc>
+    <loc>http://localhost:1313/blog/tags/algebra/</loc>
     <lastmod>2024-12-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/posts/ml3/</loc>
+    <loc>http://localhost:1313/blog/posts/ml3/</loc>
     <lastmod>2024-12-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/posts/ml2/</loc>
+    <loc>http://localhost:1313/blog/posts/ml2/</loc>
     <lastmod>2024-12-02T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/foundation-models/</loc>
+    <loc>http://localhost:1313/blog/tags/foundation-models/</loc>
     <lastmod>2024-11-13T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/posts/nlp2/</loc>
+    <loc>http://localhost:1313/blog/posts/nlp2/</loc>
     <lastmod>2024-11-13T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/natural-language-processing/</loc>
+    <loc>http://localhost:1313/blog/tags/natural-language-processing/</loc>
     <lastmod>2024-11-13T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/posts/ml1/</loc>
+    <loc>http://localhost:1313/blog/posts/ml1/</loc>
     <lastmod>2024-11-09T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/posts/blogpost/</loc>
+    <loc>http://localhost:1313/blog/posts/blogpost/</loc>
     <lastmod>2024-10-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/complex-analysis/</loc>
+    <loc>http://localhost:1313/blog/tags/complex-analysis/</loc>
     <lastmod>2024-10-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/tags/physics/</loc>
+    <loc>http://localhost:1313/blog/tags/physics/</loc>
     <lastmod>2024-10-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/posts/nlp1/</loc>
+    <loc>http://localhost:1313/blog/posts/nlp1/</loc>
     <lastmod>2024-09-26T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:55186/blog/archives/</loc>
+    <loc>http://localhost:1313/blog/secret-page/</loc>
   </url><url>
-    <loc>http://localhost:55186/blog/categories/</loc>
+    <loc>http://localhost:1313/blog/archives/</loc>
   </url><url>
-    <loc>http://localhost:55186/blog/search/</loc>
+    <loc>http://localhost:1313/blog/categories/</loc>
+  </url><url>
+    <loc>http://localhost:1313/blog/search/</loc>
   </url>
 </urlset>

@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Multi-Arm-Bandit on Nemo&#39;s Blog</title>
-    <link>http://localhost:55186/blog/tags/multi-arm-bandit/</link>
+    <link>http://localhost:1313/blog/tags/multi-arm-bandit/</link>
     <description>Recent content in Multi-Arm-Bandit on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 01 Jan 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:55186/blog/tags/multi-arm-bandit/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/blog/tags/multi-arm-bandit/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Machine Learning Series: 5.Hyperparameter Selection</title>
-      <link>http://localhost:55186/blog/posts/ml5/</link>
+      <link>http://localhost:1313/blog/posts/ml5/</link>
       <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:55186/blog/posts/ml5/</guid>
+      <guid>http://localhost:1313/blog/posts/ml5/</guid>
       <description>This is the fifth article in the Machine Learning Series. It covers classic approaches to Hyperparameter Selection, including Bayesian Optimization, Gradient Optimization, Random Search, Multi-Arm Bandits and Neural Architecture Search.</description>
     </item>
   </channel>
