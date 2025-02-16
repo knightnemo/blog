@@ -6,20 +6,69 @@
     <description>Recent content in Tags on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 03 Feb 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 15 Feb 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Aritificial-Intelligence</title>
-      <link>http://localhost:1313/blog/tags/aritificial-intelligence/</link>
-      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/aritificial-intelligence/</guid>
+      <title>Abstract-Algebra</title>
+      <link>http://localhost:1313/blog/tags/abstract-algebra/</link>
+      <pubDate>Sat, 15 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/abstract-algebra/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Algebra</title>
+      <link>http://localhost:1313/blog/tags/algebra/</link>
+      <pubDate>Sat, 15 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/algebra/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Algorithm</title>
+      <link>http://localhost:1313/blog/tags/algorithm/</link>
+      <pubDate>Sat, 15 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/algorithm/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Category-Theory</title>
+      <link>http://localhost:1313/blog/tags/category-theory/</link>
+      <pubDate>Sat, 15 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/category-theory/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Computation</title>
+      <link>http://localhost:1313/blog/tags/computation/</link>
+      <pubDate>Sat, 15 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/computation/</guid>
       <description></description>
     </item>
     <item>
       <title>Computer-Science</title>
       <link>http://localhost:1313/blog/tags/computer-science/</link>
-      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
+      <pubDate>Sat, 15 Feb 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/computer-science/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Group-Theory</title>
+      <link>http://localhost:1313/blog/tags/group-theory/</link>
+      <pubDate>Sat, 15 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/group-theory/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Math</title>
+      <link>http://localhost:1313/blog/tags/math/</link>
+      <pubDate>Sat, 15 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/math/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Aritificial-Intelligence</title>
+      <link>http://localhost:1313/blog/tags/aritificial-intelligence/</link>
+      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/aritificial-intelligence/</guid>
       <description></description>
     </item>
     <item>
@@ -142,20 +191,6 @@
       <description></description>
     </item>
     <item>
-      <title>Algorithm</title>
-      <link>http://localhost:1313/blog/tags/algorithm/</link>
-      <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/algorithm/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Math</title>
-      <link>http://localhost:1313/blog/tags/math/</link>
-      <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/math/</guid>
-      <description></description>
-    </item>
-    <item>
       <title>Multi-Arm-Bandit</title>
       <link>http://localhost:1313/blog/tags/multi-arm-bandit/</link>
       <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
@@ -174,13 +209,6 @@
       <link>http://localhost:1313/blog/tags/random-process/</link>
       <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/random-process/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Algebra</title>
-      <link>http://localhost:1313/blog/tags/algebra/</link>
-      <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/algebra/</guid>
       <description></description>
     </item>
     <item>
