@@ -1086,7 +1086,7 @@ $$
 \Rightarrow \|h\|^2 = 0
 $$
 
-因此 $\tilde{x} = x$。$\blacksquare$
+因此 $\tilde{x} = x$.$\blacksquare$
 
 但问题是,我们没有一个polytime求解l0-norm最小值的算法,所以这个定理在实际应用中没有意义,我们在实际应用中尝试吧l0-norm relax到 l1-norm,下面的thm2和3便是l1-norm下重建结果相似性的保证。
 ### Thm.2

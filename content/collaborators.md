@@ -24,7 +24,7 @@ The following are the links to the people who have influenced me __a ton__ in my
 [Junhao Shen](https://arxiv.org/pdf/2402.14008), [Runhan Huang](https://scholar.google.com/citations?user=7N0VoNsAAAAJ&hl=en), [Bohan Lyu](https://lyubh.cn), [Jacqueline Wang](https://www.linkedin.com/in/jacqueline-yujia-wang), [Shaofeng Yin](https://operator22th.github.io), [Ruiyang Zheng](https://github.com/zhengry22), [Yiming Liu](https://leo1oel.github.io), [Ningya Feng](https://openreview.net/profile?id=~Ningya_Feng1), [Tianyu Huang](https://illumiart.net), [Ruitao Liu](https://arxiv.org/abs/2412.20104), [Yitong Zhao](https://github.com/origamizyt), [Jingwu Tang](https://tangjingwu.com), Zhixuan Song, [Siwei Chen](https://github.com/pkuchensw), [Siqi Chen](https://nicsefc.ee.tsinghua.edu.cn/people/SiqiChen), Hongyi Liu, [Qixin Xu](https://github.com/Racktic), Dongchang Huang, Junshuo Zhao
 
 ### ⭐ Inspirational Figures
-[Kaiming He](https://people.csail.mit.edu/kaiming/), [Saining Xie](https://www.sainingxie.com), [Boyuan Chen](https://boyuan.space), [Yan Dai](https://yandaichn.github.io), [Guowei Xu](https://xugw-kevin.github.io)
+[Kaiming He](https://people.csail.mit.edu/kaiming/), [Saining Xie](https://www.sainingxie.com), [Boyuan Chen](https://boyuan.space), [Yan Dai](https://yandaichn.github.io), [Guowei Xu](https://xugw-kevin.github.io), [Yiming Liu](https://leo1oel.github.io)
 
 ---
 *🎯 Thank you for being part of my journey! 🗺️*
