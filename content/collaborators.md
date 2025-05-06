@@ -16,7 +16,7 @@ This page is dedicated to the people who have influenced me a lot in my journey.
 ## 👥 Links
 The following are the links to the people who have influenced me __a ton__ in my journey. Couldn't be more grateful for their help and support.
 ### 🎓 Seniors & Mentors
-[Prof. Max Simchowitz](https://msimchowitz.github.io), [Prof. Mingsheng Long](https://ise.thss.tsinghua.edu.cn/~mlong/), [Jonathan Ho](http://www.jonathanho.me)
+[Prof. Max Simchowitz](https://msimchowitz.github.io), [Prof. Mingsheng Long](https://ise.thss.tsinghua.edu.cn/~mlong/)
 
 [Jialong Wu](https://manchery.github.io), [Lanxiang Xing](https://scholar.google.com/citations?user=OoSd2xAAAAAJ&hl=en)
 
