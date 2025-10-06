@@ -2,6 +2,45 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>http://localhost:1313/blog/tags/artificial-intelligence/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/posts/wm_2025/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/computer-science/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/deep-learning/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/embodied-ai/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/foundation-models/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/jepa/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/machine-learning/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/posts/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/video-generation/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/tags/world-model/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/blog/tags/abstract-algebra/</loc>
     <lastmod>2025-02-15T00:00:00+00:00</lastmod>
   </url><url>
@@ -20,31 +59,13 @@
     <loc>http://localhost:1313/blog/tags/computation/</loc>
     <lastmod>2025-02-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/blog/tags/computer-science/</loc>
-    <lastmod>2025-02-15T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>http://localhost:1313/blog/tags/group-theory/</loc>
     <lastmod>2025-02-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/math/</loc>
     <lastmod>2025-02-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/blog/</loc>
-    <lastmod>2025-02-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/posts/</loc>
-    <lastmod>2025-02-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/tags/</loc>
-    <lastmod>2025-02-15T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>http://localhost:1313/blog/tags/aritificial-intelligence/</loc>
-    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/tags/deep-learning/</loc>
-    <lastmod>2025-02-03T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/tags/machine-learning/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/memory/</loc>
@@ -67,9 +88,6 @@
   </url><url>
     <loc>http://localhost:1313/blog/tags/transformer/</loc>
     <lastmod>2025-02-03T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/tags/artificial-intelligence/</loc>
-    <lastmod>2025-01-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/tags/conda/</loc>
     <lastmod>2025-01-15T00:00:00+00:00</lastmod>
@@ -118,9 +136,6 @@
   </url><url>
     <loc>http://localhost:1313/blog/posts/ml2/</loc>
     <lastmod>2024-12-02T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/tags/foundation-models/</loc>
-    <lastmod>2024-11-13T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/posts/nlp2/</loc>
     <lastmod>2024-11-13T00:00:00+00:00</lastmod>

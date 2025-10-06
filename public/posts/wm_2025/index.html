@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/blog/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=blog/livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Beyond the Hype: How I See World Models Evolving in 2025 | Nemo&#39;s Blog</title>
+<meta name="keywords" content="machine-learning, computer-science, deep-learning, world-model, jepa, artificial-intelligence, embodied-ai, video-generation, foundation-models">
+<meta name="description" content="A summary of my personal opinions on world models in 2025, covering their current state, future prospects, and implications for embodied AI. Discusses 3D modeling approaches, data challenges, research directions, and the role of JEPA-style architectures in the evolution of world models.">
+<meta name="author" content="Nemo">
+<link rel="canonical" href="http://localhost:1313/blog/posts/wm_2025/">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<meta name="referrer" content="no-referrer-when-downgrade">
+<link crossorigin="anonymous" href="/blog/assets/css/stylesheet.75ecc523c7c1152df7c886f961b47af55f43bbb2ec48d13c8f8959e716f99b35.css" integrity="sha256-dezFI8fBFS33yIb5YbR69V9Du7LsSNE8j4lZ5xb5mzU=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/blog/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/blog/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/blog/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/blog/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/blog/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/blog/posts/wm_2025/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY" crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "$", right: "$", display: false}
+        ]
+    });
+});
+</script>
+
+
+<script>
+    
+    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    let konamiCodePosition = 0;
+    
+    document.addEventListener('keydown', function(e) {
+        
+        const key = e.key;
+        
+        
+        const expectedKey = konamiCode[konamiCodePosition];
+        
+        
+        if (key.toLowerCase() === expectedKey.toLowerCase()) {
+            
+            konamiCodePosition++;
+            
+            
+            if (konamiCodePosition === konamiCode.length) {
+                
+                konamiCodePosition = 0;
+                
+                
+                window.location.href = '/blog/secret-page/';
+            }
+        } else {
+            
+            konamiCodePosition = 0;
+        }
+    });
+
+    
+    let clickCount = 0;
+    let lastClickTime = 0;
+    const CLICK_TIMEOUT = 1000; 
+    
+    document.addEventListener('click', function(e) {
+        
+        if (e.button !== 0) return;
+        
+        const currentTime = new Date().getTime();
+        
+        
+        if (currentTime - lastClickTime > CLICK_TIMEOUT) {
+            clickCount = 0;
+        }
+        
+        clickCount++;
+        lastClickTime = currentTime;
+        
+        
+        if (clickCount === 5) {
+            clickCount = 0;
+            window.location.href = '/blog/collaborators/';
+        }
+    });
+</script><meta property="og:url" content="http://localhost:1313/blog/posts/wm_2025/">
+  <meta property="og:site_name" content="Nemo&#39;s Blog">
+  <meta property="og:title" content="Beyond the Hype: How I See World Models Evolving in 2025">
+  <meta property="og:description" content="A summary of my personal opinions on world models in 2025, covering their current state, future prospects, and implications for embodied AI. Discusses 3D modeling approaches, data challenges, research directions, and the role of JEPA-style architectures in the evolution of world models.">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-10-06T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-10-06T00:00:00+00:00">
+    <meta property="article:tag" content="Machine-Learning">
+    <meta property="article:tag" content="Computer-Science">
+    <meta property="article:tag" content="Deep-Learning">
+    <meta property="article:tag" content="World-Model">
+    <meta property="article:tag" content="Jepa">
+    <meta property="article:tag" content="Artificial-Intelligence">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Beyond the Hype: How I See World Models Evolving in 2025">
+<meta name="twitter:description" content="A summary of my personal opinions on world models in 2025, covering their current state, future prospects, and implications for embodied AI. Discusses 3D modeling approaches, data challenges, research directions, and the role of JEPA-style architectures in the evolution of world models.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "http://localhost:1313/blog/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Beyond the Hype: How I See World Models Evolving in 2025",
+      "item": "http://localhost:1313/blog/posts/wm_2025/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Beyond the Hype: How I See World Models Evolving in 2025",
+  "name": "Beyond the Hype: How I See World Models Evolving in 2025",
+  "description": "A summary of my personal opinions on world models in 2025, covering their current state, future prospects, and implications for embodied AI. Discusses 3D modeling approaches, data challenges, research directions, and the role of JEPA-style architectures in the evolution of world models.",
+  "keywords": [
+    "machine-learning", "computer-science", "deep-learning", "world-model", "jepa", "artificial-intelligence", "embodied-ai", "video-generation", "foundation-models"
+  ],
+  "articleBody": "Recently, world models have attracted significant interest from researchers and a broader community of technology enthusiasts, largely attributed to the viral success of Google’s Genie 3.\nGenie 3 - Google’s viral world model\nIn fact, before this, many quite successful world models already existed, including Meta’s V-JEPA 2, Nvidia’s Cosmos, and others. After Genie3, many major companies have successively released their own world models, such as: Hunyuan-Gamecraft, Matrix-Game 2.0 and Yan.\nV-JEPA2: Recent World Model from Meta\nPersonally, I have always been a huge believer in the necessity of world models and have done some related work in this field. It’s undoubtedly exciting to see world models finally entering the public consciousness. However, humans always tend to “overhype” emerging technologies at the beginning, harboring some unrealistic expectations. Hence here, I want to share some personal thoughts on the current state and future development of world models, representing only my personal views.\nV-JEPA2 Real-World Deployment Demo\n1. Do World Models Need Explicit 3D Modeling? Current industry world models basically follow two fundamental approaches:\nPixel-space world models, i.e., action-conditioned video generation. This approach is well-studied in academia, coming from many years of research, and has achieved considerable success in industry. 3D Mesh-space world models, which have strong connections with 3D Vision. Notable companies include Prof. Feifei Li’s WorldLabs and Tesseract, among others. Although 3D Mesh has various advantages in comparison to pixel space predictions (geometry consistency, temporal consistency, etc.), I believe that in today’s era of abundant video data, learning world models autoregressively from video data (whether action-labeled or action-free) holds more potential to scale up, compared to learning world models from the relatively scarce 3D data.\nHowever, world models on 3D Mesh will continue to exist in some specialized scenarios and remain the dominant approach in that domain. For example, in scenarios involving depth information and contact-rich embodied environments, 3D representations will continue to be crucial.\nTesseract: An academic 3D Mesh World Model\n2. Will World Models Be the Next Big Thing? In the past two weeks, there have been many optimistic predictions about the future of world models. The biggest claim (besides humans living in some kind of simulation) is probably that World Models are the Next Big Thing in Generative Models after LLMs.\nSelected Twitter Posts\nHere I want to explain from two aspects why we shouldn’t have excessive expectations for world models.\nFrom a data perspective, video data is abundant, but data with action information annotations is scarce. It can even be said that for vision-based data collection schemes, the total video data volume is strictly greater than video data with action information annotations.\nData Pyramid for Robot Learning, Photo Credit: Yuke Zhu\nFrom a learning objective perspective, what makes world models more difficult is the Heterogeneity of Action Spaces. The previous success of generative models (especially in sequential modeling) often relied on unified data formats, such as tokens in LLMs, pixels in image/video generation models, and point clouds in 3D space. However, action spaces across different embodiments inherently lack such homogeneity. A world model without a unified action space cannot become a ready-to-use foundation model, and more research breakthroughs are needed before realizing a foundational world model across embodiments.\nRDT-1B is an embodied foundation model that learns an Unified Action Space.\nTherefore, I believe that in the next era, the Next Big Thing will be multi-modal video generation models, with world models being their subsidiary products in action/language space control. The success of Genie3 has already shown us that Diffusion Forcing + action injection modules (e.g., AdaLN), given sufficient data, can achieve stunning visual effects. However, at least from my perspective, a more worthwhile research question for the next few years is how to derive world models from existing video generation models.\nVid2World transforms Full-Sequence Video Diffusion Models into Interactive World Models.\n3. World Models: Cop or Drop? Continuing from the previous topic, for a researcher, at the current time point, is diving into world model-related research an ideal choice?\nThe answer to this question varies greatly from individual to individual. If you believe in the prospects of world models, then go for it! If you completely don’t believe in world models (e.g., helping embodied AI policy learning), then of course don’t do such research.\nPhoto Credit: Nvidia\nHere, I want to point out that at the current time point, the design choices for world models have largely converged. Algorithmically, Diffusion Forcing (or Self Forcing), and architecturally, video generation model architectures (e.g., UNet, DiT) + action modules (e.g., AdaLN) will be the mainstream pattern in the future. So for students pursuing really challenging topics, world models may have become a relatively mundane field. However, for students with strong engineering capabilities who really want to make things work, the current time is truly a moment when we can see world models transition from not working to working, with very cool visuals and truly scaled-up foundation models that will be achievable within the next 3 years.\nSimulated Rollouts from UniSim, an academic pixel-space world model.\nPersonally, I believe that the following directions in world modeling will be very much worth pursuing in the next few years:\n3.1. How to deploy World Models to the Physical World, i.e., helping Embodied AI Policy Learning through World Models. This will be detailed in the next section.\nGoogle DeepMind’s Gemini Robotics model can perform complex real-world tasks.\n3.2. How to make World Models go towards Long-sequence, achieving Minute-level Temporal Memory / Consistency. Although Genie3’s blog mentions that this temporal consistency is an emergent behavior, relying solely on data-driven approaches to achieve consistent memory is unrealistic. For long sequences, we might need an SSM-style hidden state, or some kind of memory retrieval, but personally I feel this won’t be a problem that can be perfectly solved just by scaling up data volume.\nWorldmem learns Long-term Consistent World Simulation with Memory.\n3.3. World models that Integrate Multi-modal Signals. Current world models are simulation systems that rely entirely on sensorimotor information. However, Google tells us (https://arxiv.org/abs/2506.01622) that within powerful generalist policy models, there exist good-enough world models. Language, as the only modality that natively supports expressing abstract information, possesses the integration of high-level abstract knowledge and low-level sensory knowledge, which is an indispensable component of future world models. How to integrate LLMs/MLLMs into the world model framework and incorporate their rich world knowledge into existing systems is a very interesting direction.\nReasoning for Language Models is Planning for Embodied Agents, Photo Credit: Zhiting Hu.\n3.4. Making World Models truly Real-Time. The natural problem brought by data-driven methods is the high inference latency due to model complexity. If world models want to a). become truly playable Neural Game Engines; b). help embodied AI in an online manner; accelerating world model inference is a crucial step. This is a joint effort, including hardware acceleration, algorithmic innovation, and the entire community ecosystem. Making World Models real-time is essential for human entertainment purposes, Photo Credit: Xun Huang.\n3.5. Multi-Agent World Models. Currently, all the world models we see are Single-Agent world models. However, if we want a Neural Game Engine that can support multiplayer games, exploring the capabilities of world models in multi-agent scenarios is an overlooked direction. Simply concatenating each individual’s action space faces exponentially growing data requirements with the number of players (to achieve the same action space coverage). How to data-efficiently/parameter-efficiently learn a Multi-Agent, or even Variable-Agent World Model, would be a very interesting exploration.\nBimanual Operation is a good place to start for multi-agent.\n4. What Do World Models Mean for Embodied AI? People who pay attention to world models can be roughly divided into two types: One type is people in the Computer Vision field who want to create very cool visual effects and ultimately revolutionize industries like games/Simulation/Rendering; The other type is people in the Embodied AI field, some are those come from the model-based RL era and always believed in this view, some are those are new-comers who expect world models to be the game-changer that breaks the data bottleneck of Embodied AI.\nWorld models helping embodied AI is a progress that can be expected. However, if we assume that VLA (of course not the current VLA architecture) will be the form of embodied AI foundation models, in the ecosystem that emerges around VLA, what form will world models exist in?\nState-of-the-art VLA models (like $\\pi_0$) are seen as the next paradigm shift for robot learning.\nMy view is that world models will exist in embodied AI as foundation models, but they won’t be powerful enough to replace real-world imitation learning, and will only replace the role of simulators in some scenarios.\nSimulators and World Models are two ways of modeling the physical world.\nFirst, why do foundation embodied world models exist? Because a.) it’s technically feasible; b.) not making foundation world models has no value. World models are trained on data, and training a world model from scratch that can help policy learning requires more data than training an imitation learning policy. Therefore, for tasks that don’t require generalization, we don’t need world models. The real promise that world models offer is in scenarios requiring generalization, where we can zero-shot/few-shot obtain a world model adapted to the scenario from a pre-existing world model, which can truly fulfill the promise of “breaking the data bottleneck of embodied AI”.\nVLA Models show promise of generalizing out-of-distribution.\nFurthermore, we need to clearly recognize the limitations of world models. This is actually very similar to the limitations of simulation data. In scenarios where dynamics don’t have strong human priors (such as some natural science areas / under-studied real-world dynamical systems), data-driven methods (world models) may perform better than prior-driven hardcoded methods. However, in the vast majority of specific embodied AI tasks, the performance of world models can actually be upper-bounded by simulators specifically designed for that scenario. The extent to which simulated data can help policy learning is highly scenario-dependent, and in contact-rich, dexterous scenarios requiring tactile sensing, world models may prove themselves hardly useful, if not totally useless.\nWhere Dexterous Control succeeds, World Models shall fail.\nPersonally, I believe thee next era of embodied AI should revolve around a Generalist Policy Model. World models may combine with general policy models in various ways (embedded within or attached to), but the next Embodied AI era is unlikely to revolve around world models.\nHelix is a VLA model for humanoid full-upper-body control.\n5. Prior-Driven vs Data-Driven: What Role Does Physics Integration Play in World Models? Human priors and data-driven approaches are two technical approaches that have always existed, dating from the Computer Vision era. In the context of Dynamics Modeling, prior-driven means simulators, whereas data-driven means world models. I think researchers who are still uncertain about this topic should repeatedly read Rich Sutton’s The Bitter Lesson. Given sufficient data volume, data-driven methods will definitely win. But in specific task scenarios, squeezing model performance by introducing priors will be effective in the long term. At it’s core, this represents a fundamental tradeoff between generalization and performance, which the basic principles of statistical learning have told us we cannot get both.\nPhysics-Based vs Data-Driven is a fundamental tradeoff.\nTherefore, my personal view is that learning general models through physics-informed methods is a completely wrong technical route. For general models, physical accuracy/consistency is an emergent ability brought about by increased data volume.\nSnapshot of The Bitter Lesson, written by Rich Sutton.\n6. How do I View JEPA-style World Models? When it comes to world models, an unavoidable topic is Yann LeCun and the JEPA architecture he advocates. Although Yann LeCun’s statements in many scenarios are mostly unreliable (this is actually normal, Hinton thought spike neural networks would be popular, but they weren’t), some of the ideas reflected behind JEPA are still quite reasonable and very profound. Our final world model form may not be a JEPA-style architecture, but the ideas of JEPA (e.g. learning in latent space) is definately something that will be a source of continuous inspiration.\nJEPA, proposed by Yann Lecun, is an well-known paradigm for representation learning.\nAs a matter of fact, current video generation/world models are already mostly architectures that operate in latent space. The current mainstream paradigm is to use near-lossless compression methods (e.g., Stable-Diffusion’s VAE) as Encoder and Decoder, then learn a Predictor in this latent space. Lossless compression Encoders bring us lower computational costs, but whether such an Encoder-Predictor combination is optimal is actually not the case. If we replace this Encoder with Dino-v2, which can extract stronger semantic information, we can get world models that are more valuable for planning.\nDINO-WM is a World Model that predicts in Latent Space.\nIn fact, what we need is a pair of Encoder and Predictor adapted to the task itself, so training the Encoder and Predictor together makes a lot of intuitive sense. JEPA’s approach of placing the loss in feature space can be understood as constructing a “game” that is highly symmetric with reinforcement learning’s actor-critic, which could potentially learn richer latents. However, the uncertainty here is quite large, after all, GANs are not the most effective method in current generative models, theory/intuition can only take us this far, and more experimental experience is needed to verify.\nScreenshot from movie Oppenheimer, directed by Christopher Nolan.\nFinally, I’ll share my slides about JEPA and world models, using the introduction of Back to the Features: DINO as a Foundation for Video World Models (https://arxiv.org/abs/2507.19468) as a starting point to review the basic ideas of JEPA and several important papers.\nThe original blog post was written in Chinese in Aug. 2025 (see original post here), and turns out, the JEPA language model is already here in Oct. 2025.\n",
+  "wordCount" : "2281",
+  "inLanguage": "en",
+  "datePublished": "2025-10-06T00:00:00Z",
+  "dateModified": "2025-10-06T00:00:00Z",
+  "author":[{
+    "@type": "Person",
+    "name": "Nemo"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/blog/posts/wm_2025/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Nemo's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/blog/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/blog/" accesskey="h" title="Nemo&#39;s Blog (Alt + H)">Nemo&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/blog/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/blog/posts/" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/blog/archives/" title="Archive">
+                    <span>Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/blog/search/" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/blog/tags/" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://knightnemo.github.io" title="About Me">
+                    <span>About Me</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/blog/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/blog/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Beyond the Hype: How I See World Models Evolving in 2025
+    </h1>
+    <div class="post-meta"><span title='2025-10-06 00:00:00 +0000 UTC'>October 6, 2025</span>&nbsp;·&nbsp;11 min&nbsp;·&nbsp;Nemo
+
+
+      <div class="meta-item">&nbsp·&nbsp
+        <span id="busuanzi_container_page_pv" > 
+          Reads: <span class="page-pv" id="busuanzi_value_page_pv">0</span> times
+        </span>
+      </div>
+    </div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#1-do-world-models-need-explicit-3d-modeling" aria-label="1. Do World Models Need Explicit 3D Modeling?">1. Do World Models Need Explicit 3D Modeling?</a></li>
+                <li>
+                    <a href="#2-will-world-models-be-the-next-big-thing" aria-label="2. Will World Models Be the Next Big Thing?">2. Will World Models Be the Next Big Thing?</a></li>
+                <li>
+                    <a href="#3-world-models-cop-or-drop" aria-label="3. World Models: Cop or Drop?">3. World Models: Cop or Drop?</a><ul>
+                        
+                <li>
+                    <a href="#31-how-to-deploy-world-models-to-the-physical-world-ie-helping-embodied-ai-policy-learning-through-world-models" aria-label="3.1. How to deploy World Models to the Physical World, i.e., helping Embodied AI Policy Learning through World Models.">3.1. How to deploy World Models to the Physical World, i.e., helping Embodied AI Policy Learning through World Models.</a></li>
+                <li>
+                    <a href="#32-how-to-make-world-models-go-towards-long-sequence-achieving-minute-level-temporal-memory--consistency" aria-label="3.2. How to make World Models go towards Long-sequence, achieving Minute-level Temporal Memory / Consistency.">3.2. How to make World Models go towards Long-sequence, achieving Minute-level Temporal Memory / Consistency.</a></li>
+                <li>
+                    <a href="#33-world-models-that-integrate-multi-modal-signals" aria-label="3.3. World models that Integrate Multi-modal Signals.">3.3. World models that Integrate Multi-modal Signals.</a></li>
+                <li>
+                    <a href="#34-making-world-models-truly-real-time" aria-label="3.4. Making World Models truly Real-Time.">3.4. Making World Models truly Real-Time.</a></li>
+                <li>
+                    <a href="#35-multi-agent-world-models" aria-label="3.5. Multi-Agent World Models.">3.5. Multi-Agent World Models.</a></li></ul>
+                </li>
+                <li>
+                    <a href="#4-what-do-world-models-mean-for-embodied-ai" aria-label="4. What Do World Models Mean for Embodied AI?">4. What Do World Models Mean for Embodied AI?</a></li>
+                <li>
+                    <a href="#5-prior-driven-vs-data-driven-what-role-does-physics-integration-play-in-world-models" aria-label="5. Prior-Driven vs Data-Driven: What Role Does Physics Integration Play in World Models?">5. Prior-Driven vs Data-Driven: What Role Does Physics Integration Play in World Models?</a></li>
+                <li>
+                    <a href="#6-how-do-i-view-jepa-style-world-models" aria-label="6. How do I View JEPA-style World Models?">6. How do I View JEPA-style World Models?</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p>Recently, world models have attracted significant interest from researchers and a broader community of technology enthusiasts, largely attributed to the viral success of Google&rsquo;s <a href="https://deepmind.google/discover/blog/genie-3-a-new-frontier-for-world-models/"><code>Genie 3</code></a>.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/3f413b6f-4da2-4194-93ab-d19f7ecf7411.jpg#center"
+         alt="Genie 3 - Google&rsquo;s viral world model"/> <figcaption>
+            <p>Genie 3 - Google&rsquo;s viral world model</p>
+        </figcaption>
+</figure>
+
+<p><strong>In fact, before this, many quite successful world models already existed</strong>, including Meta&rsquo;s <code>V-JEPA 2</code>, Nvidia&rsquo;s <code>Cosmos</code>, and others. <strong>After Genie3, many major companies have successively released their own world models</strong>, such as: <a href="%60https://hunyuan-gamecraft.github.io%60"><code>Hunyuan-Gamecraft</code></a>, <a href="%60https://matrix-game-v2.github.io%60"><code>Matrix-Game 2.0</code></a> and <a href="%60https://greatx3.github.io/Yan/%60"><code>Yan</code></a>.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/b20c2d40-1255-49dd-84af-6b2687baeafd.png#center"
+         alt="V-JEPA2: Recent World Model from Meta" width="100%"/> <figcaption>
+            <p>V-JEPA2: Recent World Model from Meta</p>
+        </figcaption>
+</figure>
+
+<p><strong>Personally, I have always been a huge believer in the necessity of world models and have done some related work in this field.</strong> It&rsquo;s undoubtedly exciting to see world models finally entering the public consciousness. However, humans always tend to &ldquo;overhype&rdquo; emerging technologies at the beginning, harboring some unrealistic expectations. <strong>Hence here, I want to share some personal thoughts on the current state and future development of world models, representing only my personal views.</strong></p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/ebade9b9-eb57-467b-b034-8da883adbe71.jpg#center"
+         alt="V-JEPA2 Real-World Deployment Demo" width="100%"/> <figcaption>
+            <p>V-JEPA2 Real-World Deployment Demo</p>
+        </figcaption>
+</figure>
+
+<h2 id="1-do-world-models-need-explicit-3d-modeling">1. Do World Models Need Explicit 3D Modeling?<a hidden class="anchor" aria-hidden="true" href="#1-do-world-models-need-explicit-3d-modeling">#</a></h2>
+<p>Current industry world models basically follow two fundamental approaches:</p>
+<ul>
+<li><strong>Pixel-space world models</strong>, i.e., action-conditioned video generation. This approach is well-studied in academia, coming from many years of research, and has achieved considerable success in industry.</li>
+<li><strong>3D Mesh-space world models</strong>, which have strong connections with 3D Vision. Notable companies include Prof. Feifei Li&rsquo;s <code>WorldLabs</code> and <a href="%60https://tesseractworld.github.io%60"><code>Tesseract</code></a>, among others.</li>
+</ul>
+<p>Although 3D Mesh has various advantages in comparison to pixel space predictions (geometry consistency, temporal consistency, etc.), I believe that in today&rsquo;s era of abundant video data, <strong>learning world models autoregressively from video data (whether action-labeled or action-free) holds more potential to scale up, compared to learning world models from the relatively scarce 3D data.</strong></p>
+<p><strong>However, world models on 3D Mesh will continue to exist in some specialized scenarios and remain the dominant approach in that domain.</strong> For example, in scenarios involving depth information and contact-rich embodied environments, 3D representations will continue to be crucial.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/cc67806b-ece3-4ecf-a52e-c26e9e4f12ba.jpg#center"
+         alt="Tesseract: An academic 3D Mesh World Model" width="100%"/> <figcaption>
+            <p>Tesseract: An academic 3D Mesh World Model</p>
+        </figcaption>
+</figure>
+
+<h2 id="2-will-world-models-be-the-next-big-thing">2. Will World Models Be the Next Big Thing?<a hidden class="anchor" aria-hidden="true" href="#2-will-world-models-be-the-next-big-thing">#</a></h2>
+<p>In the past two weeks, there have been many optimistic predictions about the future of world models. The biggest claim (besides humans living in some kind of simulation) is probably that <strong>World Models are the Next Big Thing in Generative Models after LLMs</strong>.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/bde29bbd-75d5-47d6-97a6-728714ab5436.png#center" width="80%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/26c32d74-867b-4db3-98fe-cbebac1b5e25.png#center"
+         alt="Selected Twitter Posts" width="80%"/> <figcaption>
+            <p>Selected Twitter Posts</p>
+        </figcaption>
+</figure>
+
+<p>Here I want to explain from two aspects why we shouldn&rsquo;t have excessive expectations for world models.</p>
+<p><strong>From a data perspective</strong>, video data is abundant, but data with action information annotations is scarce. It can even be said that for vision-based data collection schemes, <strong>the total video data volume is strictly greater than video data with action information annotations</strong>.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/0057fcb5-f9e9-4dd9-902a-536f6cee38ca.jpg#center"
+         alt="Data Pyramid for Robot Learning, Photo Credit: Yuke Zhu" width="100%"/> <figcaption>
+            <p>Data Pyramid for Robot Learning, Photo Credit: Yuke Zhu</p>
+        </figcaption>
+</figure>
+
+<p><strong>From a learning objective perspective</strong>, what makes world models more difficult is the <strong>Heterogeneity of Action Spaces</strong>. The previous success of generative models (especially in sequential modeling) often relied on unified data formats, such as tokens in LLMs, pixels in image/video generation models, and point clouds in 3D space. <strong>However, action spaces across different embodiments inherently lack such homogeneity</strong>. A world model without a unified action space cannot become a ready-to-use foundation model, and more research breakthroughs are needed before realizing a foundational world model across embodiments.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/ce486e40-e0fd-4ea2-bc7e-26d878359eac.png#center"
+         alt="RDT-1B is an embodied foundation model that learns an Unified Action Space." width="90%"/> <figcaption>
+            <p>RDT-1B is an embodied foundation model that learns an Unified Action Space.</p>
+        </figcaption>
+</figure>
+
+<p>Therefore, <strong>I believe that in the next era, the Next Big Thing will be multi-modal video generation models</strong>, with world models being their subsidiary products in action/language space control. The success of Genie3 has already shown us that Diffusion Forcing + action injection modules (e.g., AdaLN), given sufficient data, can achieve stunning visual effects. However, at least from my perspective, a more worthwhile research question for the next few years is <strong>how to derive world models from existing video generation models</strong>.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/29aa03d2-51e4-4a1d-be79-bc1ca3152105.png#center"
+         alt="Vid2World transforms Full-Sequence Video Diffusion Models into Interactive World Models." width="100%"/> <figcaption>
+            <p>Vid2World transforms Full-Sequence Video Diffusion Models into Interactive World Models.</p>
+        </figcaption>
+</figure>
+
+<h2 id="3-world-models-cop-or-drop">3. World Models: Cop or Drop?<a hidden class="anchor" aria-hidden="true" href="#3-world-models-cop-or-drop">#</a></h2>
+<p>Continuing from the previous topic, for a researcher, <strong>at the current time point, is diving into world model-related research an ideal choice?</strong></p>
+<p><strong>The answer to this question varies greatly from individual to individual</strong>. If you believe in the prospects of world models, then go for it! If you completely don&rsquo;t believe in world models (e.g., helping embodied AI policy learning), then of course don&rsquo;t do such research.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/bbcef274-db96-4baf-a3fe-e858f4cf0c36.jpg#center"
+         alt="Photo Credit: Nvidia" width="90%"/> <figcaption>
+            <p>Photo Credit: Nvidia</p>
+        </figcaption>
+</figure>
+
+<p>Here, I want to point out that at the current time point, <strong>the design choices for world models have largely converged. Algorithmically, Diffusion Forcing (or Self Forcing), and architecturally, video generation model architectures (e.g., UNet, DiT) + action modules (e.g., AdaLN)</strong> will be the mainstream pattern in the future. So for students pursuing really challenging topics, world models may have become a relatively mundane field. However, for students with strong engineering capabilities who really want to make things work, the current time is truly a moment when we can see world models transition from not working to working, with very cool visuals and truly scaled-up foundation models that will be achievable within the next 3 years.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/e8a03425-a7c5-4485-a77b-00ea1d93c005.jpg#center"
+         alt="Simulated Rollouts from UniSim, an academic pixel-space world model." width="90%"/> <figcaption>
+            <p>Simulated Rollouts from UniSim, an academic pixel-space world model.</p>
+        </figcaption>
+</figure>
+
+<p><strong>Personally, I believe that the following directions in world modeling will be very much worth pursuing in the next few years:</strong></p>
+<h3 id="31-how-to-deploy-world-models-to-the-physical-world-ie-helping-embodied-ai-policy-learning-through-world-models">3.1. How to deploy World Models to the Physical World, i.e., helping Embodied AI Policy Learning through World Models.<a hidden class="anchor" aria-hidden="true" href="#31-how-to-deploy-world-models-to-the-physical-world-ie-helping-embodied-ai-policy-learning-through-world-models">#</a></h3>
+<p>This will be detailed in the next section.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/02b705ac-b142-48db-b73a-fb6db31d84fe.jpg#center"
+         alt="Google DeepMind’s Gemini Robotics model can perform complex real-world tasks." width="90%"/> <figcaption>
+            <p>Google DeepMind’s Gemini Robotics model can perform complex real-world tasks.</p>
+        </figcaption>
+</figure>
+
+<h3 id="32-how-to-make-world-models-go-towards-long-sequence-achieving-minute-level-temporal-memory--consistency">3.2. How to make World Models go towards Long-sequence, achieving Minute-level Temporal Memory / Consistency.<a hidden class="anchor" aria-hidden="true" href="#32-how-to-make-world-models-go-towards-long-sequence-achieving-minute-level-temporal-memory--consistency">#</a></h3>
+<p><strong>Although Genie3&rsquo;s blog mentions that this temporal consistency is an emergent behavior, relying solely on data-driven approaches to achieve consistent memory is unrealistic</strong>. For long sequences, we might need an SSM-style hidden state, or some kind of memory retrieval, but personally I feel <strong>this won&rsquo;t be a problem that can be perfectly solved just by scaling up data volume</strong>.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/28ed16ed-c820-4d56-82c3-5df4dfbcc45f.jpg#center"
+         alt="Worldmem learns Long-term Consistent World Simulation with Memory." width="90%"/> <figcaption>
+            <p>Worldmem learns Long-term Consistent World Simulation with Memory.</p>
+        </figcaption>
+</figure>
+
+<h3 id="33-world-models-that-integrate-multi-modal-signals">3.3. World models that Integrate Multi-modal Signals.<a hidden class="anchor" aria-hidden="true" href="#33-world-models-that-integrate-multi-modal-signals">#</a></h3>
+<p>Current world models are simulation systems that rely entirely on sensorimotor information. However, Google tells us (<code>https://arxiv.org/abs/2506.01622</code>) that within powerful generalist policy models, there exist good-enough world models. <strong>Language, as the only modality that natively supports expressing abstract information, possesses the integration of high-level abstract knowledge and low-level sensory knowledge, which is an indispensable component of future world models.</strong> How to integrate LLMs/MLLMs into the world model framework and incorporate their rich world knowledge into existing systems is a very interesting direction.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/5b2b9baa-1266-4aa0-9795-8a40f520278f.png#center"
+         alt="Reasoning for Language Models is Planning for Embodied Agents, Photo Credit: Zhiting Hu." width="100%"/> <figcaption>
+            <p>Reasoning for Language Models is Planning for Embodied Agents, Photo Credit: Zhiting Hu.</p>
+        </figcaption>
+</figure>
+
+<h3 id="34-making-world-models-truly-real-time">3.4. Making World Models truly Real-Time.<a hidden class="anchor" aria-hidden="true" href="#34-making-world-models-truly-real-time">#</a></h3>
+<p>The natural problem brought by data-driven methods is the high inference latency due to model complexity. <strong>If world models want to a). become truly playable Neural Game Engines; b). help embodied AI in an online manner; accelerating world model inference is a crucial step.</strong> This is a joint effort, including hardware acceleration, algorithmic innovation, and the entire community ecosystem.
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/311821c7-3aa2-410a-8ea2-bcf6389e5507.png#center"
+         alt="Making World Models real-time is essential for human entertainment purposes, Photo Credit: Xun Huang." width="100%"/> <figcaption>
+            <p>Making World Models real-time is essential for human entertainment purposes, Photo Credit: Xun Huang.</p>
+        </figcaption>
+</figure>
+</p>
+<h3 id="35-multi-agent-world-models">3.5. Multi-Agent World Models.<a hidden class="anchor" aria-hidden="true" href="#35-multi-agent-world-models">#</a></h3>
+<p>Currently, all the world models we see are Single-Agent world models. However, if we want a Neural Game Engine that can support multiplayer games, exploring the capabilities of world models in multi-agent scenarios is an overlooked direction. <strong>Simply concatenating each individual&rsquo;s action space faces exponentially growing data requirements with the number of players</strong> (to achieve the same action space coverage). How to data-efficiently/parameter-efficiently learn a Multi-Agent, or even Variable-Agent World Model, would be a very interesting exploration.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/e2543e46-47d8-4657-800c-50cd44e0ebfa.png#center"
+         alt="Bimanual Operation is a good place to start for multi-agent." width="90%"/> <figcaption>
+            <p>Bimanual Operation is a good place to start for multi-agent.</p>
+        </figcaption>
+</figure>
+
+<h2 id="4-what-do-world-models-mean-for-embodied-ai">4. What Do World Models Mean for Embodied AI?<a hidden class="anchor" aria-hidden="true" href="#4-what-do-world-models-mean-for-embodied-ai">#</a></h2>
+<p><strong>People who pay attention to world models can be roughly divided into two types</strong>: <strong>One type is people in the Computer Vision field</strong> who want to create very cool visual effects and ultimately revolutionize industries like games/Simulation/Rendering; <strong>The other type is people in the Embodied AI field</strong>, some are those come from the model-based RL era and always believed in this view, some are <strong>those are new-comers who expect world models to be the game-changer that breaks the data bottleneck of Embodied AI</strong>.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/ce85b777-86f2-4d97-9872-ea501a2fce5d.png#center" width="90%"/> 
+</figure>
+
+<p>World models helping embodied AI is a progress that can be expected. However, if we assume that VLA (of course not the current VLA architecture) will be the form of embodied AI foundation models, in the ecosystem that emerges around VLA, what form will world models exist in?</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/8dca64fc-d8b4-41e0-b3d3-ca90db2c317c.png#center"
+         alt="State-of-the-art VLA models (like $\pi_0$) are seen as the next paradigm shift for robot learning." width="100%"/> <figcaption>
+            <p>State-of-the-art VLA models (like $\pi_0$) are seen as the next paradigm shift for robot learning.</p>
+        </figcaption>
+</figure>
+
+<p><strong>My view is that world models will exist in embodied AI as foundation models, but they won&rsquo;t be powerful enough to replace real-world imitation learning, and will only replace the role of simulators in some scenarios.</strong></p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/81aa2a29-7ff1-4ce0-9ee5-d330459460c5.png#center"
+         alt="Simulators and World Models are two ways of modeling the physical world." width="90%"/> <figcaption>
+            <p>Simulators and World Models are two ways of modeling the physical world.</p>
+        </figcaption>
+</figure>
+
+<p><strong>First, why do foundation embodied world models exist?</strong> Because a.) it&rsquo;s technically feasible; b.) not making foundation world models has no value. <strong>World models are trained on data, and training a world model from scratch that can help policy learning requires more data than training an imitation learning policy</strong>. Therefore, for tasks that don&rsquo;t require generalization, we don&rsquo;t need world models. The real promise that world models offer is in scenarios requiring generalization, where we can zero-shot/few-shot obtain a world model adapted to the scenario from a pre-existing world model, which can truly fulfill the promise of &ldquo;breaking the data bottleneck of embodied AI&rdquo;.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/e9c91355-e831-4ff8-99dc-93bcca674e1d.png#center"
+         alt="VLA Models show promise of generalizing out-of-distribution." width="90%"/> <figcaption>
+            <p>VLA Models show promise of generalizing out-of-distribution.</p>
+        </figcaption>
+</figure>
+
+<p><strong>Furthermore, we need to clearly recognize the limitations of world models</strong>. This is actually very similar to the limitations of simulation data. <strong>In scenarios where dynamics don&rsquo;t have strong human priors (such as some natural science areas / under-studied real-world dynamical systems), data-driven methods (world models) may perform better than prior-driven hardcoded methods.</strong> However, in the vast majority of specific embodied AI tasks, the performance of world models can actually be upper-bounded by simulators specifically designed for that scenario. The extent to which simulated data can help policy learning is highly scenario-dependent, and <strong>in contact-rich, dexterous scenarios requiring tactile sensing, world models may prove themselves hardly useful, if not totally useless</strong>.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/5dd63913-06e2-4168-9d35-d66cc398268d.png#center"
+         alt="Where Dexterous Control succeeds, World Models shall fail." width="90%"/> <figcaption>
+            <p>Where Dexterous Control succeeds, World Models shall fail.</p>
+        </figcaption>
+</figure>
+
+<p><strong>Personally, I believe thee next era of embodied AI should revolve around a Generalist Policy Model</strong>. World models may combine with general policy models in various ways (embedded within or attached to), but the next Embodied AI era is unlikely to revolve around world models.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="https://techcrunch.com/wp-content/uploads/2025/02/VLA_Full_Quality_MASTER_21925A.2025-02-20-11_33_54.gif?w=800#center"
+         alt="Helix is a VLA model for humanoid full-upper-body control." width="90%"/> <figcaption>
+            <p>Helix is a VLA model for humanoid full-upper-body control.</p>
+        </figcaption>
+</figure>
+
+<h2 id="5-prior-driven-vs-data-driven-what-role-does-physics-integration-play-in-world-models">5. Prior-Driven vs Data-Driven: What Role Does Physics Integration Play in World Models?<a hidden class="anchor" aria-hidden="true" href="#5-prior-driven-vs-data-driven-what-role-does-physics-integration-play-in-world-models">#</a></h2>
+<p>Human priors and data-driven approaches are two technical approaches that have always existed, dating from the Computer Vision era. In the context of Dynamics Modeling, prior-driven means simulators, whereas data-driven means world models. I think researchers who are still uncertain about this topic should repeatedly read Rich Sutton&rsquo;s The Bitter Lesson. <strong>Given sufficient data volume, data-driven methods will definitely win. But in specific task scenarios, squeezing model performance by introducing priors will be effective in the long term.</strong> At it&rsquo;s core, this represents a fundamental tradeoff between generalization and performance, which the basic principles of statistical learning have told us we cannot get both.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/81936dfc-7e1e-4c0b-915b-686e4c5a9f0a.jpg#center"
+         alt="Physics-Based vs Data-Driven is a fundamental tradeoff." width="90%"/> <figcaption>
+            <p>Physics-Based vs Data-Driven is a fundamental tradeoff.</p>
+        </figcaption>
+</figure>
+
+<p>Therefore, my personal view is that learning general models through physics-informed methods is a completely wrong technical route. <strong>For general models, physical accuracy/consistency is an emergent ability brought about by increased data volume.</strong></p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/f2ac15f1-11ab-4f80-9a48-3b44686dcb1c.jpg#center"
+         alt="Snapshot of The Bitter Lesson, written by Rich Sutton." width="90%"/> <figcaption>
+            <p>Snapshot of The Bitter Lesson, written by Rich Sutton.</p>
+        </figcaption>
+</figure>
+
+<h2 id="6-how-do-i-view-jepa-style-world-models">6. How do I View JEPA-style World Models?<a hidden class="anchor" aria-hidden="true" href="#6-how-do-i-view-jepa-style-world-models">#</a></h2>
+<p><strong>When it comes to world models, an unavoidable topic is Yann LeCun and the JEPA architecture he advocates.</strong> Although Yann LeCun&rsquo;s statements in many scenarios are mostly unreliable (this is actually normal, Hinton thought spike neural networks would be popular, but they weren&rsquo;t), some of the ideas reflected behind JEPA are still quite reasonable and very profound. <strong>Our final world model form may not be a JEPA-style architecture, but the ideas of JEPA (e.g. learning in latent space) is definately something that will be a source of continuous inspiration.</strong></p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/97116c4f-f713-4737-95ef-78b5db8701ff.png#center"
+         alt="JEPA, proposed by Yann Lecun, is an well-known paradigm for representation learning." width="90%"/> <figcaption>
+            <p>JEPA, proposed by Yann Lecun, is an well-known paradigm for representation learning.</p>
+        </figcaption>
+</figure>
+
+<p><strong>As a matter of fact, current video generation/world models are already mostly architectures that operate in latent space</strong>. The current mainstream paradigm is to use near-lossless compression methods (e.g., Stable-Diffusion&rsquo;s VAE) as Encoder and Decoder, then learn a Predictor in this latent space. Lossless compression Encoders bring us lower computational costs, <strong>but whether such an Encoder-Predictor combination is optimal is actually not the case</strong>. If we replace this Encoder with Dino-v2, which can extract stronger semantic information, we can get world models that are more valuable for planning.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/ec601d0b-293f-4709-8baf-9fb2fda712ce.png#center"
+         alt="DINO-WM is a World Model that predicts in Latent Space." width="100%"/> <figcaption>
+            <p>DINO-WM is a World Model that predicts in Latent Space.</p>
+        </figcaption>
+</figure>
+
+<p>In fact, what we need is a pair of Encoder and Predictor adapted to the task itself, so training the Encoder and Predictor together makes a lot of intuitive sense. JEPA&rsquo;s approach of placing the loss in feature space can be understood as constructing a &ldquo;game&rdquo; that is highly symmetric with reinforcement learning&rsquo;s actor-critic, which could potentially learn richer latents. However, the uncertainty here is quite large, after all, GANs are not the most effective method in current generative models, <strong>theory/intuition can only take us this far, and more experimental experience is needed to verify</strong>.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/6522f2fe-e7c0-4718-897e-d5e4f60711d9.jpg#center"
+         alt="Screenshot from movie Oppenheimer, directed by Christopher Nolan." width="100%"/> <figcaption>
+            <p>Screenshot from movie <em>Oppenheimer</em>, directed by Christopher Nolan.</p>
+        </figcaption>
+</figure>
+
+<p>Finally, I&rsquo;ll share my slides about JEPA and world models, using the introduction of <code>Back to the Features: DINO as a Foundation for Video World Models (https://arxiv.org/abs/2507.19468)</code> as a starting point to review the basic ideas of JEPA and several important papers.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/76e53aec-c770-4ebb-89eb-6dfecc471da7.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/2dfa98a0-4f9d-45e7-99d6-0035edaa2418.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/0c05eea7-7433-412f-a63e-fc8a117b149c.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/3f268ceb-d0e7-4113-9043-7a5c16940cb7.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/0b1b55a3-9495-4fb0-8e36-370d79331201.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/a528bbd6-8431-498d-bf3a-ee48e8c8e730.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/b3f224e9-bc23-47f3-ad06-eaa37b532ce3.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/e330fb8d-3dd7-4b40-a393-b4f164149f3b.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/1f03b45d-f382-4639-ab17-89394799bf46.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/432eed8d-5eff-42c8-a96f-bb3e1bf26b9b.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/e7b4fa39-e7fc-4c93-8c79-14a43402c0b6.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/db73c800-bd7b-4c3b-bc6d-26a17b9b571a.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/76bd20e3-95c3-43c3-861d-d79fe5bb15cf.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/d85b06ad-df9b-41e8-9ccb-1770ef4cd9c5.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/e3a03446-3a98-480b-9a73-0b370ea888c1.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/b249705a-fca5-4987-835a-5abd776d57fe.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/2919f2bf-dc44-4847-afae-b7d6b83be1a0.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/45d95476-fbb9-4970-846d-353346bbe696.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/1c3b86be-d963-4955-b5e4-3fb0f1057880.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/75bf2685-c4cc-402b-b402-ee2d4df79ed7.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/8410b79a-43d4-4437-a6cf-9efb74db3512.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/f9ef3513-0946-4efe-8134-706a31a0f9aa.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/3179beba-5a0e-4fd2-9cda-96b3f6556cd5.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/bb51e31d-cbf1-4a63-b07a-0d29f5d66c8a.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/8ed9a8ba-c31e-4bec-a7e0-bef9f7f9064e.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/909bf590-f026-40af-bce1-38c40f1bc33c.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/06bb44fa-7848-414c-9b29-ce362d5cdf3a.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/ce053f29-7bad-4b97-b440-bb103629d4e1.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/e9443e12-a501-4cac-a1b3-3062b0d4cff2.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/23a9ca7f-1c55-4a8e-ab49-aa069d018f1f.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/969926c0-c1c5-43b1-ae66-5dd72fcc619b.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/417c6191-baa5-42a6-808d-e1edc73f98c0.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/d62ec639-b86a-4664-8161-0771a85719b7.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/6b0acf05-d490-4b17-9728-5628efb48dcf.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/31b268f9-fff7-428c-9497-83a07bfafdb2.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/fad002f2-b078-483f-b8e8-9ccfbbc2f223.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/7b356769-7cb3-40e3-8bf9-a5333817bef0.png#center" width="100%"/> 
+</figure>
+
+<figure class="align-center ">
+    <img loading="lazy" src="../img/wm_2025/5fde6e21-f3b0-4b69-9422-39516f01f538.png#center" width="100%"/> 
+</figure>
+
+<p>The original blog post was written in Chinese in Aug. 2025 (see original post <a href="https://mp.weixin.qq.com/s/iYrUB2pYS6gqryhfr2LCKg">here</a>), and turns out, the JEPA language model is already <a href="https://arxiv.org/abs/2509.14252">here</a> in Oct. 2025.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/blog/tags/machine-learning/">Machine-Learning</a></li>
+      <li><a href="http://localhost:1313/blog/tags/computer-science/">Computer-Science</a></li>
+      <li><a href="http://localhost:1313/blog/tags/deep-learning/">Deep-Learning</a></li>
+      <li><a href="http://localhost:1313/blog/tags/world-model/">World-Model</a></li>
+      <li><a href="http://localhost:1313/blog/tags/jepa/">Jepa</a></li>
+      <li><a href="http://localhost:1313/blog/tags/artificial-intelligence/">Artificial-Intelligence</a></li>
+      <li><a href="http://localhost:1313/blog/tags/embodied-ai/">Embodied-Ai</a></li>
+      <li><a href="http://localhost:1313/blog/tags/video-generation/">Video-Generation</a></li>
+      <li><a href="http://localhost:1313/blog/tags/foundation-models/">Foundation-Models</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="http://localhost:1313/blog/posts/ac/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Algebra and Computation</span>
+  </a>
+</nav>
+
+
+<ul class="share-buttons">
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Beyond the Hype: How I See World Models Evolving in 2025 on x"
+            href="https://x.com/intent/tweet/?text=Beyond%20the%20Hype%3a%20How%20I%20See%20World%20Models%20Evolving%20in%202025&amp;url=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fwm_2025%2f&amp;hashtags=machine-learning%2ccomputer-science%2cdeep-learning%2cworld-model%2cjepa%2cartificial-intelligence%2cembodied-ai%2cvideo-generation%2cfoundation-models">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Beyond the Hype: How I See World Models Evolving in 2025 on linkedin"
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fwm_2025%2f&amp;title=Beyond%20the%20Hype%3a%20How%20I%20See%20World%20Models%20Evolving%20in%202025&amp;summary=Beyond%20the%20Hype%3a%20How%20I%20See%20World%20Models%20Evolving%20in%202025&amp;source=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fwm_2025%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Beyond the Hype: How I See World Models Evolving in 2025 on reddit"
+            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fwm_2025%2f&title=Beyond%20the%20Hype%3a%20How%20I%20See%20World%20Models%20Evolving%20in%202025">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Beyond the Hype: How I See World Models Evolving in 2025 on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fwm_2025%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Beyond the Hype: How I See World Models Evolving in 2025 on whatsapp"
+            href="https://api.whatsapp.com/send?text=Beyond%20the%20Hype%3a%20How%20I%20See%20World%20Models%20Evolving%20in%202025%20-%20http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fwm_2025%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Beyond the Hype: How I See World Models Evolving in 2025 on telegram"
+            href="https://telegram.me/share/url?text=Beyond%20the%20Hype%3a%20How%20I%20See%20World%20Models%20Evolving%20in%202025&amp;url=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fwm_2025%2f">
+            <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Beyond the Hype: How I See World Models Evolving in 2025 on ycombinator"
+            href="https://news.ycombinator.com/submitlink?t=Beyond%20the%20Hype%3a%20How%20I%20See%20World%20Models%20Evolving%20in%202025&u=http%3a%2f%2flocalhost%3a1313%2fblog%2fposts%2fwm_2025%2f">
+            <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
+                xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                <path
+                    d="M449.446 0C483.971 0 512 28.03 512 62.554L512 449.446C512 483.97 483.97 512 449.446 512L62.554 512C28.03 512 0 483.97 0 449.446L0 62.554C0 28.03 28.029 0 62.554 0L449.446 0ZM183.8767 87.9921H121.8427L230.6673 292.4508V424.0079H281.3328V292.4508L390.1575 87.9921H328.1233L256 238.2489z" />
+            </svg>
+        </a>
+    </li>
+</ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/blog/">Nemo&#39;s Blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+            Total site visits: <span id="busuanzi_value_site_pv"></span> times
+        </span>
+        
+    </div></footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

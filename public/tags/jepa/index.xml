@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Jepa on Nemo&#39;s Blog</title>
+    <link>http://localhost:1313/blog/tags/jepa/</link>
+    <description>Recent content in Jepa on Nemo&#39;s Blog</description>
+    <generator>Hugo -- 0.140.2</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 06 Oct 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/blog/tags/jepa/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Beyond the Hype: How I See World Models Evolving in 2025</title>
+      <link>http://localhost:1313/blog/posts/wm_2025/</link>
+      <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/posts/wm_2025/</guid>
+      <description>A summary of my personal opinions on world models in 2025, covering their current state, future prospects, and implications for embodied AI. Discusses 3D modeling approaches, data challenges, research directions, and the role of JEPA-style architectures in the evolution of world models.</description>
+    </item>
+  </channel>
+</rss>

@@ -6,8 +6,71 @@
     <description>Recent content in Tags on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 15 Feb 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 06 Oct 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Artificial-Intelligence</title>
+      <link>http://localhost:1313/blog/tags/artificial-intelligence/</link>
+      <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/artificial-intelligence/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Computer-Science</title>
+      <link>http://localhost:1313/blog/tags/computer-science/</link>
+      <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/computer-science/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Deep-Learning</title>
+      <link>http://localhost:1313/blog/tags/deep-learning/</link>
+      <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/deep-learning/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Embodied-Ai</title>
+      <link>http://localhost:1313/blog/tags/embodied-ai/</link>
+      <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/embodied-ai/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Foundation-Models</title>
+      <link>http://localhost:1313/blog/tags/foundation-models/</link>
+      <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/foundation-models/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Jepa</title>
+      <link>http://localhost:1313/blog/tags/jepa/</link>
+      <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/jepa/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Machine-Learning</title>
+      <link>http://localhost:1313/blog/tags/machine-learning/</link>
+      <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/machine-learning/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Video-Generation</title>
+      <link>http://localhost:1313/blog/tags/video-generation/</link>
+      <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/video-generation/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>World-Model</title>
+      <link>http://localhost:1313/blog/tags/world-model/</link>
+      <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/world-model/</guid>
+      <description></description>
+    </item>
     <item>
       <title>Abstract-Algebra</title>
       <link>http://localhost:1313/blog/tags/abstract-algebra/</link>
@@ -44,13 +107,6 @@
       <description></description>
     </item>
     <item>
-      <title>Computer-Science</title>
-      <link>http://localhost:1313/blog/tags/computer-science/</link>
-      <pubDate>Sat, 15 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/computer-science/</guid>
-      <description></description>
-    </item>
-    <item>
       <title>Group-Theory</title>
       <link>http://localhost:1313/blog/tags/group-theory/</link>
       <pubDate>Sat, 15 Feb 2025 00:00:00 +0000</pubDate>
@@ -69,20 +125,6 @@
       <link>http://localhost:1313/blog/tags/aritificial-intelligence/</link>
       <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/aritificial-intelligence/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Deep-Learning</title>
-      <link>http://localhost:1313/blog/tags/deep-learning/</link>
-      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/deep-learning/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Machine-Learning</title>
-      <link>http://localhost:1313/blog/tags/machine-learning/</link>
-      <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/machine-learning/</guid>
       <description></description>
     </item>
     <item>
@@ -125,13 +167,6 @@
       <link>http://localhost:1313/blog/tags/transformer/</link>
       <pubDate>Mon, 03 Feb 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/transformer/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Artificial-Intelligence</title>
-      <link>http://localhost:1313/blog/tags/artificial-intelligence/</link>
-      <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/artificial-intelligence/</guid>
       <description></description>
     </item>
     <item>
@@ -209,13 +244,6 @@
       <link>http://localhost:1313/blog/tags/random-process/</link>
       <pubDate>Wed, 01 Jan 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/random-process/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Foundation-Models</title>
-      <link>http://localhost:1313/blog/tags/foundation-models/</link>
-      <pubDate>Wed, 13 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/foundation-models/</guid>
       <description></description>
     </item>
     <item>

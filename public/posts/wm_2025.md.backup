@@ -1,0 +1,242 @@
+---
+title: "How I view World Models in 2025"
+date: 2025-10-06
+draft: false
+ShowToc: true
+tags: ["machine-learning", "computer-science", "deep-learning", "world-model", "jepa", "artificial-intelligence", "embodied-ai", "video-generation", "foundation-models"]
+summary: "A summary of my personal opinions on world models in 2025, covering their current state, future prospects, and implications for embodied AI. Discusses 3D modeling approaches, data challenges, research directions, and the role of JEPA-style architectures in the evolution of world models."
+---
+
+Recently, world models have attracted significant interest from researchers and a broader community of technology enthusiasts, largely attributed to the viral success of Google's [`Genie 3`](https://deepmind.google/discover/blog/genie-3-a-new-frontier-for-world-models/).
+
+![](https://files.mdnice.com/user/76269/3f413b6f-4da2-4194-93ab-d19f7ecf7411.jpg)
+
+**In fact, before this, many quite successful world models already existed**, including Meta's `V-JEPA 2`, Nvidia's `Cosmos`, and others. **After Genie3, many major companies have successively released their own world models**, such as: [`Hunyuan-Gamecraft`](`https://hunyuan-gamecraft.github.io`), [`Matrix-Game 2.0`](`https://matrix-game-v2.github.io`) and [`Yan`](`https://greatx3.github.io/Yan/`).
+
+![](https://files.mdnice.com/user/76269/b20c2d40-1255-49dd-84af-6b2687baeafd.png)
+
+**Personally, I have always believed in the necessity of world models and have done some related work in this field.** It's undoubtedly exciting to see world models finally entering the public consciousness. However, humans always tend to "overhype" emerging technologies at the beginning, harboring some unrealistic expectations. **Here, I want to share some personal thoughts on the current state and future development of world models, representing only my personal views.**
+
+![](https://files.mdnice.com/user/76269/ebade9b9-eb57-467b-b034-8da883adbe71.jpg)
+
+## 1. Do World Models Need Explicit 3D Modeling?
+
+Current industry world models basically follow two fundamental approaches:
+- **Pixel-space world models**, i.e., action-conditioned video generation. This approach is well-studied in academia, coming from many years of research, and has achieved considerable success in industry.
+- **3D Mesh-space world models**, which have strong connections with 3D Vision. Notable companies include Prof. Feifei Li's `WorldLabs` and [`Tesseract`](`https://tesseractworld.github.io`), among others.
+
+Although 3D Mesh has various advantages in comparison to pixel space predictions (geometry consistency, temporal consistency, etc.), I believe that in today's era of abundant video data, **learning world models autoregressively from video data (whether action-labeled or action-free) holds more potential to scale up, compared to learning world models from the relatively scarce 3D data.**
+
+**However, world models on 3D Mesh will continue to exist in some specialized scenarios and remain the dominant approach in that domain.** For example, in scenarios involving depth information and contact-rich embodied environments, 3D representations will continue to be crucial.
+
+![](https://files.mdnice.com/user/76269/cc67806b-ece3-4ecf-a52e-c26e9e4f12ba.jpg)
+
+## 2. Will World Models Be the Next Big Thing?
+
+In the past two weeks, there have been many optimistic predictions about the future of world models. The biggest claim (besides humans living in some kind of simulation) is probably that **World Models are the Next Big Thing in Generative Models after LLMs**.
+
+
+![](https://files.mdnice.com/user/76269/bde29bbd-75d5-47d6-97a6-728714ab5436.png)
+
+
+![](https://files.mdnice.com/user/76269/26c32d74-867b-4db3-98fe-cbebac1b5e25.png)
+
+Here I want to explain from two aspects why we shouldn't have excessive expectations for world models.
+
+**From a data perspective**, video data is abundant, but data with action information annotations is scarce. It can even be said that for vision-based data collection schemes, **the total video data volume is strictly greater than video data with action information annotations**.
+
+![](https://files.mdnice.com/user/76269/0057fcb5-f9e9-4dd9-902a-536f6cee38ca.jpg)
+
+
+**From a problem modeling perspective**, what makes world models more difficult is the **Heterogeneity of Action Spaces**. The previous success of generative models (especially in sequential modeling) often relied on unified data formats, such as tokens in LLMs, pixels in image/video generation models, and point clouds in 3D space. **However, action spaces across different embodiments inherently lack such homogeneity**. A world model without a unified action space cannot become a ready-to-use foundation model, and more research breakthroughs are needed before realizing a foundational world model across embodiments.
+
+![](https://files.mdnice.com/user/76269/ce486e40-e0fd-4ea2-bc7e-26d878359eac.png)
+
+Therefore, **I believe that in the next era, the Next Big Thing will be multi-modal video generation models**, with world models being their subsidiary products in action/language space control. The success of Genie3 has already shown us that Diffusion Forcing + action injection modules (e.g., AdaLN), given sufficient data, can achieve stunning visual effects. However, at least from my perspective, a more worthwhile research question for the next few years is **how to derive world models from existing video generation models**.
+
+![](https://files.mdnice.com/user/76269/29aa03d2-51e4-4a1d-be79-bc1ca3152105.png)
+
+
+## 3. World Models: Cop or Drop?
+
+Continuing from the previous topic, for a researcher, **at the current time point, is diving into world model-related research an ideal choice?**
+
+**The answer to this question varies greatly from individual to individual**. If you believe in the prospects of world models, then go for it! If you completely don't believe in world models (e.g., helping embodied AI policy learning), then of course don't do such research.
+
+![](https://files.mdnice.com/user/76269/bbcef274-db96-4baf-a3fe-e858f4cf0c36.jpg)
+
+
+Here, I want to point out that at the current time point, **the design choices for world models have largely converged. Algorithmically, Diffusion Forcing (or Self Forcing), and architecturally, video generation model architectures (e.g., UNet, DiT) + action modules (e.g., AdaLN)** will be the mainstream pattern in the future. So for students pursuing really challenging topics, world models may have become a relatively mundane field. However, for students with strong engineering capabilities who really want to make things work, the current time is truly a moment when we can see world models transition from not working to working, with very cool visuals and truly scaled-up foundation models that will be achievable within the next 3 years.
+
+![](https://files.mdnice.com/user/76269/e8a03425-a7c5-4485-a77b-00ea1d93c005.jpg)
+
+
+**Personally, I believe that the following directions in world modeling will be very much worth pursuing in the next few years:**
+
+### 1. How to deploy world models to the physical world, i.e., helping embodied AI policy learning through world models.
+
+This will be detailed in the next section.
+
+![](https://files.mdnice.com/user/76269/02b705ac-b142-48db-b73a-fb6db31d84fe.jpg)
+
+
+### 2. How to make world models go towards long-sequence, achieving minute-level temporal memory/consistency.
+
+**Although Genie3's blog mentions that this temporal consistency is an emergent behavior, relying solely on data-driven approaches to achieve consistent memory is unrealistic**. For long sequences, we might need an SSM-style hidden state, or some kind of memory retrieval, but personally I feel **this won't be a problem that can be perfectly solved just by scaling up data volume**.
+
+![](https://files.mdnice.com/user/76269/28ed16ed-c820-4d56-82c3-5df4dfbcc45f.jpg)
+
+
+### 3. World models that integrate multi-modal signals.
+
+Current world models are simulation systems that rely entirely on sensorimotor information. However, Google tells us (`https://arxiv.org/abs/2506.01622`) that within powerful generalist policy models, there exist good-enough world models. **Language, as the only modality that natively supports expressing abstract information, possesses the integration of high-level abstract knowledge and low-level sensory knowledge, which is an indispensable component of future world models.** How to integrate LLMs/MLLMs into the world model framework and incorporate their rich world knowledge into existing systems is a very interesting direction.
+
+![](https://files.mdnice.com/user/76269/5b2b9baa-1266-4aa0-9795-8a40f520278f.png)
+
+### 4. Making world models truly real-time.
+
+The natural problem brought by data-driven methods is the high inference latency due to model complexity. **If world models want to a). become truly playable Neural Game Engines; b). help embodied AI in an online manner; accelerating world model inference is a crucial step.** This is a joint effort, including hardware acceleration, algorithmic innovation, and the entire community ecosystem.
+![](https://www.xunhuang.me/imgs/blog/pyramid.jpg)
+![](https://files.mdnice.com/user/76269/311821c7-3aa2-410a-8ea2-bcf6389e5507.png)
+
+### 5. Multi-Agent World Model.
+
+Currently, all the world models we see are Single-Agent world models. However, if we want a Neural Game Engine that can support multiplayer games, exploring the capabilities of world models in multi-agent scenarios is an overlooked direction. **Simply concatenating each individual's action space faces exponentially growing data requirements with the number of players** (to achieve the same action space coverage). How to data-efficiently/parameter-efficiently learn a Multi-Agent, or even Variable-Agent World Model, would be a very interesting exploration.
+
+![](https://files.mdnice.com/user/76269/e2543e46-47d8-4657-800c-50cd44e0ebfa.png)
+
+## 4. What Do World Models Mean for Embodied AI?
+
+**People who pay attention to world models can be roughly divided into two types**: **One type is people in the Computer Vision field** who want to create very cool visual effects and ultimately revolutionize industries like games/Simulation/Rendering; **The other type is people in the Embodied AI field**, some are those come from the model-based RL era and always believed in this view, some are **those are new-comers who expect world models to be the game-changer that breaks the data bottleneck of Embodied AI**.
+
+![](https://files.mdnice.com/user/76269/ce85b777-86f2-4d97-9872-ea501a2fce5d.png)
+
+
+World models helping embodied AI is a progress that can be expected. However, if we assume that VLA (of course not the current VLA architecture) will be the form of embodied AI foundation models, in the ecosystem that emerges around VLA, what form will world models exist in?
+
+![](https://files.mdnice.com/user/76269/8dca64fc-d8b4-41e0-b3d3-ca90db2c317c.png)
+
+
+**My view is that world models will exist in embodied AI as foundation models, but they won't be powerful enough to replace real-world imitation learning, and will only replace the role of simulators in some scenarios.**
+
+![](https://files.mdnice.com/user/76269/81aa2a29-7ff1-4ce0-9ee5-d330459460c5.png)
+
+
+**First, why do foundation embodied world models exist?** Because a.) it's technically feasible; b.) not making foundation world models has no value. **World models are trained on data, and training a world model from scratch that can help policy learning requires more data than training an imitation learning policy**. Therefore, for tasks that don't require generalization, we don't need world models. The real promise that world models offer is in scenarios requiring generalization, where we can zero-shot/few-shot obtain a world model adapted to the scenario from a pre-existing world model, which can truly fulfill the promise of "breaking the data bottleneck of embodied AI".
+
+![](https://files.mdnice.com/user/76269/e9c91355-e831-4ff8-99dc-93bcca674e1d.png)
+
+**Furthermore, we need to clearly recognize the limitations of world models**. This is actually very similar to the limitations of simulation data. **In scenarios where dynamics don't have strong human priors (such as some natural science areas / under-studied real-world dynamical systems), data-driven methods (world models) may perform better than prior-driven hardcoded methods.** However, in the vast majority of specific embodied AI tasks, the performance of world models can actually be upper-bounded by simulators specifically designed for that scenario. The extent to which simulated data can help policy learning is highly scenario-dependent, and **in contact-rich, dexterous scenarios requiring tactile sensing, world models may prove themselves hardly useful, if not totally useless**.
+
+![](https://files.mdnice.com/user/76269/5dd63913-06e2-4168-9d35-d66cc398268d.png)
+
+
+**Personally, I believe thee next era of embodied AI should revolve around a Generalist Policy Model**. World models may combine with general policy models in various ways (embedded within or attached to), but the next Embodied AI era is unlikely to revolve around world models.
+
+
+![](https://files.mdnice.com/user/76269/36a95839-bf5d-42d8-9303-377ef058f844.png)
+
+## 5. Prior-Driven vs Data-Driven: What Role Does Physics Integration Play in World Models?
+
+Human priors and data-driven approaches are two technical approaches that have always existed, dating from the Computer Vision era. In the context of Dynamics Modeling, prior-driven means simulators, whereas data-driven means world models. I think researchers who are still uncertain about this topic should repeatedly read Rich Sutton's The Bitter Lesson. **Given sufficient data volume, data-driven methods will definitely win. But in specific task scenarios, squeezing model performance by introducing priors will be effective in the long term.** At it's core, this represents a fundamental tradeoff between generalization and performance, which the basic principles of statistical learning have told us we cannot get both.
+
+![](https://files.mdnice.com/user/76269/81936dfc-7e1e-4c0b-915b-686e4c5a9f0a.jpg)
+
+Therefore, my personal view is that learning general models through physics-informed methods is a completely wrong technical route. **For general models, physical accuracy/consistency is an emergent ability brought about by increased data volume.**
+
+![](https://files.mdnice.com/user/76269/f2ac15f1-11ab-4f80-9a48-3b44686dcb1c.jpg)
+
+## 6. How do I View JEPA-style World Models?
+
+**When it comes to world models, an unavoidable topic is Yann LeCun and the JEPA architecture he advocates.** Although Yann LeCun's statements in many scenarios are mostly unreliable (this is actually normal, Hinton thought spike neural networks would be popular, but they weren't), some of the ideas reflected behind JEPA are still quite reasonable and very profound. **Our final world model form may not be a JEPA-style architecture, but the ideas of JEPA (e.g. learning in latent space) is definately something that will be a source of continuous inspiration.**
+
+![](https://files.mdnice.com/user/76269/97116c4f-f713-4737-95ef-78b5db8701ff.png)
+
+
+**As a matter of fact, current video generation/world models are already mostly architectures that operate in latent space**. The current mainstream paradigm is to use near-lossless compression methods (e.g., Stable-Diffusion's VAE) as Encoder and Decoder, then learn a Predictor in this latent space. Lossless compression Encoders bring us lower computational costs, **but whether such an Encoder-Predictor combination is optimal is actually not the case**. If we replace this Encoder with Dino-v2, which can extract stronger semantic information, we can get world models that are more valuable for planning.
+
+![](https://files.mdnice.com/user/76269/ec601d0b-293f-4709-8baf-9fb2fda712ce.png)
+
+In fact, what we need is a pair of Encoder and Predictor adapted to the task itself, so training the Encoder and Predictor together makes a lot of intuitive sense. JEPA's approach of placing the loss in feature space can be understood as constructing a "game" that is highly symmetric with reinforcement learning's actor-critic, which could potentially learn richer latents. However, the uncertainty here is quite large, after all, GANs are not the most effective method in current generative models, **theory/intuition can only take us this far, and more experimental experience is needed to verify**.
+
+![](https://files.mdnice.com/user/76269/6522f2fe-e7c0-4718-897e-d5e4f60711d9.jpg)
+
+Finally, I'll share my slides about JEPA and world models, using the introduction of `Back to the Features: DINO as a Foundation for Video World Models (https://arxiv.org/abs/2507.19468)` as a starting point to review the basic ideas of JEPA and several important papers.
+
+
+![](https://files.mdnice.com/user/76269/76e53aec-c770-4ebb-89eb-6dfecc471da7.png)
+
+![](https://files.mdnice.com/user/76269/2dfa98a0-4f9d-45e7-99d6-0035edaa2418.png)
+
+![](https://files.mdnice.com/user/76269/0c05eea7-7433-412f-a63e-fc8a117b149c.png)
+
+![](https://files.mdnice.com/user/76269/3f268ceb-d0e7-4113-9043-7a5c16940cb7.png)
+
+![](https://files.mdnice.com/user/76269/0b1b55a3-9495-4fb0-8e36-370d79331201.png)
+
+![](https://files.mdnice.com/user/76269/a528bbd6-8431-498d-bf3a-ee48e8c8e730.png)
+
+
+![](https://files.mdnice.com/user/76269/b3f224e9-bc23-47f3-ad06-eaa37b532ce3.png)
+
+![](https://files.mdnice.com/user/76269/e330fb8d-3dd7-4b40-a393-b4f164149f3b.png)
+
+![](https://files.mdnice.com/user/76269/1f03b45d-f382-4639-ab17-89394799bf46.png)
+
+![](https://files.mdnice.com/user/76269/432eed8d-5eff-42c8-a96f-bb3e1bf26b9b.png)
+
+![](https://files.mdnice.com/user/76269/e7b4fa39-e7fc-4c93-8c79-14a43402c0b6.png)
+
+![](https://files.mdnice.com/user/76269/db73c800-bd7b-4c3b-bc6d-26a17b9b571a.png)
+
+![](https://files.mdnice.com/user/76269/76bd20e3-95c3-43c3-861d-d79fe5bb15cf.png)
+
+![](https://files.mdnice.com/user/76269/d85b06ad-df9b-41e8-9ccb-1770ef4cd9c5.png)
+
+![](https://files.mdnice.com/user/76269/e3a03446-3a98-480b-9a73-0b370ea888c1.png)
+
+![](https://files.mdnice.com/user/76269/b249705a-fca5-4987-835a-5abd776d57fe.png)
+
+![](https://files.mdnice.com/user/76269/2919f2bf-dc44-4847-afae-b7d6b83be1a0.png)
+
+![](https://files.mdnice.com/user/76269/45d95476-fbb9-4970-846d-353346bbe696.png)
+
+![](https://files.mdnice.com/user/76269/1c3b86be-d963-4955-b5e4-3fb0f1057880.png)
+
+![](https://files.mdnice.com/user/76269/75bf2685-c4cc-402b-b402-ee2d4df79ed7.png)
+
+![](https://files.mdnice.com/user/76269/8410b79a-43d4-4437-a6cf-9efb74db3512.png)
+
+![](https://files.mdnice.com/user/76269/f9ef3513-0946-4efe-8134-706a31a0f9aa.png)
+
+![](https://files.mdnice.com/user/76269/3179beba-5a0e-4fd2-9cda-96b3f6556cd5.png)
+
+![](https://files.mdnice.com/user/76269/bb51e31d-cbf1-4a63-b07a-0d29f5d66c8a.png)
+
+![](https://files.mdnice.com/user/76269/8ed9a8ba-c31e-4bec-a7e0-bef9f7f9064e.png)
+
+![](https://files.mdnice.com/user/76269/909bf590-f026-40af-bce1-38c40f1bc33c.png)
+
+![](https://files.mdnice.com/user/76269/06bb44fa-7848-414c-9b29-ce362d5cdf3a.png)
+
+![](https://files.mdnice.com/user/76269/ce053f29-7bad-4b97-b440-bb103629d4e1.png)
+
+![](https://files.mdnice.com/user/76269/e9443e12-a501-4cac-a1b3-3062b0d4cff2.png)
+
+![](https://files.mdnice.com/user/76269/23a9ca7f-1c55-4a8e-ab49-aa069d018f1f.png)
+
+![](https://files.mdnice.com/user/76269/969926c0-c1c5-43b1-ae66-5dd72fcc619b.png)
+
+![](https://files.mdnice.com/user/76269/417c6191-baa5-42a6-808d-e1edc73f98c0.png)
+
+![](https://files.mdnice.com/user/76269/d62ec639-b86a-4664-8161-0771a85719b7.png)
+
+![](https://files.mdnice.com/user/76269/6b0acf05-d490-4b17-9728-5628efb48dcf.png)
+
+![](https://files.mdnice.com/user/76269/31b268f9-fff7-428c-9497-83a07bfafdb2.png)
+
+![](https://files.mdnice.com/user/76269/fad002f2-b078-483f-b8e8-9ccfbbc2f223.png)
+
+![](https://files.mdnice.com/user/76269/5fde6e21-f3b0-4b69-9422-39516f01f538.png)
+
+![](https://files.mdnice.com/user/76269/7b356769-7cb3-40e3-8bf9-a5333817bef0.png)
