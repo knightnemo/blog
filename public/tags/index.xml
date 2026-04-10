@@ -6,13 +6,48 @@
     <description>Recent content in Tags on Nemo&#39;s Blog</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 06 Oct 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 09 Apr 2026 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Ai-Agents</title>
+      <link>http://localhost:1313/blog/tags/ai-agents/</link>
+      <pubDate>Thu, 09 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/ai-agents/</guid>
+      <description></description>
+    </item>
     <item>
       <title>Artificial-Intelligence</title>
       <link>http://localhost:1313/blog/tags/artificial-intelligence/</link>
-      <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
+      <pubDate>Thu, 09 Apr 2026 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/artificial-intelligence/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Augmented-Reality</title>
+      <link>http://localhost:1313/blog/tags/augmented-reality/</link>
+      <pubDate>Thu, 09 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/augmented-reality/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Future</title>
+      <link>http://localhost:1313/blog/tags/future/</link>
+      <pubDate>Thu, 09 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/future/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Opinion</title>
+      <link>http://localhost:1313/blog/tags/opinion/</link>
+      <pubDate>Thu, 09 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/opinion/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>World-Model</title>
+      <link>http://localhost:1313/blog/tags/world-model/</link>
+      <pubDate>Thu, 09 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/tags/world-model/</guid>
       <description></description>
     </item>
     <item>
@@ -62,13 +97,6 @@
       <link>http://localhost:1313/blog/tags/video-generation/</link>
       <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blog/tags/video-generation/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>World-Model</title>
-      <link>http://localhost:1313/blog/tags/world-model/</link>
-      <pubDate>Mon, 06 Oct 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/tags/world-model/</guid>
       <description></description>
     </item>
     <item>
