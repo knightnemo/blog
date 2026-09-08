@@ -1,0 +1,6 @@
+/* Only the article language switch is custom; typography uses the blog theme. */
+.ahead-languages { display: flex; align-items: center; gap: 10px; margin: 12px 0 20px; color: var(--secondary); font-size: 14px; }
+.ahead-languages a { padding: 4px 0; border-bottom: 1px solid transparent; }
+.ahead-languages a[aria-current="page"] { color: var(--primary); border-bottom-color: currentColor; }
+.ahead-languages a:hover { color: var(--primary); }
+.ahead-languages a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
