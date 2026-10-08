@@ -1,0 +1,11 @@
+{{- $lang := .Page.Params.guideLang | default "en" -}}
+{{- $zh := eq $lang "zh" -}}
+<link rel="stylesheet" href="{{ "assets/diffusion-rl/full.css" | relURL }}">
+<nav class="dr-language" aria-label="Article language">
+<a href="{{ ref .Page "/posts/diffusion-rl" }}" lang="en" hreflang="en" {{ if not $zh }}aria-current="page"{{ end }}>English</a>
+<span aria-hidden="true">/</span>
+<a href="{{ ref .Page "/posts/diffusion-rl-zh" }}" lang="zh-CN" hreflang="zh-CN" {{ if $zh }}aria-current="page"{{ end }}>中文</a>
+</nav>
+{{ partial (printf "diffusion-rl/%s.html" $lang) . }}
+<script id="diffusion-full-spec" type="application/json">{{ index site.Data (printf "diffusion_full_%s" $lang) | jsonify | safeJS }}</script>
+<script defer src="{{ "assets/diffusion-rl/full.js" | relURL }}"></script>

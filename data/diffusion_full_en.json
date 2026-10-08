@@ -1,0 +1,1561 @@
+{
+  "ROWORDER": [
+    "noise",
+    "k5",
+    "k4",
+    "k3",
+    "k2",
+    "k1",
+    "out",
+    "res",
+    "env"
+  ],
+  "ROWLABEL": {
+    "noise": "x_K",
+    "k5": "k=K",
+    "k4": "K−1",
+    "k3": "⋯",
+    "k2": "2",
+    "k1": "1",
+    "out": "x₀ / aₜ",
+    "res": "Residual Δ",
+    "env": "Env / r"
+  },
+  "ATTR_LABEL": {
+    "action": "RL action",
+    "likelihood": "Likelihood source",
+    "advantage": "Advantage assignment",
+    "critic": "critic",
+    "onoff": "on / off-policy",
+    "reward": "Reward requirement",
+    "trainable": "Trainable components",
+    "sampler": "Sampler requirement",
+    "cost": "Update cost"
+  },
+  "M": {
+    "example": {
+      "name": "Example",
+      "cols": [
+        "t",
+        "t+1"
+      ],
+      "res": true,
+      "cells": {
+        "noise": "data",
+        "k5": "frozen",
+        "k4": "frozen",
+        "k3": "train",
+        "k2": "act",
+        "k1": "act",
+        "out": "data",
+        "res": "act",
+        "env": "data"
+      },
+      "w": {
+        "noise": "N(0,I)",
+        "k2": "γÂ",
+        "k1": "Â",
+        "out": "aₜ",
+        "res": "A",
+        "env": "Env"
+      },
+      "op": {
+        "k2": 0.7,
+        "k1": 1
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "env",
+          "text": "V(sₜ)"
+        }
+      ],
+      "gae": true,
+      "path": [
+        {
+          "from": "env",
+          "to": "k3",
+          "cols": [
+            1
+          ]
+        }
+      ],
+      "group": {
+        "from": "k5",
+        "to": "k1",
+        "label": "×G",
+        "cols": [
+          0
+        ]
+      },
+      "brackets": [
+        {
+          "from": "k2",
+          "to": "k1",
+          "text": "Additional terms"
+        }
+      ],
+      "notes": [
+        {
+          "row": "noise",
+          "col": 0,
+          "n": 1
+        },
+        {
+          "row": "k5",
+          "col": 0,
+          "n": 2
+        },
+        {
+          "row": "k3",
+          "col": 0,
+          "n": 3
+        },
+        {
+          "row": "k2",
+          "col": 0,
+          "n": 4
+        },
+        {
+          "row": "out",
+          "col": 0,
+          "n": 5
+        },
+        {
+          "row": "res",
+          "col": 0,
+          "n": 6
+        },
+        {
+          "row": "env",
+          "col": 0,
+          "n": 7
+        },
+        {
+          "side": "env",
+          "n": 8
+        },
+        {
+          "row": "k4",
+          "col": 1,
+          "dx": 44,
+          "n": 9
+        },
+        {
+          "row": "k1",
+          "col": 0,
+          "dx": -40,
+          "n": 10
+        }
+      ]
+    },
+    "ddpo": {
+      "name": "DDPO",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "Reward model",
+      "cells": {
+        "k5": "act",
+        "k4": "act",
+        "k3": "act",
+        "k2": "act",
+        "k1": "act"
+      },
+      "w": {
+        "k5": "Â",
+        "k4": "Â",
+        "k3": "Â",
+        "k2": "Â",
+        "k1": "Â",
+        "noise": "N(0,I)",
+        "out": "x₀",
+        "env": "R(x₀,c)"
+      },
+      "stars": [
+        "env"
+      ],
+      "side": [
+        {
+          "row": "k3",
+          "text": "DDIM η=1"
+        },
+        {
+          "row": "env",
+          "text": "Â: per-prompt statistics"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "DDIM η=1, 50 steps; store each log π"
+        ],
+        [
+          "Score",
+          "Reward model gives r(x₀,c); normalize per prompt"
+        ],
+        [
+          "Update",
+          "Per-step ratio + clipping; same Â",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "Each denoising transition x_{k−1} (K total)",
+        "likelihood": "Per-step Gaussian; stochastic sampler required",
+        "advantage": "Same Â broadcast to all steps; per-prompt normalization",
+        "critic": "None",
+        "onoff": "on-policy",
+        "reward": "Black-box terminal scalar",
+        "trainable": "All denoising steps",
+        "sampler": "Stochastic (DDIM η=1)",
+        "cost": "K sampling forward passes + K forward/backward passes per sample"
+      }
+    },
+    "dpok": {
+      "name": "DPOK",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "Reward model",
+      "cells": {
+        "k5": "act",
+        "k4": "act",
+        "k3": "act",
+        "k2": "act",
+        "k1": "act"
+      },
+      "w": {
+        "k5": "A_k",
+        "k4": "A_k",
+        "k3": "A_k",
+        "k2": "A_k",
+        "k1": "A_k",
+        "noise": "N(0,I)",
+        "out": "x₀",
+        "env": "ImageReward"
+      },
+      "stars": [
+        "env"
+      ],
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "Per-step KL→θ_ref"
+        }
+      ],
+      "critic": [
+        {
+          "row": "k3",
+          "text": "Optional V(x_k,c)"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "Stochastic sampler produces full chain"
+        ],
+        [
+          "Score",
+          "ImageReward gives r; optional step baseline V(x_k,c)"
+        ],
+        [
+          "Update",
+          "Policy gradient + closed-form step KL",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "Each denoising transition x_{k−1} (K total)",
+        "likelihood": "Per-step Gaussian; stochastic sampler required",
+        "advantage": "Optional r − V(x_k,c), varying per step",
+        "critic": "Optional V(x_k,c) (denoising state)",
+        "onoff": "on-policy",
+        "reward": "Learned preference reward (ImageReward)",
+        "trainable": "All denoising steps",
+        "sampler": "Random",
+        "cost": "DDPO cost + one reference forward pass per step (KL)"
+      }
+    },
+    "flowgrpo": {
+      "name": "Flow-GRPO",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "Reward model",
+      "cells": {
+        "k5": "act",
+        "k4": "act",
+        "k3": "act",
+        "k2": "act",
+        "k1": "act"
+      },
+      "w": {
+        "k5": "Â",
+        "k4": "Â",
+        "k3": "Â",
+        "k2": "Â",
+        "k1": "Â",
+        "noise": "N(0,I)",
+        "out": "x₀",
+        "env": "R(x₀,c)"
+      },
+      "stars": [
+        "env"
+      ],
+      "group": {
+        "from": "noise",
+        "to": "env",
+        "label": "×24"
+      },
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "Per-step KL"
+        }
+      ],
+      "side": [
+        {
+          "row": "k3",
+          "text": "SDE a=0.7"
+        },
+        {
+          "row": "k1",
+          "text": "10 train / 40 eval steps"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "G=24 SDE chains per prompt (10 steps); store log π"
+        ],
+        [
+          "Score",
+          "Terminal reward; group-normalize into Â"
+        ],
+        [
+          "Update",
+          "Ratios + clipping + closed-form KL at all steps",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "Each SDE denoising step",
+        "likelihood": "Per-step Gaussian after ODE→SDE",
+        "advantage": "Group-normalized Â (G=24), broadcast to all steps",
+        "critic": "None",
+        "onoff": "on-policy",
+        "reward": "Terminal: GenEval / OCR / PickScore",
+        "trainable": "All training steps (T=10)",
+        "sampler": "10-step training SDE, 40-step inference ODE",
+        "cost": "G×T forward + G×T forward/backward passes per group"
+      }
+    },
+    "dancegrpo": {
+      "name": "DanceGRPO",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "Reward model",
+      "cells": {
+        "k5": "act",
+        "k4": "frozen",
+        "k3": "act",
+        "k2": "act",
+        "k1": "frozen"
+      },
+      "w": {
+        "noise": "Shared within group",
+        "k5": "Â",
+        "k4": "—",
+        "k3": "Â",
+        "k2": "Â",
+        "k1": "—",
+        "out": "x₀",
+        "env": "Σ_m A^m"
+      },
+      "stars": [
+        "env"
+      ],
+      "group": {
+        "from": "k5",
+        "to": "env",
+        "label": "×12"
+      },
+      "side": [
+        {
+          "row": "noise",
+          "text": "Shared initial noise"
+        },
+        {
+          "row": "k3",
+          "text": "Random 60% of steps"
+        },
+        {
+          "row": "k1",
+          "text": "No KL"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "Shared x_K within group; G=12 SDE chains"
+        ],
+        [
+          "Score",
+          "Normalize each reward separately, then sum"
+        ],
+        [
+          "Update",
+          "Ratios + clipping only at random 60% of steps",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "SDE transitions at random 60% of steps",
+        "likelihood": "Per-step SDE Gaussian (diffusion or flow SDE)",
+        "advantage": "Sum separately normalized rewards; shared initial noise within group",
+        "critic": "None",
+        "onoff": "on-policy",
+        "reward": "Multiple reward models (image / video)",
+        "trainable": "Random 60% of timesteps per update",
+        "sampler": "SDE (50 SD / 25 FLUX steps)",
+        "cost": "G×T forward + 0.6·G×T forward/backward passes per group"
+      }
+    },
+    "mixgrpo": {
+      "name": "MixGRPO",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "Reward model",
+      "cells": {
+        "k5": "frozen",
+        "k4": "act",
+        "k3": "act",
+        "k2": "frozen",
+        "k1": "frozen"
+      },
+      "w": {
+        "noise": "N(0,I)",
+        "k5": "ODE",
+        "k4": "Â",
+        "k3": "Â",
+        "k2": "ODE",
+        "k1": "ODE",
+        "out": "x₀",
+        "env": "R(x₀,c)"
+      },
+      "stars": [
+        "env"
+      ],
+      "group": {
+        "from": "noise",
+        "to": "env",
+        "label": "×12"
+      },
+      "brackets": [
+        {
+          "from": "k4",
+          "to": "k3",
+          "text": "Window W: SDE+KL"
+        }
+      ],
+      "side": [
+        {
+          "row": "k1",
+          "text": "Window moves down"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "ODE outside, SDE inside window (w=4/25); store window log π only"
+        ],
+        [
+          "Score",
+          "Terminal reward; group normalization"
+        ],
+        [
+          "Update",
+          "Ratios + clipping + KL only at window steps",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "SDE transitions in window W (w=4/25)",
+        "likelihood": "Per-step Gaussian only inside the window",
+        "advantage": "Group-normalized Â, only at window steps",
+        "critic": "None",
+        "onoff": "on-policy",
+        "reward": "Preference model",
+        "trainable": "w steps in a window that moves downward during training",
+        "sampler": "ODE outside window (Flash: DPM-Solver++); SDE inside",
+        "cost": "G×T forward + G×w forward/backward passes per group"
+      }
+    },
+    "dppo": {
+      "name": "DPPO",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "cells": {
+        "k5": "frozen",
+        "k4": "frozen",
+        "k3": "act",
+        "k2": "act",
+        "k1": "act"
+      },
+      "w": {
+        "noise": "N(0,I)",
+        "k5": "θ",
+        "k4": "θ",
+        "k3": "γ²A",
+        "k2": "γA",
+        "k1": "A",
+        "out": "aₜ",
+        "env": "Env"
+      },
+      "op": {
+        "k3": 0.55,
+        "k2": 0.75,
+        "k1": 1
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "env",
+          "text": "V(sₜ)"
+        }
+      ],
+      "gae": true,
+      "brackets": [
+        {
+          "from": "k3",
+          "to": "k1",
+          "text": "Last K′ steps θ_ft"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "One stochastic chain per environment step (σ≥0.1); execute aₜ"
+        ],
+        [
+          "Score",
+          "Environment return; V(sₜ) + GAE produce Aₜ"
+        ],
+        [
+          "Update",
+          "Last K′ steps: Â=γ^k·Aₜ, per-step ratio + clip",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "Last K′ denoising transitions at each environment step",
+        "likelihood": "Per-step Gaussian; σ floor 0.1",
+        "advantage": "Environment GAE Aₜ, shared across chain × γ_denoise^k",
+        "critic": "V(sₜ) (environment state only)",
+        "onoff": "on-policy",
+        "reward": "Environment return (dense or sparse)",
+        "trainable": "Last K′ steps (θ_ft)",
+        "sampler": "Stochastic (DDPM or DDIM η=1)",
+        "cost": "K forward passes per environment step; K′ forward/backward update passes"
+      }
+    },
+    "reinflow": {
+      "name": "ReinFlow",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "cells": {
+        "k5": "act",
+        "k4": "act",
+        "k3": "act",
+        "k2": "act",
+        "k1": "act"
+      },
+      "w": {
+        "k5": "A",
+        "k4": "A",
+        "k3": "A",
+        "k2": "A",
+        "k1": "A",
+        "noise": "N(0,I)",
+        "out": "aₜ",
+        "env": "Env"
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "env",
+          "text": "V(sₜ)"
+        }
+      ],
+      "gae": true,
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "+ learned noise σ_θ′"
+        }
+      ],
+      "side": [
+        {
+          "row": "out",
+          "text": "1–4 flow steps"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "Add σ_θ′ noise at each v_θ step; store chain log π"
+        ],
+        [
+          "Score",
+          "Environment return + GAE"
+        ],
+        [
+          "Update",
+          "PPO + entropy; discard σ_θ′ at deployment",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "Each noisy flow step (1–4 steps)",
+        "likelihood": "Learned noise σ_θ′ ⇒ exact Gaussian conditional transitions",
+        "advantage": "Environment GAE Aₜ",
+        "critic": "V(sₜ)",
+        "onoff": "on-policy",
+        "reward": "Environment return",
+        "trainable": "All v_θ steps + noise network σ_θ′",
+        "sampler": "Noisy flow (remove noise for deployment)",
+        "cost": "1–4 forward passes per environment step; same number of update passes"
+      }
+    },
+    "ogpo": {
+      "name": "OGPO",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "cells": {
+        "k5": "act",
+        "k4": "act",
+        "k3": "act",
+        "k2": "act",
+        "k1": "act"
+      },
+      "w": {
+        "k5": "Â",
+        "k4": "Â",
+        "k3": "Â",
+        "k2": "Â",
+        "k1": "Â",
+        "noise": "N(0,I)",
+        "out": "a₀",
+        "env": "replay"
+      },
+      "stars": [
+        "out",
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "out",
+          "text": "Q(s,a₀)"
+        }
+      ],
+      "group": {
+        "from": "k5",
+        "to": "out",
+        "label": "×N"
+      },
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "Chain ∏ρ"
+        }
+      ],
+      "side": [
+        {
+          "row": "env",
+          "text": "Learn Q with TD"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "Environment replay data; off-policy TD learns Q"
+        ],
+        [
+          "Score",
+          "Resample N chains at replay states; Â=Q−mean Q"
+        ],
+        [
+          "Update",
+          "Product ratio + clipping (optional success BC)",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "Entire denoising chain (one action)",
+        "likelihood": "Product of per-step Gaussian ratios",
+        "advantage": "Q(s,a₀) − mean Q over N chains from the same state; one scalar per chain",
+        "critic": "Q(s,a) (off-policy TD; critic ensemble)",
+        "onoff": "Mixed: off-policy critic, chain PPO",
+        "reward": "Q as terminal chain reward",
+        "trainable": "All denoising steps",
+        "sampler": "Stochastic (requires log π)",
+        "cost": "Resample N chains per state; no extra environment steps"
+      }
+    },
+    "noiseppo": {
+      "name": "Noise PPO",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "Reward model",
+      "cells": {
+        "noise": "act"
+      },
+      "w": {
+        "k5": "",
+        "k4": "",
+        "k3": "",
+        "k2": "",
+        "k1": "",
+        "noise": "Â",
+        "out": "x₀",
+        "env": "Weighted rewards"
+      },
+      "stars": [
+        "env"
+      ],
+      "side": [
+        {
+          "row": "noise",
+          "text": "KL→N(0,I)"
+        },
+        {
+          "row": "k3",
+          "text": "Frozen, LCM 4 steps"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "Sample noise from π_θ(x_K|c); generate with frozen model"
+        ],
+        [
+          "Score",
+          "Weighted aesthetics / PickScore / HPSv2"
+        ],
+        [
+          "Update",
+          "One-step PPO + KL to N(0,I) + entropy",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "Initial noise x_K (one step)",
+        "likelihood": "Gaussian noise policy",
+        "advantage": "One-step PPO advantage (baseline unconfirmed)",
+        "critic": "Unconfirmed",
+        "onoff": "on-policy",
+        "reward": "Aesthetics / PickScore / HPSv2",
+        "trainable": "Only noise policy (frozen diffusion)",
+        "sampler": "Unchanged (LCM 4 steps, SDXL-Turbo)",
+        "cost": "1 generation per sample; no diffusion backpropagation"
+      }
+    },
+    "dsrl": {
+      "name": "DSRL",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "cells": {
+        "noise": "act"
+      },
+      "w": {
+        "k5": "",
+        "k4": "",
+        "k3": "DDIM",
+        "k2": "",
+        "k1": "",
+        "noise": "w",
+        "out": "aₜ",
+        "env": "Env"
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "noise",
+          "text": "Q^W(s,w)"
+        },
+        {
+          "row": "out",
+          "text": "Q^A(s,a)（NA）"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "π^W selects w∈[−b,b]^d; frozen DDIM produces aₜ"
+        ],
+        [
+          "Score",
+          "Store environment data; TD learns Q^A / Q^W"
+        ],
+        [
+          "Update",
+          "SAC: actor maximizes Q^W",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "Initial noise w∈[−b,b]^d at each environment step",
+        "likelihood": "Noise-policy density (for SAC entropy)",
+        "advantage": "None (actor directly maximizes Q^W)",
+        "critic": "Q^W(s,w); NA also uses Q^A(s,a)",
+        "onoff": "off-policy",
+        "reward": "Environment return",
+        "trainable": "Only noise policy + critic",
+        "sampler": "Unchanged (DDIM σ=0)",
+        "cost": "1 generation per environment step; no diffusion backpropagation"
+      }
+    },
+    "ddpo_pref": {
+      "name": "Diffusion-DPO",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "Preference data",
+      "cells": {
+        "k5": "train",
+        "k4": "train",
+        "k3": "train",
+        "k2": "train",
+        "k1": "train"
+      },
+      "w": {
+        "k5": "",
+        "k4": "",
+        "k3": "Random k",
+        "k2": "",
+        "k1": "",
+        "noise": "ε",
+        "out": "x₀ʷ / x₀ˡ",
+        "env": "Preference pairs"
+      },
+      "stars": [
+        "env"
+      ],
+      "group": {
+        "from": "k5",
+        "to": "out",
+        "label": "w / l"
+      },
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "ELBO difference vs ε_ref"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "None: offline preference pairs (x₀ʷ, x₀ˡ)"
+        ],
+        [
+          "Score",
+          "Human preference labels"
+        ],
+        [
+          "Update",
+          "Forward-noise to random k; DPO logistic loss",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "None (offline)",
+        "likelihood": "Not required (denoising-loss approximation)",
+        "advantage": "None; logistic loss on preference pairs",
+        "critic": "None",
+        "onoff": "offline",
+        "reward": "Paired preferences",
+        "trainable": "All (random k per update)",
+        "sampler": "No sampling needed",
+        "cost": "4 forward passes (θ and ref) + 2 backward passes per pair"
+      }
+    },
+    "nft": {
+      "name": "DiffusionNFT",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "Reward model",
+      "cells": {
+        "k5": "train",
+        "k4": "train",
+        "k3": "train",
+        "k2": "train",
+        "k1": "train"
+      },
+      "w": {
+        "k5": "",
+        "k4": "",
+        "k3": "Forward x_t",
+        "k2": "",
+        "k1": "",
+        "noise": "N(0,I)",
+        "out": "x₀",
+        "env": "r∈[0,1]"
+      },
+      "stars": [
+        "env"
+      ],
+      "group": {
+        "from": "noise",
+        "to": "env",
+        "label": "×24"
+      },
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "v⁺ / v⁻ regression"
+        }
+      ],
+      "side": [
+        {
+          "row": "out",
+          "text": "Any solver"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "Any sampler (e.g. second-order ODE); no CFG"
+        ],
+        [
+          "Score",
+          "Normalize within group, clip to r∈[0,1]"
+        ],
+        [
+          "Update",
+          "Forward-noise x_t; positive/negative implicit-policy regression; EMA θ_old",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "No explicit RL action (regression)",
+        "likelihood": "Not required",
+        "advantage": "Weight r∈[0,1] (group normalization + clipping)",
+        "critic": "None",
+        "onoff": "Online (EMA θ_old)",
+        "reward": "Terminal reward",
+        "trainable": "All (random forward-noising t)",
+        "sampler": "Any (ODE, higher-order); CFG-free setup",
+        "cost": "1 generation per sample + forward/backward at a few t"
+      }
+    },
+    "fpo": {
+      "name": "FPO",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "cells": {
+        "k5": "train",
+        "k4": "train",
+        "k3": "train",
+        "k2": "train",
+        "k1": "train",
+        "out": "act"
+      },
+      "w": {
+        "k5": "",
+        "k4": "",
+        "k3": "CFM",
+        "k2": "",
+        "k1": "",
+        "noise": "N(0,I)",
+        "out": "A",
+        "env": "Env"
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "env",
+          "text": "V(sₜ)"
+        }
+      ],
+      "gae": true,
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "CFM difference → ρ̂"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "Any sampler produces aₜ; store N_mc pairs (τ, ε)"
+        ],
+        [
+          "Score",
+          "Environment return + GAE"
+        ],
+        [
+          "Update",
+          "ρ̂ = exp(−mean CFM loss difference), PPO clip",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "Entire final action aₜ",
+        "likelihood": "Not required; CFM loss difference constructs ρ̂",
+        "advantage": "Environment GAE Aₜ",
+        "critic": "V(sₜ)",
+        "onoff": "on-policy",
+        "reward": "Environment return",
+        "trainable": "All (N_mc samples of (τ, ε))",
+        "sampler": "Any (can be deterministic)",
+        "cost": "1 generation per environment step; N_mc forward/backward update passes"
+      }
+    },
+    "pathwise": {
+      "name": "ReFL / DRaFT / AlignProp",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "Reward model",
+      "cells": {
+        "k5": "frozen",
+        "k4": "frozen",
+        "k3": "train",
+        "k2": "train",
+        "k1": "train"
+      },
+      "w": {
+        "noise": "N(0,I)",
+        "k5": "no_grad",
+        "k4": "no_grad",
+        "out": "x₀",
+        "env": "Differentiable r"
+      },
+      "stars": [
+        "env"
+      ],
+      "path": [
+        {
+          "from": "env",
+          "to": "k3"
+        }
+      ],
+      "side": [
+        {
+          "row": "k4",
+          "text": "Truncate at k_stop"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "Denoise without gradients to k_stop, then with gradients to x₀"
+        ],
+        [
+          "Score",
+          "Differentiable reward r(x₀)"
+        ],
+        [
+          "Update",
+          "Backpropagate ∇_θ r through chain (truncated)",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "None (direct reward optimization)",
+        "likelihood": "Not required",
+        "advantage": "None; directly backpropagate ∇r",
+        "critic": "None",
+        "onoff": "On (generate, then update)",
+        "reward": "Differentiable reward",
+        "trainable": "Last few steps after truncation",
+        "sampler": "Any differentiable sampler",
+        "cost": "Memory grows with backpropagation horizon"
+      }
+    },
+    "offq": {
+      "name": "Off-policy Q comparisons",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "cells": {
+        "k5": "train",
+        "k4": "train",
+        "k3": "train",
+        "k2": "train",
+        "k1": "train"
+      },
+      "w": {
+        "k5": "",
+        "k4": "",
+        "k3": "",
+        "k2": "",
+        "k1": "",
+        "noise": "N(0,I)",
+        "out": "aₜ",
+        "env": "replay"
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "out",
+          "text": "Q(s,a)"
+        }
+      ],
+      "path": [
+        {
+          "from": "out",
+          "to": "k5"
+        }
+      ],
+      "side": [
+        {
+          "row": "k3",
+          "text": "BC + Q objective"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "Arbitrary replay data"
+        ],
+        [
+          "Score",
+          "Learn Q(s,a) with TD"
+        ],
+        [
+          "Update",
+          "Diffusion-QL: backpropagate ∇_a Q; DIPO / QSM / IDQL differ",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "Entire aₜ (off-policy)",
+        "likelihood": "Not required",
+        "advantage": "None; use Q or ∇_a Q",
+        "critic": "Q(s,a)",
+        "onoff": "off-policy",
+        "reward": "Environment return",
+        "trainable": "All (BC + Q objective)",
+        "sampler": "Any",
+        "cost": "Diffusion-QL backpropagates through the chain"
+      }
+    },
+    "residual": {
+      "name": "Residual RL",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "res": true,
+      "cells": {
+        "noise": [
+          "data",
+          "reuse",
+          "reuse"
+        ],
+        "k5": [
+          "frozen",
+          "reuse",
+          "reuse"
+        ],
+        "k4": [
+          "frozen",
+          "reuse",
+          "reuse"
+        ],
+        "k3": [
+          "frozen",
+          "reuse",
+          "reuse"
+        ],
+        "k2": [
+          "frozen",
+          "reuse",
+          "reuse"
+        ],
+        "k1": [
+          "frozen",
+          "reuse",
+          "reuse"
+        ],
+        "out": [
+          "data",
+          "reuse",
+          "reuse"
+        ],
+        "res": "act"
+      },
+      "w": {
+        "noise": [
+          "N(0,I)",
+          "Reuse",
+          "Reuse"
+        ],
+        "out": [
+          "a^base",
+          "Reuse",
+          "Reuse"
+        ],
+        "res": "A",
+        "env": "Env"
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "env",
+          "text": "V(s) / Q"
+        }
+      ],
+      "gae": true,
+      "side": [
+        {
+          "row": "res",
+          "text": "×0.1 or ±α"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "Frozen base call per chunk; sample residual Δ each control step"
+        ],
+        [
+          "Score",
+          "Environment return + GAE (ResiP) / TD (PD)"
+        ],
+        [
+          "Update",
+          "PPO (ResiP) or SAC (PD) updates only the residual",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "Output residual Δ (every control step)",
+        "likelihood": "Gaussian residual policy",
+        "advantage": "GAE (ResiP) / Q (PD)",
+        "critic": "V(s) (ResiP) or Q (PD)",
+        "onoff": "on（ResiP）/ off（PD）",
+        "reward": "Environment return",
+        "trainable": "Only residual network",
+        "sampler": "Unchanged",
+        "cost": "Small MLP; one base-policy call per chunk"
+      }
+    }
+  },
+  "G": {
+    "W": 940,
+    "H": 672,
+    "lanes": [
+      [
+        14,
+        100,
+        "Noise space"
+      ],
+      [
+        108,
+        418,
+        "Inside chain · likelihood ratio"
+      ],
+      [
+        426,
+        570,
+        "Likelihood-free / regression"
+      ],
+      [
+        578,
+        662,
+        "Outside chain / output"
+      ]
+    ],
+    "nodes": {
+      "noiseppo": [
+        340,
+        58,
+        [
+          "Noise PPO"
+        ]
+      ],
+      "dsrl": [
+        590,
+        58,
+        [
+          "DSRL"
+        ]
+      ],
+      "dpok": [
+        340,
+        150,
+        [
+          "DPOK"
+        ]
+      ],
+      "ddpo": [
+        100,
+        230,
+        [
+          "DDPO"
+        ]
+      ],
+      "flowgrpo": [
+        340,
+        230,
+        [
+          "Flow-GRPO"
+        ]
+      ],
+      "dancegrpo": [
+        590,
+        230,
+        [
+          "DanceGRPO"
+        ]
+      ],
+      "mixgrpo": [
+        840,
+        230,
+        [
+          "MixGRPO"
+        ]
+      ],
+      "dppo": [
+        340,
+        320,
+        [
+          "DPPO"
+        ]
+      ],
+      "reinflow": [
+        590,
+        320,
+        [
+          "ReinFlow"
+        ]
+      ],
+      "ogpo": [
+        840,
+        385,
+        [
+          "OGPO"
+        ]
+      ],
+      "ddpo_pref": [
+        100,
+        470,
+        [
+          "Diffusion-DPO"
+        ]
+      ],
+      "fpo": [
+        340,
+        470,
+        [
+          "FPO"
+        ]
+      ],
+      "nft": [
+        590,
+        470,
+        [
+          "DiffusionNFT"
+        ]
+      ],
+      "pathwise": [
+        840,
+        470,
+        [
+          "ReFL · DRaFT",
+          "AlignProp"
+        ]
+      ],
+      "offq": [
+        840,
+        540,
+        [
+          "Off-policy Q",
+          "DIPO · QSM …"
+        ]
+      ],
+      "residual": [
+        340,
+        620,
+        [
+          "ResiP /",
+          "Policy Decorator"
+        ]
+      ]
+    },
+    "href": {
+      "noiseppo": "m-noiseppo",
+      "dsrl": "m-dsrl",
+      "dpok": "m-dpok",
+      "ddpo": "m-ddpo",
+      "flowgrpo": "m-flowgrpo",
+      "dancegrpo": "m-dancegrpo",
+      "mixgrpo": "m-mixgrpo",
+      "dppo": "m-dppo",
+      "reinflow": "m-reinflow",
+      "ogpo": "m-ogpo",
+      "ddpo_pref": "m-ddpo-pref",
+      "fpo": "m-fpo",
+      "nft": "m-nft",
+      "pathwise": "m-pathwise",
+      "offq": "m-offq",
+      "residual": "m-residual"
+    },
+    "edges": [
+      [
+        "ddpo",
+        "noiseppo",
+        [
+          "Make only x_K",
+          "the action"
+        ],
+        0.45
+      ],
+      [
+        "ddpo",
+        "dpok",
+        [
+          "+ per-step KL"
+        ],
+        0.5
+      ],
+      [
+        "ddpo",
+        "flowgrpo",
+        [
+          "flow + SDE",
+          "Group Â"
+        ],
+        0.5
+      ],
+      [
+        "ddpo",
+        "dppo",
+        [
+          "Embed in environment MDP",
+          "V(sₜ) · last K′ steps"
+        ],
+        0.5
+      ],
+      [
+        "ddpo",
+        "ddpo_pref",
+        [
+          "Offline preference pairs",
+          "ELBO in place of log π"
+        ],
+        0.5
+      ],
+      [
+        "flowgrpo",
+        "dancegrpo",
+        [
+          "Shared noise",
+          "Random 60% of steps"
+        ],
+        0.5
+      ],
+      [
+        "dancegrpo",
+        "mixgrpo",
+        [
+          "Moving SDE window",
+          "ODE outside window"
+        ],
+        0.5
+      ],
+      [
+        "dppo",
+        "reinflow",
+        [
+          "Flow model",
+          "Learned noise"
+        ],
+        0.5
+      ],
+      [
+        "dppo",
+        "ogpo",
+        [
+          "Joint-chain ratio",
+          "off-policy Q"
+        ],
+        0.7
+      ],
+      [
+        "dppo",
+        "fpo",
+        [
+          "CFM loss difference",
+          "Replaces ratio"
+        ],
+        0.5
+      ],
+      [
+        "flowgrpo",
+        "nft",
+        [
+          "Positive / negative · forward process",
+          "No log π"
+        ],
+        0.76
+      ],
+      [
+        "noiseppo",
+        "dsrl",
+        [
+          "One-step PPO ↔",
+          "off-policy SAC"
+        ],
+        0.5,
+        true
+      ]
+    ]
+  },
+  "lang": "en"
+}

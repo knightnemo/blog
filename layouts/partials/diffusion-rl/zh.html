@@ -1,0 +1,912 @@
+<div class="dr-full" lang="zh-CN"><section id="scope"><blockquote class="ai-note"><p><strong>说明：</strong>这篇 blog 在 AI 的辅助下完成。</p></blockquote></section><div class="shell"><nav aria-label="目录" class="toc">
+<div class="toc-inner">
+<details id="toc-details" open="">
+<summary>目录</summary>
+<div class="label">目录</div>
+<ol>
+<li><a href="#tldr">要点速览</a></li>
+<li><a href="#howto">0 怎么读这一页</a></li>
+<li><a href="#genealogy">1 方法谱系图</a></li>
+<li><a href="#setup">2 双层 MDP 推导</a>
+<ol>
+<li><a href="#single">2.1 单层 denoising MDP</a></li>
+<li><a href="#dppo-mdp">2.2 DPPO 的双层 MDP</a></li>
+<li><a href="#alts">2.3 其他切法</a></li>
+<li><a href="#sde">2.4 ODE → SDE</a></li>
+<li><a href="#grad-paths">2.5 梯度走哪条路</a></li>
+<li><a href="#onpolicy">2.6 通用 on-policy 方法</a></li>
+</ol>
+</li>
+<li><a href="#lane-chain">3 链内：likelihood ratio</a>
+<ol>
+<li><a href="#m-ddpo">DDPO</a></li>
+<li><a href="#m-dpok">DPOK</a></li>
+<li><a href="#m-flowgrpo">Flow-GRPO</a></li>
+<li><a href="#m-dancegrpo">DanceGRPO</a></li>
+<li><a href="#m-mixgrpo">MixGRPO</a></li>
+<li><a href="#m-dppo">DPPO</a></li>
+<li><a href="#m-reinflow">ReinFlow</a></li>
+<li><a href="#m-ogpo">OGPO</a></li>
+</ol>
+</li>
+<li><a href="#lane-noise">4 噪声空间</a>
+<ol>
+<li><a href="#m-noiseppo">Noise PPO</a></li>
+<li><a href="#m-dsrl">DSRL</a></li>
+</ol>
+</li>
+<li><a href="#lane-free">5 likelihood-free / 回归</a>
+<ol>
+<li><a href="#m-ddpo-pref">Diffusion-DPO</a></li>
+<li><a href="#m-nft">DiffusionNFT</a></li>
+<li><a href="#m-fpo">FPO</a></li>
+<li><a href="#m-pathwise">ReFL / DRaFT / AlignProp</a></li>
+<li><a href="#m-offq">Off-policy Q 对照</a></li>
+</ol>
+</li>
+<li><a href="#lane-out">6 链外 / 输出</a>
+<ol>
+<li><a href="#m-residual">Residual RL</a></li>
+</ol>
+</li>
+<li><a href="#cross-domain">7 跨领域对照与推导</a></li><li><a href="#compare">8 两两对比器</a></li>
+<li><a href="#table">9 总对比表</a></li>
+<li><a href="#refs">参考文献</a></li>
+</ol>
+</details>
+</div>
+</nav><div class="research-content">
+<section id="tldr">
+<div class="tldr">
+<h3 style="margin-top:14px">要点速览</h3>
+<ol>
+<li>扩散策略里有两条 horizon：环境步 \(t\) 和去噪步 \(k=K\dots0\)。比较这些方法时，我主要看三个问题：<strong>action 定义在哪一层，likelihood 在哪里算，advantage 又是怎么分到每个去噪步的</strong>。</li>
+<li>DDPO / DPOK 把去噪链当成单层 MDP：\(\pi_\theta(x_{k-1}\mid x_k,c)\) 是 Gaussian，log-prob 精确可算；奖励只在 \(x_0\) 上出现，所以每一步拿到的都是同一个终端信号。</li>
+<li>DPPO 把去噪链嵌进环境 MDP：\((t,k)\) 展开成一条长链，奖励只在 \(k=0\) 出现。critic 只看环境状态 \(V(s_t)\)；GAE 只在环境层做；同一环境步内所有去噪步共享 \(A_t\)，再乘 \(\gamma_{\text{denoise}}^{k}\) 压低早期（高噪声）步的权重。</li>
+<li>PPO ratio 在每个 \((t,k)\) 上单独算、单独 clip；梯度只经过当前步的 \(\mu_\theta(a^{k+1},s_t,k)\)，<strong>不沿去噪链反传</strong>。这是 score-function 估计，与 DRaFT / AlignProp 这类 pathwise（链上反传）方法是两回事。</li>
+<li>Flow / ODE 采样器给定当前状态后，下一步就是确定的，<strong>条件单步转移</strong>是 Dirac，没法直接拿来算普通的 Gaussian PPO ratio。当然，初始噪声是随机的，最后的输出也仍然可以是随机的。Flow-GRPO、DanceGRPO 的做法是构造 SDE；ReinFlow、πRL Flow-Noise 则加一个可学习的噪声。DDIM \(\eta=0\) 时也有同样的问题。</li>
+<li>另外三条路绕开“链上 log-prob”：在初始噪声上做 RL（DSRL、Noise PPO），用 flow-matching 损失差构造替代 ratio（FPO），或者用正/负样本加权的 flow-matching 回归（DiffusionNFT）。</li>
+</ol>
+</div>
+</section>
+<section id="howto">
+<h2><span class="secnum">0</span>怎么读这一页</h2>
+<p>下面的图都按同一个格式画。<strong>列</strong>是环境步：图像生成只有一列，条件是 prompt \(c\)；机器人画 3 列 \(t, t{+}1, t{+}2\)。<strong>行</strong>从初始噪声 \(x_K\) 开始，经过各个去噪转移 \(k=K,\dots,1\)，得到输出 \(x_0\) 或 \(a_t\)，再经过可选的残差，最后到环境 / 奖励模型。第 \(k\) 行表示 \(x_k\to x_{k-1}\)；为了方便画图，50 步也只画 5 行。各张图的颜色、星标、箭头和格内数字含义相同，可以直接对着看。</p>
+<ul class="legend">
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-cell-frozen" height="18" rx="3" width="36" x="2" y="2"></rect></svg><span><b>灰色格</b>：冻结的计算（参数不更新，或这一步不进入损失）。</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-cell-act" height="18" rx="3" width="36" x="2" y="2"></rect></svg><span><b>实心强调色格</b>：这一格的输出就是 RL 的 action，要算 \(\log\pi\)，likelihood ratio 在这里。</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-cell-train" height="18" rx="3" width="36" x="2" y="2"></rect></svg><span><b>空心强调色格</b>：可训练，但不作为 RL action（回归 / flow-matching 损失，或 pathwise 梯度经过的地方）。</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-cell-data" height="18" rx="3" width="36" x="2" y="2"></rect></svg><span><b>白色格</b>：数据或环境（样本、动作、仿真器、奖励模型）。</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-cell-reuse" height="18" rx="3" width="36" x="2" y="2"></rect></svg><span><b>虚线格</b>：这一列不重新计算，复用之前生成的结果（例如按块重规划）。</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><text class="g-star" x="12" y="16">★</text></svg><span><b>星标</b>：奖励进入的位置。</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><text class="g-t" style="font-size:11px" x="4" y="15">γ²Â</text></svg><span><b>格内文字</b>：该格分到的 advantage 权重（\(\hat A\) 表示广播同一个值；\(\gamma^k\hat A\) 表示按步衰减；深浅与权重成正比）。</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><line class="g-path" x1="20" x2="20" y1="20" y2="4"></line><path class="g-path" d="M15,8 L20,2 L25,8"></path></svg><span><b>红色反向箭头</b>：pathwise 梯度（沿链反传可微奖励，或 \(\nabla_a Q\)）。</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-group" height="15" rx="3" width="32" x="5" y="5"></rect><rect class="g-group" height="15" rx="3" style="fill:var(--surface)" width="32" x="2" y="2"></rect></svg><span><b>叠放虚线框 + “×G”</b>：GRPO 的组 / 兄弟样本，advantage 在框内比较。</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-pill" height="16" rx="8" width="36" x="2" y="3"></rect><text class="g-side-acc" style="font-size:9px" text-anchor="middle" x="20" y="15">V(s)</text></svg><span><b>青色药丸</b>：critic 挂在哪一层（\(V(s_t)\)、\(Q(s,a)\) 等）。</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><line class="g-gae" x1="26" x2="6" y1="11" y2="11"></line><path class="g-gae" d="M11,6 L5,11 L11,16"></path></svg><span><b>环境行下方的青色箭头</b>：GAE / 折扣回报在环境步之间从右往左递推。</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><path class="g-bracket" d="M4,3 H10 V19 H4"></path></svg><span><b>右侧括号</b>：作用于一段行的附加项（逐步 KL、滑动窗口、整链乘积 ratio 等），括号旁写明。</span></li>
+</ul>
+<figure>
+<div class="fig-frame" style="max-width:520px"><div class="gridfig" data-m="example"></div></div>
+<figcaption><b>示例图</b>（合成示意，不对应任何真实方法）。编号对应下表。</figcaption>
+</figure>
+<ol class="legend-num">
+<li><span class="num">1</span><span>初始噪声 \(x_K\sim\mathcal N(0,I)\)，这里是白色数据格。若这一格是实心色（Noise PPO、DSRL），说明 RL 的 action 就是噪声。</span></li>
+<li><span class="num">2</span><span>灰色：前几个去噪步冻结（DPPO 的“只调最后 \(K'\) 步”）。</span></li>
+<li><span class="num">3</span><span>空心：参数可训练，但这一格不算 \(\log\pi\)，例如被 pathwise 梯度经过、或用回归损失训练。</span></li>
+<li><span class="num">4</span><span>实心：RL action，在这里算 ratio \(\rho\)。格内 \(\gamma\hat A\)、\(\hat A\) 是它分到的 advantage 权重，越淡权重越小。</span></li>
+<li><span class="num">5</span><span>输出 \(a_t\) / \(x_0\)。</span></li>
+<li><span class="num">6</span><span>残差行（只有输出残差类方法有）。实心表示残差是 RL action。</span></li>
+<li><span class="num">7</span><span>环境 / 奖励模型，星标表示奖励在这里进入。</span></li>
+<li><span class="num">8</span><span>critic 挂载位置。</span></li>
+<li><span class="num">9</span><span>红色箭头：pathwise 梯度从奖励沿链往回传到哪一步。</span></li>
+<li><span class="num">10</span><span>叠放虚线框 ×G：同一条件下的一组兄弟样本。</span></li>
+</ol>
+<p>网格下面的“数据流”条带写的是同一件事的时间顺序：rollout 阶段做什么、打分怎么来、更新阶段用什么损失。</p>
+</section>
+<section id="genealogy">
+<h2><span class="secnum">1</span>方法谱系图</h2>
+<p>我按 RL 作用的位置把方法分成四类：噪声空间、链内（likelihood ratio）、likelihood-free / 回归、链外 / 输出。连线写的是两个方法之间改了什么，不一定表示论文的引用关系。点击方法名可以跳到对应小节。</p>
+<figure>
+<div class="fig-frame" id="genealogy-fig"></div>
+<figcaption><b>图 0</b>　方法谱系。实线边：直接在父方法上改一处或两处。ReFL / DRaFT / AlignProp 与 off-policy Q 方法是对照组，不在主干上。</figcaption>
+</figure>
+</section>
+<section id="setup">
+<h2><span class="secnum">2</span>双层 MDP 推导：两条 horizon</h2>
+<p>记号约定：环境步 \(t=0,1,\dots\)，去噪步 \(k=K,\dots,1,0\)（\(k=K\) 是纯噪声，\(k=0\) 是干净样本 / 动作）。图像生成里只有一条去噪 horizon，条件 \(c\) 是 prompt；机器人里，条件是观测 \(s_t\)，每个环境步都要跑一整条去噪链才能得到动作 \(a_t^0\)。</p>
+<h3 id="single"><span class="secnum">2.1</span>单层 denoising MDP（DDPO / DPOK）</h3>
+<p>DDPO（Black et al., 2023）和 DPOK（Fan et al., 2023）把一次采样看成长度为 \(K\) 的 episode：</p>
+<div class="eq">\[
+\mathbf s_k=(c,\,k,\,x_k),\qquad \mathbf a_k=x_{k-1},\qquad
+\pi_\theta(\mathbf a_k\mid \mathbf s_k)=\mathcal N\!\big(x_{k-1};\ \mu_\theta(x_k,k,c),\ \sigma_k^2 I\big),
+\]
+\[
+P(\mathbf s_{k-1}\mid \mathbf s_k,\mathbf a_k)=\delta_{(c,\,k-1,\,\mathbf a_k)},\qquad
+R(\mathbf s_k,\mathbf a_k)=\begin{cases} r(x_0,c) &amp; k=1\\ 0 &amp; \text{otherwise.}\end{cases}
+\]</div>
+<p>转移是确定性的（下一个状态就是刚采的 \(x_{k-1}\)），唯一的随机性来自策略本身。因为每一步是对角 Gaussian，log-prob 可以精确计算：</p>
+<div class="eq">\[
+\log\pi_\theta(x_{k-1}\mid x_k,c) = -\frac{\lVert x_{k-1}-\mu_\theta(x_k,k,c)\rVert^2}{2\sigma_k^2} + \text{const}.
+\]</div>
+<p>由于奖励只在终点出现、中间奖励为 0、折扣取 1，每一步的回报都等于 \(r(x_0,c)\)。DDPO 的两个估计量：</p>
+<div class="eq">\[
+\text{DDPO}_{\text{SF}}:\ \ \nabla_\theta J=\mathbb E\Big[\textstyle\sum_{k=1}^{K}\nabla_\theta\log\pi_\theta(x_{k-1}\mid x_k,c)\;r(x_0,c)\Big]
+\]
+\[
+\text{DDPO}_{\text{IS}}:\ \ J=\mathbb E\Big[\textstyle\sum_{k}\min\big(\rho_k\hat A,\ \operatorname{clip}(\rho_k,1-\epsilon,1+\epsilon)\hat A\big)\Big],\quad
+\rho_k=\frac{\pi_\theta(x_{k-1}\mid x_k,c)}{\pi_{\text{old}}(x_{k-1}\mid x_k,c)}
+\]</div>
+<p>\(\hat A\) 用每个 prompt 的历史 reward 均值 / 标准差做归一化，这样就不用另外训练 critic 了。思路和后来的 GRPO 有些像，但 GRPO 用的是同一批兄弟样本的统计量。DPOK 则在这个 MDP 上加 KL 正则，通过链式上界，把终端分布的 KL 换成逐步 Gaussian KL 的期望之和。后者有闭式解：</p>
+<div class="eq">\[
+\mathrm{KL}\big(p_\theta(x_0\mid c)\,\Vert\,p_{\text{pre}}(x_0\mid c)\big)\le
+\sum_{k}\mathbb E_{p_\theta}\Big[\mathrm{KL}\big(\pi_\theta(\cdot\mid x_k,c)\Vert\pi_{\text{pre}}(\cdot\mid x_k,c)\big)\Big]
+=\sum_k \mathbb E\Big[\tfrac{\lVert\mu_\theta-\mu_{\text{pre}}\rVert^2}{2\sigma_k^2}\Big].
+\]</div>
+<p>DPOK 附录里还可选地学一个 \(V(x_k,c)\approx\mathbb E[r(x_0,c)\mid x_k]\) 作 baseline，也就是<strong>定义在去噪状态上的 critic</strong>，可以和下面 DPPO 的设计对照着看。</p>
+<div class="note"><p><strong>算 Gaussian ratio 的前提是方差大于零。</strong>当 \(\sigma_k&gt;0\) 时，普通密度才有定义。DDIM 中 \(\sigma_k(\eta)=\eta\sqrt{\tfrac{1-\bar\alpha_{k-1}}{1-\bar\alpha_k}}\sqrt{1-\tfrac{\bar\alpha_k}{\bar\alpha_{k-1}}}\)。但取 \(\eta&gt;0\) 还不够，端点的方差可能仍然是零，需要检查 DDPM / DDIM 的具体实现，排除这一步或者加方差下界。\(\eta=0\) 时，单步转移是 Dirac，不能代入这里的 Gaussian ratio。不过，这并不意味着最终输出没有概率分布。</p></div>
+<h3 id="dppo-mdp"><span class="secnum">2.2</span>DPPO 的双层 MDP</h3>
+<p>DPPO（Ren et al., 2024）面对的是机器人：每个环境步 \(t\)，策略从 \(a_t^K\sim\mathcal N(0,I)\) 出发去噪到 \(a_t^0\)，执行 \(a_t^0\)（通常是一个 action chunk），环境转移到 \(s_{t+1}\)。DPPO 把两层展平成一条链，以下用<strong>目标状态下标</strong> \(k=K-1,\ldots,0\) 表示转移 \(a^{k+1}\to a^k\)，展平下标 \(\bar t(t,k)=tK+(K-k-1)\)：</p>
+<div class="eq">\[
+\bar s_{\bar t(t,k)}=(s_t,\ a_t^{k+1}),\qquad \bar a_{\bar t(t,k)}=a_t^{k},\qquad
+\bar R_{\bar t(t,k)}=\begin{cases}0 &amp; k\gt 0\\ R(s_t,a_t^0) &amp; k=0\end{cases}
+\]
+\[
+k\gt 0:\ (s_t,a_t^k)\ \text{确定性地成为下一状态};\qquad
+k=0:\ (s_{t+1},a_{t+1}^K)\sim P(s_{t+1}\mid s_t,a_t^0)\otimes\mathcal N(0,I).
+\]</div>
+<p>每一步的策略仍然是 Gaussian：\(\pi_\theta(a_t^k\mid s_t,a_t^{k+1})=\mathcal N\big(a_t^k;\mu_\theta(a_t^{k+1},s_t,k),\sigma_{k+1}^2I\big)\)，所以 log-prob 可以直接算。接下来的问题是，环境奖励只在 \(k=0\) 出现，怎么给每个 \((t,k)\) 算 advantage？</p>
+<figure>
+<div class="fig-frame">
+<svg aria-label="DPPO 双层 MDP：横轴是环境步 t，纵轴是去噪步 k。奖励只在 k=0 执行动作后产生；GAE 在环境层从右向左递推出 A_t；A_t 再乘以 gamma_denoise 的 k 次方，广播给同一环境步里的每个去噪步。" role="img" viewbox="0 0 960 470">
+<defs>
+<marker id="ah" markerheight="7" markerwidth="7" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path></marker>
+<marker id="ah-acc" markerheight="7" markerwidth="7" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"></path></marker>
+<marker id="ah-rew" markerheight="7" markerwidth="7" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--reward)"></path></marker>
+</defs>
+<rect height="92" rx="6" style="fill:var(--frozen-soft)" width="642" x="196" y="40"></rect>
+<rect height="94" rx="6" style="fill:var(--accent-soft)" width="642" x="196" y="170"></rect>
+<text class="svg-muted" font-size="12" x="850" y="82">冻结 θ</text>
+<text class="svg-muted" font-size="11" x="850" y="98">（早期步）</text>
+<text class="svg-accent" font-size="12" x="850" y="208">可训练 θ_ft</text>
+<text class="svg-accent" font-size="11" x="850" y="224">（最后 K′ 步）</text>
+<text class="svg-muted" font-size="12" x="16" y="26">去噪步 k ↓</text>
+<text class="svg-muted" font-size="12" text-anchor="middle" x="520" y="22">环境步 t →</text>
+<text class="svg-ink" font-size="12" x="40" y="66">k = K</text>
+<text class="svg-ink" font-size="12" x="40" y="116">K−1</text>
+<text class="svg-ink" font-size="12" x="40" y="156">⋮</text>
+<text class="svg-ink" font-size="12" x="40" y="196">1</text>
+<text class="svg-ink" font-size="12" x="40" y="246">0（执行）</text>
+<text class="svg-muted" font-size="12" x="40" y="310">环境层</text>
+<text class="svg-accent" font-size="12" x="40" y="404">advantage</text>
+<g fill="none" stroke="currentColor" stroke-width="1.3">
+<text class="svg-ink" font-size="13" stroke="none" text-anchor="middle" x="260" y="40">t</text>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="238" y="50"></rect>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="238" y="100"></rect>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="238" y="180"></rect>
+<rect height="24" rx="5" stroke-width="2" style="fill:var(--surface);stroke:var(--reward)" width="44" x="238" y="230"></rect>
+<line marker-end="url(#ah)" x1="260" x2="260" y1="74" y2="99"></line>
+<line x1="260" x2="260" y1="124" y2="140"></line>
+<line marker-end="url(#ah)" x1="260" x2="260" y1="162" y2="179"></line>
+<line marker-end="url(#ah)" x1="260" x2="260" y1="204" y2="229"></line>
+<line marker-end="url(#ah)" x1="260" x2="260" y1="254" y2="289"></line>
+<rect height="32" rx="5" style="fill:var(--surface)" width="72" x="224" y="290"></rect>
+<rect height="24" rx="12" style="fill:var(--surface)" width="54" x="130" y="294"></rect>
+<line marker-end="url(#ah)" x1="184" x2="223" y1="306" y2="306"></line>
+<line stroke-dasharray="3 4" x1="157" x2="157" y1="294" y2="62"></line>
+<line marker-end="url(#ah)" stroke-dasharray="3 4" x1="157" x2="237" y1="62" y2="62"></line>
+<line marker-end="url(#ah)" x1="296" x2="389" y1="306" y2="306"></line>
+<line marker-end="url(#ah-rew)" stroke-width="1.6" style="stroke:var(--reward)" x1="260" x2="260" y1="322" y2="384"></line>
+</g>
+<g class="svg-ink" font-size="12" text-anchor="middle">
+<text x="260" y="66">aᴷ</text><text x="260" y="116">aᴷ⁻¹</text><text x="260" y="156">⋮</text><text x="260" y="196">a¹</text><text x="260" y="246">a⁰</text>
+<text x="260" y="310">环境 P</text><text x="157" y="310">sₜ</text>
+</g>
+<text class="svg-muted" font-size="11" text-anchor="middle" x="157" y="338">V(sₜ)</text>
+<text class="svg-muted" font-size="11" x="168" y="54">条件 sₜ</text>
+<text class="svg-muted" font-size="11" text-anchor="middle" x="350" y="298">sₜ₊₁</text>
+<text class="svg-reward" font-size="12" x="268" y="352">rₜ</text>
+<g fill="none" stroke="currentColor" stroke-width="1.3">
+<text class="svg-ink" font-size="13" stroke="none" text-anchor="middle" x="520" y="40">t+1</text>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="498" y="50"></rect>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="498" y="100"></rect>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="498" y="180"></rect>
+<rect height="24" rx="5" stroke-width="2" style="fill:var(--surface);stroke:var(--reward)" width="44" x="498" y="230"></rect>
+<line marker-end="url(#ah)" x1="520" x2="520" y1="74" y2="99"></line>
+<line x1="520" x2="520" y1="124" y2="140"></line>
+<line marker-end="url(#ah)" x1="520" x2="520" y1="162" y2="179"></line>
+<line marker-end="url(#ah)" x1="520" x2="520" y1="204" y2="229"></line>
+<line marker-end="url(#ah)" x1="520" x2="520" y1="254" y2="289"></line>
+<rect height="32" rx="5" style="fill:var(--surface)" width="72" x="484" y="290"></rect>
+<rect height="24" rx="12" style="fill:var(--surface)" width="54" x="390" y="294"></rect>
+<line marker-end="url(#ah)" x1="444" x2="483" y1="306" y2="306"></line>
+<line stroke-dasharray="3 4" x1="417" x2="417" y1="294" y2="62"></line>
+<line marker-end="url(#ah)" stroke-dasharray="3 4" x1="417" x2="497" y1="62" y2="62"></line>
+<line marker-end="url(#ah)" x1="556" x2="649" y1="306" y2="306"></line>
+<line marker-end="url(#ah-rew)" stroke-width="1.6" style="stroke:var(--reward)" x1="520" x2="520" y1="322" y2="384"></line>
+</g>
+<g class="svg-ink" font-size="12" text-anchor="middle">
+<text x="520" y="66">aᴷ</text><text x="520" y="116">aᴷ⁻¹</text><text x="520" y="156">⋮</text><text x="520" y="196">a¹</text><text x="520" y="246">a⁰</text>
+<text x="520" y="310">环境 P</text><text x="417" y="310">sₜ₊₁</text>
+</g>
+<text class="svg-muted" font-size="11" text-anchor="middle" x="417" y="338">V(sₜ₊₁)</text>
+<text class="svg-reward" font-size="12" x="528" y="352">rₜ₊₁</text>
+<g fill="none" stroke="currentColor" stroke-width="1.3">
+<text class="svg-ink" font-size="13" stroke="none" text-anchor="middle" x="780" y="40">t+2</text>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="758" y="50"></rect>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="758" y="100"></rect>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="758" y="180"></rect>
+<rect height="24" rx="5" stroke-width="2" style="fill:var(--surface);stroke:var(--reward)" width="44" x="758" y="230"></rect>
+<line marker-end="url(#ah)" x1="780" x2="780" y1="74" y2="99"></line>
+<line x1="780" x2="780" y1="124" y2="140"></line>
+<line marker-end="url(#ah)" x1="780" x2="780" y1="162" y2="179"></line>
+<line marker-end="url(#ah)" x1="780" x2="780" y1="204" y2="229"></line>
+<line marker-end="url(#ah)" x1="780" x2="780" y1="254" y2="289"></line>
+<rect height="32" rx="5" style="fill:var(--surface)" width="72" x="744" y="290"></rect>
+<rect height="24" rx="12" style="fill:var(--surface)" width="54" x="650" y="294"></rect>
+<line marker-end="url(#ah)" x1="704" x2="743" y1="306" y2="306"></line>
+<line stroke-dasharray="3 4" x1="677" x2="677" y1="294" y2="62"></line>
+<line marker-end="url(#ah)" stroke-dasharray="3 4" x1="677" x2="757" y1="62" y2="62"></line>
+<line stroke-dasharray="2 3" x1="816" x2="900" y1="306" y2="306"></line>
+<line marker-end="url(#ah-rew)" stroke-width="1.6" style="stroke:var(--reward)" x1="780" x2="780" y1="322" y2="384"></line>
+</g>
+<g class="svg-ink" font-size="12" text-anchor="middle">
+<text x="780" y="66">aᴷ</text><text x="780" y="116">aᴷ⁻¹</text><text x="780" y="156">⋮</text><text x="780" y="196">a¹</text><text x="780" y="246">a⁰</text>
+<text x="780" y="310">环境 P</text><text x="677" y="310">sₜ₊₂</text>
+</g>
+<text class="svg-muted" font-size="11" text-anchor="middle" x="677" y="338">V(sₜ₊₂)</text>
+<text class="svg-reward" font-size="12" x="788" y="352">rₜ₊₂</text>
+<g class="svg-accent" font-size="12" text-anchor="middle">
+<text font-weight="600" x="260" y="404">Aₜ</text>
+<text font-weight="600" x="520" y="404">Aₜ₊₁</text>
+<text font-weight="600" x="780" y="404">Aₜ₊₂</text>
+</g>
+<g fill="none" stroke-width="1.6" style="stroke:var(--accent)">
+<line marker-end="url(#ah-acc)" x1="488" x2="296" y1="400" y2="400"></line>
+<line marker-end="url(#ah-acc)" x1="748" x2="560" y1="400" y2="400"></line>
+<line marker-end="url(#ah-acc)" stroke-dasharray="2 3" x1="920" x2="820" y1="400" y2="400"></line>
+</g>
+<text class="svg-accent" font-size="11" text-anchor="middle" x="392" y="422">GAE：δₜ = rₜ + γV(sₜ₊₁) − V(sₜ)</text>
+<text class="svg-accent" font-size="11" text-anchor="middle" x="654" y="422">Aₜ = Σ (γλ)ˡ δₜ₊ₗ</text>
+<g fill="none" stroke-width="1.6" style="stroke:var(--accent)">
+<line x1="304" x2="304" y1="388" y2="62"></line>
+<line marker-end="url(#ah-acc)" opacity="1" x1="304" x2="284" y1="242" y2="242"></line>
+<line marker-end="url(#ah-acc)" opacity="0.8" x1="304" x2="284" y1="192" y2="192"></line>
+<line marker-end="url(#ah-acc)" opacity="0.55" x1="304" x2="284" y1="112" y2="112"></line>
+<line marker-end="url(#ah-acc)" opacity="0.4" x1="304" x2="284" y1="62" y2="62"></line>
+<line x1="564" x2="564" y1="388" y2="62"></line>
+<line marker-end="url(#ah-acc)" x1="564" x2="544" y1="242" y2="242"></line>
+<line marker-end="url(#ah-acc)" opacity="0.8" x1="564" x2="544" y1="192" y2="192"></line>
+<line marker-end="url(#ah-acc)" opacity="0.55" x1="564" x2="544" y1="112" y2="112"></line>
+<line marker-end="url(#ah-acc)" opacity="0.4" x1="564" x2="544" y1="62" y2="62"></line>
+<line x1="824" x2="824" y1="388" y2="62"></line>
+<line marker-end="url(#ah-acc)" x1="824" x2="804" y1="242" y2="242"></line>
+<line marker-end="url(#ah-acc)" opacity="0.8" x1="824" x2="804" y1="192" y2="192"></line>
+<line marker-end="url(#ah-acc)" opacity="0.55" x1="824" x2="804" y1="112" y2="112"></line>
+<line marker-end="url(#ah-acc)" opacity="0.4" x1="824" x2="804" y1="62" y2="62"></line>
+</g>
+<g>
+<rect height="10" style="fill:var(--surface)" width="8" x="300" y="301"></rect><line stroke="currentColor" stroke-width="1.3" x1="298" x2="310" y1="306" y2="306"></line>
+<rect height="10" style="fill:var(--surface)" width="8" x="560" y="301"></rect><line stroke="currentColor" stroke-width="1.3" x1="558" x2="570" y1="306" y2="306"></line>
+<rect height="10" style="fill:var(--surface)" width="8" x="820" y="301"></rect><line stroke="currentColor" stroke-dasharray="2 3" stroke-width="1.3" x1="818" x2="830" y1="306" y2="306"></line>
+</g>
+<text class="svg-accent" font-size="12" x="850" y="150">Âₜ,ₖ = γ_dᵏ · Aₜ</text>
+<text class="svg-muted" font-size="11" x="850" y="166">每格一个 ρₜ,ₖ</text>
+<g font-size="11">
+<line marker-end="url(#ah)" stroke="currentColor" stroke-width="1.3" x1="40" x2="70" y1="452" y2="452"></line>
+<text class="svg-ink" x="78" y="456">去噪转移 π_θ(aᵏ⁻¹|aᵏ,sₜ)：梯度只经过本步</text>
+<line marker-end="url(#ah-rew)" stroke-width="1.6" style="stroke:var(--reward)" x1="440" x2="470" y1="452" y2="452"></line>
+<text class="svg-reward" x="478" y="456">奖励（只在 k=0 后出现）</text>
+<line marker-end="url(#ah-acc)" stroke-width="1.6" style="stroke:var(--accent)" x1="650" x2="680" y1="452" y2="452"></line>
+<text class="svg-accent" x="688" y="456">advantage 流向（越淡权重越小）</text>
+</g>
+</svg>
+</div>
+<figcaption><b>图 1</b>　DPPO 的 \(t\times k\) 网格。橙色：奖励 \(r_t\) 只在执行 \(a_t^0\) 之后出现。青色：critic \(V(s_t)\) 只看环境状态，GAE 只在环境层从右往左递推出 \(A_t\)；同一列里所有去噪步共享 \(A_t\)，再乘 \(\gamma_{\text{denoise}}^{k}\)，离 \(k=0\) 越远权重越小。只有阴影下半部分（最后 \(K'\) 步）的参数被更新。</figcaption>
+</figure>
+<p><strong>Advantage 怎么算、怎么传。</strong>DPPO 的 advantage 是两层的：</p>
+<div class="eq">\[
+\delta_t=r_t+\gamma_{\text{env}}V_\phi(s_{t+1})-V_\phi(s_t),\qquad
+A_t=\sum_{l\ge0}(\gamma_{\text{env}}\lambda)^l\,\delta_{t+l},\qquad
+\hat A_{t,k}=\gamma_{\text{denoise}}^{\,k}\,A_t .
+\]</div>
+<ul>
+<li><strong>critic 只依赖 \(s_t\)</strong>，不依赖中间噪声动作 \(a_t^{k+1}\)。论文的消融显示，让 value 也看 \(a^{k+1}\) 会明显不稳定。</li>
+<li><strong>advantage 是共享的，不是逐步算的。</strong>同一环境步里所有 \(k\) 用同一个 \(A_t\)，只差一个确定性的系数 \(\gamma_{\text{denoise}}^k\)（公开配置为 0.99）。代码里是 <code>advantages *= gamma_denoising ** (ft_denoising_steps - i - 1)</code>，\(i\) 沿链递增，最后一步系数为 1。</li>
+<li>我的理解是，如果内层折扣取 1，critic 又只看 \(s_t\)，那么内层 TD 项就是 \(0+V(s_t)-V(s_t)=0\)。但光凭这一点，还不能说“在展平的链上跑普通 GAE”就等于把环境层 GAE 广播下来，因为 trace 的 \(\lambda\) 和折扣在内层怎么处理也要说清楚。DPPO 的实际做法是先在环境层算 \(A_t\)，再乘 \(\gamma_{\mathrm{denoise}}^k\)，给早期去噪步更小的权重。</li>
+</ul>
+<p><strong>PPO ratio 与 clipping。</strong>每个 \((t,k)\) 是一个独立的 PPO 样本：</p>
+<div class="eq">\[
+\rho_{t,k}(\theta)=\frac{\pi_\theta(a_t^k\mid s_t,a_t^{k+1})}{\pi_{\theta_{\text{old}}}(a_t^k\mid s_t,a_t^{k+1})},\qquad
+\mathcal L_{\text{PPO}}=-\,\mathbb E_{t,k}\Big[\min\big(\rho_{t,k}\hat A_{t,k},\ \operatorname{clip}(\rho_{t,k},1-\epsilon_k,1+\epsilon_k)\hat A_{t,k}\big)\Big].
+\]</div>
+<ul>
+<li>\(a_t^{k+1}\) 和 \(a_t^k\) 都是 rollout 时存下来的，更新时把它们当常数。\(\nabla_\theta\log\pi_\theta\) 只经过当前的 \(\mu_\theta(a_t^{k+1},s_t,k)\)，<strong>不会跨去噪步反传</strong>。按步组织 minibatch，就不用一直存着整条链的反传激活了。不过 rollout 轨迹还是要存，总计算量也仍然随 \(K\) 增长，所以不能说显存开销完全与 \(K\) 无关。</li>
+<li>官方代码里 clip 系数可以随去噪步变化：\(\epsilon_k=\epsilon_{\text{base}}+(\epsilon-\epsilon_{\text{base}})\frac{e^{\beta\tau_k}-1}{e^{\beta}-1}\)，\(\tau_k\in[0,1]\) 沿链递增，越接近 \(k=0\) trust region 越宽。公开配置里 Robomimic 是 <code>clip_ploss_coef_base=0.001</code> → <code>clip_ploss_coef=0.01</code>，Gym 两者都是 0.01（等于不调度）。</li>
+</ul>
+<p><strong>探索噪声与数值稳定。</strong>扩散的后验方差 \(\sigma_k\) 在最后几步非常小，会带来两个问题：探索不够，以及 \(\log\pi\) 对 \(\mu\) 的微小变化极其敏感（ratio 爆炸）。DPPO 用两个下界分别处理：采样时把 \(\sigma_k\) 截到不低于 \(\sigma^{\text{exp}}_{\min}\)（按任务取 0.01–0.1），计算 log-prob 时截到不低于 \(\sigma^{\text{prob}}_{\min}=0.1\)。公开的 Gym / Robomimic 配置里两个下界都是 0.1。</p>
+<p><strong>只微调最后几步。</strong>复制一份 \(\theta_{\text{ft}}\)，前 \(K-K'\) 步用冻结的 \(\theta\)，最后 \(K'\) 步用 \(\theta_{\text{ft}}\)，只有这部分进 PPO 损失（公开配置 \(K=20,\ K'=10\)）。另一种做法是训练时直接换成 \(K_{\text{DDIM}}\approx5\) 步、\(\eta=1\) 的 DDIM（随机），评估时用 \(\eta=0\)。动作是 action chunk（\(T_a\) 步执行后重规划）。</p>
+<h3 id="alts"><span class="secnum">2.3</span>其他切法</h3>
+<p><strong>(a) 整条链当成一个大 action。</strong>链的联合 log-prob 是逐步 log-prob 之和，联合 ratio 是逐步 ratio 之积：</p>
+<div class="eq">\[
+\log\pi_\theta(a^{0:K}\mid s)=\log\mathcal N(a^K;0,I)+\sum_{k=1}^{K}\log\pi_\theta(a^{k-1}\mid a^k,s),\qquad
+\rho^{\text{chain}}=\prod_{k=1}^{K}\rho_k=\exp\Big(\sum_k\Delta\ell_k\Big).
+\]</div>
+<p>最终动作的边缘 ratio \(\pi_\theta(a^0\mid s)/\pi_{\mathrm{old}}(a^0\mid s)\) 通常不好算，但如果把中间变量都存下来，就能算扩展空间上的 importance weight \(\rho^{\mathrm{chain}}\)。在旧策略处，不加 clipping 和额外步权重时，两种写法给出相同的 score-function 梯度 \(\mathbb E[A\sum_k\nabla\log\pi_k]\)。离开这个点，目标就不一样了：即使每步 ratio 都在 \([1-\epsilon,1+\epsilon]\) 内，乘起来也可能到 \((1\pm\epsilon)^K\) 这个量级。另外，<strong>PPO clipping 并不是 ratio 或 KL 的硬约束</strong>。整链乘积波动大，也可能更频繁地触发 clipping。OGPO 用的就是整链 ratio。</p>
+<p><strong>(b) GRPO 式只看结果的组内比较。</strong>对同一条件 \(c\) 采 \(G\) 条链，\(\hat A_i=(r_i-\bar r)/\operatorname{std}(r)\)，把同一个 \(\hat A_i\) 广播给链上每一步，然后逐步 ratio + clip（Flow-GRPO、DanceGRPO）。不需要 critic，但每步拿到的仍是同一个终端信号，credit assignment 跟 DDPO 没本质区别；进步主要来自更好的 baseline 和工程（SDE 采样、步数缩减、共享噪声）。</p>
+<p><strong>(c) 只在噪声 / latent 空间做 RL。</strong>冻结 \(f_\theta\)，把它当成环境的一部分，学一个噪声策略 \(\pi_\psi(w\mid s)\)，动作是 \(a=f_\theta(s,w)\)（通常配确定性采样器，比如 DDIM \(\eta=0\)）。likelihood 就是 \(\pi_\psi\) 自己的 Gaussian log-prob，跟去噪链无关。代表：DSRL（off-policy、SAC），Noise PPO（单步 MDP、PPO）。</p>
+<p><strong>(d) 完全绕开链的 likelihood。</strong>一类用 ELBO / flow-matching 损失差构造替代 ratio（FPO）；一类直接做加权的 flow-matching 回归，比如 DiffusionNFT 的正 / 负隐式策略，以及更早的 advantage-weighted regression 思路：</p>
+<div class="eq">\[
+\mathcal L_{\text{wFM}}(\theta)=\mathbb E_{(s,a)\sim\mathcal D,\ \tau,\ \varepsilon}\Big[\,w(s,a)\,\big\lVert v_\theta(x_\tau,\tau,s)-(\varepsilon-a)\big\rVert^2\Big],\qquad w=\exp(A/\beta)\ \text{或}\ r\in[0,1].
+\]</div>
+<p>这些方法不用算 rollout 的链上 likelihood，所以 ODE、高阶 solver 都可以用。但这不代表任意 CFG 设置都能稳定训练，比如 FPO 就报告过 CFG 相关的问题。上式只是 weighted flow matching 的示意；DiffusionNFT 还要构造正 / 负隐式策略，具体看后面的小节，不能直接当成普通的奖励加权 SFT。</p>
+<h3 id="sde"><span class="secnum">2.4</span>ODE → SDE：flow 模型为什么需要它</h3>
+<p>Flow matching / rectified flow 用 ODE \(\mathrm dx_\tau=v_\theta(x_\tau,\tau)\,\mathrm d\tau\) 采样。给定当前状态，下一步是确定的，也就是 Dirac 转移，没法用普通随机转移的密度来算逐步 PPO；这和最终输出有没有密度是两件事。这里取 \(\tau=1\) 为噪声，\(\tau=0\) 为数据，生成时 \(\mathrm d\tau&lt;0\)。假设速度场 / score 是理想的，并且在连续时间下考虑，我们可以构造一个边缘分布相同的反向 SDE。</p>
+<div class="eq">\[\mathrm dx_\tau=\left[v_\theta(x_\tau,\tau)-\frac{\sigma_\tau^2}{2}\nabla_x\log p_\tau(x_\tau)\right]\mathrm d\tau+\sigma_\tau\,\mathrm d\bar W_\tau,\qquad \operatorname{Var}(\mathrm d\bar W_\tau)=|\mathrm d\tau|I.\]</div>
+<p>本小节的 \(t\) 是插值时间，不是环境步。对 rectified flow，\(x_t=(1-t)x_0+t\varepsilon\)，score 可以用速度场表示：\(\nabla\log p_t(x)=-\frac{x+(1-t)v_\theta(x,t)}{t}\)。代入后做 Euler–Maruyama，就是 Flow-GRPO 的更新：</p>
+<div class="eq">\[
+x_{t+\Delta t}=x_t+\Big[v_\theta(x_t,t)+\frac{\sigma_t^2}{2t}\big(x_t+(1-t)v_\theta(x_t,t)\big)\Big]\Delta t+\sigma_t\sqrt{|\Delta t|}\,\epsilon,\qquad \sigma_t=a\sqrt{\tfrac{t}{1-t}} .
+\]</div>
+<p>于是每步都是各向同性 Gaussian，log-prob 闭式可算；两个策略之间的逐步 KL 也有闭式：\(\mathrm{KL}=\frac{|\Delta t|}{2}\big(\frac{\sigma_t(1-t)}{2t}+\frac{1}{\sigma_t}\big)^2\lVert v_\theta-v_{\text{ref}}\rVert^2\)。超参数 \(a\) 控制探索强度（生成时 \(\Delta t&lt;0\)，噪声协方差与 KL 用 \(|\Delta t|\)；有限步离散化不保证完全保持连续时间边缘分布）。</p>
+<p>ReinFlow 不推 SDE，而是直接给每步加一个<strong>可学习的</strong>噪声网络：</p>
+<div class="eq">\[
+a^{k+1}=a^k+v_\theta(t_k,a^k,s)\,\Delta t_k+\sigma_{\theta'}(t_k,a^k,s)\,\epsilon,\qquad
+\pi(a^{k+1}\mid a^k,s)=\mathcal N\big(a^k+v_\theta\Delta t_k,\ \operatorname{diag}\sigma_{\theta'}^2\big).
+\]</div>
+<p>这样就得到一个离散时间 Markov 过程，联合 likelihood 是逐步 Gaussian 的乘积。噪声大小交给 RL 学，再加上下界和上界；步数可以很少，只有 1–4 步。但这样一来，就不再保证边缘分布和预训练模型一致了。πRL 两种都试了：Flow-Noise 用 ReinFlow 式的可学习噪声和单层 MDP，Flow-SDE 用 SDE 和 DPPO 式的双层 MDP。</p>
+<h3 id="grad-paths"><span class="secnum">2.5</span>梯度到底走哪条路</h3>
+<div class="tbl"><table>
+<thead><tr><th>梯度路径</th><th>需要什么</th><th>代表</th><th>特点</th></tr></thead>
+<tbody>
+<tr><td>Score-function，逐步局部</td><td>每步 \(\log\pi\)；随机采样器</td><td>DDPO、DPOK、DPPO、Flow-GRPO、DanceGRPO、ReinFlow</td><td>允许黑盒、不可微奖励；score-function 方差可能较大；不保存跨去噪步的反传激活，但轨迹存储与总计算仍随 \(K\) 增长</td></tr>
+<tr><td>Pathwise，沿链反传</td><td>可微奖励；可微的链</td><td>ReFL、DRaFT、AlignProp</td><td>通常比 score-function 更低方差；显存随反传步数增长；可能 reward hacking；黑盒物理环境奖励不能直接沿该路径反传</td></tr>
+<tr><td>Pathwise 链 + Gaussian 输出头</td><td>存下整条噪声序列</td><td>NCDPO</td><td>把链当成噪声条件下的确定性函数 \(f_\theta(s,a^K,z_{1:K})\)，在其输出上放 Gaussian 做 PPO，梯度穿过所有去噪步</td></tr>
+<tr><td>噪声空间策略</td><td>对 \(f_\theta\) 的黑盒访问</td><td>DSRL、Noise PPO</td><td>不更新 \(\theta\)；受限于冻结生成器在允许 latent 域内可达的输出</td></tr>
+<tr><td>替代 likelihood / 加权回归</td><td>flow-matching 损失</td><td>FPO、DiffusionNFT、AWR 类</td><td>采样器无关；ratio 或权重是近似，存在偏差 / 额外方差</td></tr>
+</tbody></table></div>
+</section><section id="onpolicy">
+<h3><span class="secnum">2.6</span>通用 on-policy 方法</h3>
+<div class="method">
+<div class="method-head"><h4>PPO + GAE</h4><span class="cite">Schulman et al. 2017 · <a href="https://arxiv.org/abs/1707.06347">1707.06347</a>；GAE 2015 · <a href="https://arxiv.org/abs/1506.02438">1506.02438</a></span></div>
+<div class="eq">\[
+  \mathcal L^{\text{CLIP}}=\mathbb E\big[\min(\rho_t A_t,\operatorname{clip}(\rho_t,1\pm\epsilon)A_t)\big],\quad
+  \rho_t=\tfrac{\pi_\theta(a_t\mid s_t)}{\pi_{\text{old}}(a_t\mid s_t)},\quad
+  A_t^{\text{GAE}}=\textstyle\sum_l(\gamma\lambda)^l\delta_{t+l}
+  \]</div>
+<p>critic \(V_\phi\) 用 value loss（常带 value clipping）训练。clipping 是限制策略更新的 surrogate，并不硬性约束 KL，多 epoch 复用同一批数据。常见实现还包括 clipped value loss、全局归一化 advantage，以及 target-KL 早停。</p>
+</div>
+<div class="method">
+<div class="method-head"><h4>GRPO</h4><span class="cite">Shao et al. 2024（DeepSeekMath）· <a href="https://arxiv.org/abs/2402.03300">2402.03300</a></span></div>
+<div class="eq">\[
+  \hat A_i=\frac{r_i-\operatorname{mean}(r_{1:G})}{\operatorname{std}(r_{1:G})},\qquad
+  \mathcal J=\mathbb E\Big[\tfrac1G\textstyle\sum_i\tfrac1{|o_i|}\sum_t\min(\rho_{i,t}\hat A_i,\operatorname{clip}(\cdot)\hat A_i)-\beta\,\mathbb D_{\text{KL}}\Big],\quad
+  \mathbb D_{\text{KL}}\approx\tfrac{\pi_{\text{ref}}}{\pi_\theta}-\log\tfrac{\pi_{\text{ref}}}{\pi_\theta}-1
+  \]</div>
+<p>不训练 critic，而是用同一条件下 \(G\) 个样本的均值当 baseline。一个样本的 token / 去噪步都用同一个 outcome advantage。上面的 k3 项，在样本来自当前策略且满足支持条件时，是 \(D_{\mathrm{KL}}(\pi_\theta\Vert\pi_{\mathrm{ref}})\) 的无偏估计。如果复用旧策略的数据，采样分布变了，就得另外考虑。这里 KL 直接放进 loss，不放进 reward。写代码时也要处理组内标准差为零的情况。</p>
+</div>
+<div class="method">
+<div class="method-head"><h4>RLOO / REINFORCE++</h4><span class="cite">Ahmadian et al. 2024 · <a href="https://arxiv.org/abs/2402.14740">2402.14740</a>；Hu et al. 2025 · <a href="https://arxiv.org/abs/2501.03262">2501.03262</a></span></div>
+<p>RLOO：\(\hat A_i=r_i-\frac1{G-1}\sum_{j\ne i}r_j\)。同条件下兄弟样本独立采样时，leave-one-out baseline 不依赖当前 action，因此不改变期望 policy gradient；它不除以 std。REINFORCE++ 不训练 critic，在整个 batch 上归一化 advantage，KL 放入逐 token reward，目的是缓解组内标准化带来的问题。</p>
+</div>
+<h4 style="margin-top:22px">用在扩散策略上的实际难点</h4>
+<ol>
+<li><strong>Likelihood 能否算。</strong>确定性 ODE / DDIM 的局部条件转移是 Dirac，不能直接用于普通 Gaussian PPO；随机采样器的正方差转移可算密度，但最终 \(\pi(a^0\mid s)\) 还涉及积分。可改用 SDE、注噪声或替代目标（FPO / NFT）。GenPO 通过可逆构造求精确边缘 likelihood，代价包括动作维度加倍与结构约束。</li>
+<li><strong>去噪链上的 credit assignment。</strong>奖励只在 \(x_0\) 出现。主流做法要么共享（DPPO 乘 \(\gamma_{\text{denoise}}^k\)，GRPO 直接广播），要么学去噪状态上的 critic（DPOK 可选的 \(V(x_k,c)\)）。SPO、DenseGRPO 一类工作尝试做逐步奖励，但都要额外的模型或采样。</li>
+<li><strong>方差。</strong>\(\sum_k\nabla\log\pi_k\) 一共有 \(K\) 项，方差要看每一项和它们之间的协方差，不能简单说 \(K\) 越大方差就越大。不过链长了，计算和梯度噪声都可能更难处理。DPPO 只训最后 \(K^{\prime}\) 步，DanceGRPO 抽约 60% 的时间步，MixGRPO 只训一个滑动窗口，都是少训一些步的做法。</li>
+<li><strong>计算成本。</strong>每个环境决策要跑 \(K\) 次网络；更新时每个参与训练的步都要再前向 + 反传一次。常见手段是训练时减步数（Flow-GRPO 训 10 步、推理 40 步）、DDIM 5 步、或者 1–4 步的 shortcut / ReFlow 模型（ReinFlow）。</li>
+<li><strong>探索噪声。</strong>扩散后验方差在最后几步趋近 0，PPO 拿不到有效探索，ratio 也会数值爆炸。需要 \(\sigma_{\min}\) 下界（DPPO）、可调 SDE 噪声幅度 \(a\)（Flow-GRPO）或可学习噪声（ReinFlow）。噪声加大又会让样本偏离 prior 的流形。</li>
+<li><strong>到 pretrained prior 的 KL。</strong>先验相同、Gaussian 转移方差为正时，逐步 KL 的期望之和是终端 KL 的上界。DPOK / Flow-GRPO 用了这个正则，DanceGRPO 的实验里则没用 KL。但我觉得不能因此就说 KL 都可以去掉，尤其是 reward model 容易被利用的时候。当然，加了 KL / BC 也不代表 reward hacking 就解决了。</li>
+</ol>
+</section>
+<section id="lane-chain">
+<h2><span class="secnum">3</span>链内：在去噪转移上算 likelihood ratio</h2>
+<p class="lane-intro">这类方法把部分去噪转移当成 RL action，在图里的实心格上算 \(\log\pi\) 和 ratio。区别主要是哪些步参与更新、advantage 怎么算、critic 放在哪一层。后面统一用这些记号：条件 \(c\)（图像）或 \(s_t\)（机器人），去噪状态 \(x_k\)，旧策略 \(\theta_{\text{old}}\)，参考模型 \(\theta_{\text{ref}}\)，advantage \(\hat A\)，ratio \(\rho\)。</p>
+<article class="card" id="m-ddpo">
+<header class="card-head"><h3>DDPO</h3><span class="cite">Black, Janner, Du, Kostrikov, Levine · 2023 · <a href="https://arxiv.org/abs/2305.13301">2305.13301</a></span><span class="lane-tag">链内</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>policy 是每个去噪转移 \(\pi_\theta(x_{k-1}\mid x_k,c)\)，action 是 \(x_{k-1}\)，奖励是终端的黑盒标量 \(r(x_0,c)\)（压缩率、美学分、VLM 对齐分）。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="ddpo"></div></dd>
+<dt>训练一步</dt><dd><pre><code>c ~ prompts;  x_K ~ N(0, I)
+for k = K..1:                     # DDIM 50 步, η=1（ddpo-pytorch 默认, CFG 5.0）
+    x_{k-1} ~ N(μ_θold(x_k, k, c), σ_k² I);  存 logp_old[k]
+r = R(x_0, c)
+Â = clip((r - mean_c) / std_c, -5, 5)   # 按 prompt 的 running 统计, 无 critic
+for epoch, minibatch, k in 全部 K 步:
+    ρ_k = exp(log π_θ(x_{k-1} | x_k, c) - logp_old[k])
+    L  += -min(ρ_k Â, clip(ρ_k, 1-ε, 1+ε) Â)   # ε = 1e-4
+θ ← θ - η ∇L</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\mathcal J_{\text{DDPO}_\text{IS}}=\mathbb E\Big[\sum_{k=1}^{K}\min\big(\rho_k\hat A,\ \operatorname{clip}(\rho_k,1-\epsilon,1+\epsilon)\hat A\big)\Big],\quad \rho_k=\frac{\pi_\theta(x_{k-1}\mid x_k,c)}{\pi_{\theta_{\text{old}}}(x_{k-1}\mid x_k,c)}\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对普通 PPO：
+      <ol><li>把一次采样看成 \(K\) 步 MDP：转移确定、策略是对角 Gaussian、奖励只在终点（§2.1）。</li>
+<li>没有 critic，baseline 是同一 prompt 的历史 reward 均值 / 标准差（per-prompt stat tracking）。</li>
+<li>所有 \(K\) 步拿同一个 \(\hat A\)；没有 KL。DDPO\(_\text{SF}\) 是同一框架下的 REINFORCE 版本。</li></ol></dd>
+<dt>局限</dt><dd>需要随机采样器才有 \(\log\pi\)；每个样本存 \(K\) 步；\(K\) 项同权，方差大；无 KL 时 reward over-optimization 明显；clip 范围很小（1e-4），每轮更新保守。</dd>
+<dt>变体</dt><dd>DDPO\(_\text{SF}\)；Large-scale RL for diffusion（Zhang et al. 2024，<a href="https://arxiv.org/abs/2401.12244">2401.12244</a>）把它扩到百万级 prompt 与多奖励。</dd>
+</dl>
+</article>
+<article class="card" id="m-dpok">
+<header class="card-head"><h3>DPOK</h3><span class="cite">Fan et al. · 2023 · <a href="https://arxiv.org/abs/2305.16381">2305.16381</a></span><span class="lane-tag">链内</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>与 DDPO 相同的单层 denoising MDP，目标里加逐步 KL 到预训练模型，可选学一个定义在去噪状态上的 \(V(x_k,c)\)；奖励是 ImageReward。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="dpok"></div></dd>
+<dt>训练一步</dt><dd><pre><code>c ~ prompts;  用随机采样器采 x_K..x_0 ~ π_θ;  存每步样本
+r = R(x_0, c)                         # ImageReward
+for k = K..1:
+    A_k  = r - V_φ(x_k, c)            # 可选 baseline; 不用时 A_k = r
+    L_pg += -α A_k · log π_θ(x_{k-1} | x_k, c)
+    L_kl += β ‖μ_θ(x_k,k,c) - μ_ref(x_k,k,c)‖² / (2σ_k²)   # 闭式逐步 KL
+L_V = Σ_k (V_φ(x_k, c) - r)²
+θ ← θ - η ∇(L_pg + L_kl);   φ ← φ - η ∇L_V</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\min_\theta\ \mathbb E_{c}\Big[\alpha\,\mathbb E_{p_\theta}[-r(x_0,c)]+\beta\sum_{k}\mathbb E_{p_\theta}\big[\mathrm{KL}\big(p_\theta(x_{k-1}\mid x_k,c)\,\Vert\,p_{\text{pre}}(x_{k-1}\mid x_k,c)\big)\big]\Big]\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 DDPO：
+      <ol><li>加逐步 KL 到预训练模型，是终端 KL 的上界，闭式为 \(\lVert\mu_\theta-\mu_{\text{pre}}\rVert^2/2\sigma_k^2\)。</li>
+<li>可选 critic \(V(x_k,c)\approx\mathbb E[r\mid x_k]\)：不同 \(k\) 的 advantage 因此可以不同。这是 DDPO 和 GRPO 系都没有的东西。</li>
+<li>奖励换成学到的 ImageReward；其余不变。是否对 ratio 做 PPO 式 clip：我没有在原文中确认，不确定。</li></ol></dd>
+<dt>局限</dt><dd>每步多一次冻结参考模型前向；KL 是上界，偏保守；实验规模小（少量 prompt）。</dd>
+<dt>变体</dt><dd>—</dd>
+</dl>
+</article>
+<article class="card" id="m-flowgrpo">
+<header class="card-head"><h3>Flow-GRPO</h3><span class="cite">Liu et al. · 2025 · <a href="https://arxiv.org/abs/2505.05470">2505.05470</a></span><span class="lane-tag">链内</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>rectified flow 模型（SD3.5-M）。把 ODE 换成同边缘分布的 SDE，得到逐步 Gaussian 策略；action 是每个 SDE 步；奖励是终端（GenEval、OCR、PickScore）；advantage 用组内归一化。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="flowgrpo"></div></dd>
+<dt>训练一步</dt><dd><pre><code>c ~ prompts
+for i = 1..G:                         # G = 24
+    x_1 ~ N(0, I)
+    SDE 采样 T = 10 步 (σ_t = a√(t/(1-t)), a = 0.7), 存每步 logp_old
+    r_i = R(x_0^i, c)
+Â_i = (r_i - mean(r)) / std(r)        # 广播到这条链的全部 T 步
+for i, t in 组 × 全部 T 步:
+    ρ = exp(log π_θ(x_{t+Δt} | x_t, c) - logp_old)
+    L += -min(ρ Â_i, clip(ρ, 1-ε, 1+ε) Â_i) + β KL_t(θ ‖ θ_ref)
+θ ← θ - η ∇L                          # 推理仍用 ODE, T = 40</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\mathcal J=\mathbb E\Big[\frac1G\sum_{i=1}^{G}\frac1T\sum_{t}\Big(\min\big(\rho_t^i\hat A^i,\operatorname{clip}(\rho_t^i,1\pm\epsilon)\hat A^i\big)-\beta\,D_{\text{KL}}(\pi_\theta\Vert\pi_{\text{ref}})\Big)\Big]\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 DDPO：
+      <ol><li>模型从 DDPM 换成 rectified flow，用 ODE→SDE 得到 Gaussian 转移（§2.4）。</li>
+<li>baseline 从 per-prompt 历史统计换成同一 prompt 下 \(G=24\) 个样本的组内归一化。</li>
+<li>加闭式逐步 KL（\(\beta=0.04\) 用于 GenEval / OCR，0.01 用于 PickScore）。</li>
+<li>Denoising Reduction：训练只采 10 步，推理仍 40 步。</li></ol></dd>
+<dt>局限</dt><dd>SDE 噪声幅度 \(a\) 要调（太小则探索不足）；所有步共享 outcome advantage；每组 \(G\times T\) 次前向，更新时同样多的前向 + 反传。</dd>
+<dt>变体</dt><dd>πRL Flow-SDE（<a href="https://arxiv.org/abs/2510.25889">2510.25889</a>）：同样的 SDE 用在 \(\pi_0\) / \(\pi_{0.5}\) VLA 上，并与环境耦合成双层 MDP。</dd>
+</dl>
+</article>
+<article class="card" id="m-dancegrpo">
+<header class="card-head"><h3>DanceGRPO</h3><span class="cite">Xue et al. · 2025 · <a href="https://arxiv.org/abs/2505.07818">2505.07818</a></span><span class="lane-tag">链内</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>同样是“SDE + 组内 advantage”，统一 diffusion 与 rectified flow，覆盖 T2I / T2V / I2V（SD、FLUX、HunyuanVideo、SkyReels），用多个奖励模型。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="dancegrpo"></div></dd>
+<dt>训练一步</dt><dd><pre><code>c ~ prompts;  x_K ~ N(0, I)          # 组内共享同一个初始噪声
+for i = 1..G:                         # 图像 G = 12
+    SDE 采样 (SD 50 步 / FLUX、HunyuanVideo 25 步), 存 logp_old
+for each 奖励模型 m:
+    A_i^m = (r_i^m - μ^m) / σ^m
+Â_i = Σ_m A_i^m                       # 先各自归一化再相加
+S = 随机保留 60% 的时间步
+for i, k in 组 × S:
+    L += -min(ρ Â_i, clip(ρ, 1-ε, 1+ε) Â_i)    # ε = 1e-4, 无 KL
+θ ← θ - η ∇L                          # 带 CFG 时 cond 与 uncond 一起优化</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\mathcal J=\mathbb E\Big[\frac1G\sum_i\frac{1}{|S|}\sum_{k\in S}\min\big(\rho_k^i\hat A^i,\operatorname{clip}(\rho_k^i,1\pm\epsilon)\hat A^i\big)\Big],\quad \hat A^i=\sum_m\frac{r_i^m-\mu^m}{\sigma^m}\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 Flow-GRPO（两者几乎同时发表，这里比的是机制，不是继承关系）：
+      <ol><li>组内样本共享初始噪声（论文称不共享会在视频上导致 reward hacking 和不稳定）。</li>
+<li>每次只在随机 60% 的时间步上算损失。</li>
+<li>多奖励时 advantage 先各自归一化再相加。</li>
+<li>去掉 KL（论文称影响很小）。</li>
+<li>有 CFG 的模型需要 cond 与 uncond 联合优化，只训 cond 会发散。</li></ol></dd>
+<dt>局限</dt><dd>视频上计算很重；clip 很小；不用 KL 时防过优化只能靠共享噪声等技巧。 共享噪声本身不保证消除 reward hacking。</dd>
+<dt>变体</dt><dd>—</dd>
+</dl>
+</article>
+<article class="card" id="m-mixgrpo">
+<header class="card-head"><h3>MixGRPO</h3><span class="cite">Li et al. · 2025 · <a href="https://arxiv.org/abs/2507.21802">2507.21802</a></span><span class="lane-tag">链内</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>GRPO 的效率改进：只在一个滑动窗口内用 SDE 采样并计算 ratio / KL，窗口外用确定性 ODE。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="mixgrpo"></div></dd>
+<dt>训练一步</dt><dd><pre><code>窗口 W = [l, l + w),  w = 4,  总步数 T = 25 (FLUX.1-dev)
+c ~ prompts
+for i = 1..G:                         # G = 12
+    窗口前: ODE (Euler)
+    窗口内: SDE (Euler-Maruyama), 存 logp_old
+    窗口后: ODE;  Flash 版用二阶 DPM-Solver++
+Â_i = 组内归一化
+L = Σ_{i, k ∈ W} -min(ρ Â_i, clip(ρ) Â_i) + β KL_k
+θ ← θ - η ∇L
+每 25 次迭代: l ← l + 1               # 从高噪声段往低噪声段移动</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\mathcal J=\mathbb E\Big[\frac1G\sum_i\frac1{w}\sum_{k\in W}\Big(\min\big(\rho_k^i\hat A^i,\operatorname{clip}(\rho_k^i,1\pm\epsilon)\hat A^i\big)-\beta D_{\text{KL},k}\Big)\Big]\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 DanceGRPO：
+      <ol><li>SDE 噪声和损失都只在窗口 \(W\) 内（默认 4 / 25 步），而不是随机 60%。</li>
+<li>窗口外是 ODE，可以换高阶 solver（Flash）。</li>
+<li>窗口按 progressive 调度移动：每 25 次迭代前进 1 步，从低 SNR 段走向高 SNR 段。</li>
+<li>训练时间比 DanceGRPO 少约 50%（Flash 约 71%）。</li></ol></dd>
+<dt>局限</dt><dd>窗口大小和移动调度都是启发式；同一时刻只有少数步得到梯度信号。</dd>
+<dt>变体</dt><dd>MixGRPO-Flash。</dd>
+</dl>
+</article>
+<article class="card" id="m-dppo">
+<header class="card-head"><h3>DPPO</h3><span class="cite">Ren et al. · 2024 · <a href="https://arxiv.org/abs/2409.00588">2409.00588</a> · <a href="https://github.com/irom-princeton/dppo">代码</a></span><span class="lane-tag">链内</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>机器人扩散策略。每个环境步跑一条去噪链，action 是每个去噪转移 \(a_t^{k-1}\)；奖励来自环境；critic 是 \(V(s_t)\)；只训最后 \(K'\) 步（§2.2 有完整推导）。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="dppo"></div></dd>
+<dt>训练一步</dt><dd><pre><code>for t = 0..T-1 (并行环境):
+    a_t^K ~ N(0, I)
+    for k = K..1:                     # 前 K-K' 步用冻结 θ
+        a_t^{k-1} ~ N(μ(a_t^k, s_t, k), max(σ_k, 0.1)²)
+    执行 a_t^0 (action chunk), 得 r_t, s_{t+1};  存最后 K' 步 logp_old
+A_t = GAE(r, V_φ(s))                  # 只在环境层
+for t, k in 最后 K' 步:
+    Â_{t,k} = γ_denoise^(k-1) · A_t        # γ_denoise = 0.99
+    ρ = exp(log π_θft(a_t^{k-1} | a_t^k, s_t) - logp_old)   # σ 下界 0.1
+    L += -min(ρ Â, clip(ρ, 1-ε_k, 1+ε_k) Â)    # ε_k 随 k 调度
+L_V = (V_φ(s_t) - R_t)²</code></pre><p>伪代码用源下标 \(k=K,\ldots,1\)，因此最后一步权重是 \(\gamma^{k-1}=1\)；上方推导用目标下标 \(k=K-1,\ldots,0\)，两种写法需相差一位。</p></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\mathcal L=-\mathbb E_{t,k}\Big[\min\big(\rho_{t,k}\hat A_{t,k},\operatorname{clip}(\rho_{t,k},1\pm\epsilon_k)\hat A_{t,k}\big)\Big],\quad \hat A_{t,k}=\gamma_{\text{denoise}}^{\,k}\,A_t^{\text{GAE}}\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 DDPO：
+      <ol><li>把单层去噪 MDP 嵌进环境 MDP，每个环境步一条链，奖励来自环境。</li>
+<li>加 critic \(V(s_t)\)（只看环境状态）和 GAE。</li>
+<li>advantage 在同一条链内共享，再乘 \(\gamma_{\text{denoise}}^k\)。</li>
+<li>只训最后 \(K'\) 步（公开 Gym / Robomimic 配置：\(K=20,\ K'=10\)）。</li>
+<li>采样和算 log-prob 各有一个 \(\sigma\) 下界（公开配置均为 0.1）。</li>
+<li>clip 系数随去噪步调度（Robomimic 配置 0.001→0.01；Gym 配置两端都是 0.01，即不调度）。</li></ol></dd>
+<dt>局限</dt><dd>on-policy，环境步昂贵时样本效率低；超参多（\(K'\)、\(\gamma_{\text{denoise}}\)、两个 \(\sigma\) 下界、clip 调度）；墙钟时间约为 Gaussian PPO 的 2 倍。</dd>
+<dt>变体</dt><dd>NCDPO（<a href="https://arxiv.org/abs/2505.10482">2505.10482</a>）：存下整条噪声序列，更新时确定性重算 \(a^0\)，在输出上放 Gaussian 做 PPO，梯度沿全链反传。GenPO（<a href="https://arxiv.org/abs/2505.18763">2505.18763</a>）：doubled dummy action 构造可逆扩散，拿到精确边缘 likelihood。</dd>
+</dl>
+</article>
+<article class="card" id="m-reinflow">
+<header class="card-head"><h3>ReinFlow</h3><span class="cite">Zhang, Yu, Su, Wang · 2025 · NeurIPS 2025 · <a href="https://arxiv.org/abs/2505.22094">2505.22094</a></span><span class="lane-tag">链内</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>少步 flow policy（ReFlow、Shortcut，1–4 步）。每步加一个可学习噪声 \(\sigma_{\theta'}\)，让链变成 Gaussian Markov 过程，链的联合 likelihood 精确可算，然后跑 PPO。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="reinflow"></div></dd>
+<dt>训练一步</dt><dd><pre><code>for t:  a^0 ~ N(0, I)
+    for k = 0..K-1:                   # K = 1..4
+        a^{k+1} = a^k + v_θ(t_k, a^k, s) Δt + σ_θ'(t_k, a^k, s) · ε
+    执行 a^K, 得 r_t;  存整链 logp_old
+A_t = GAE(r, V_φ)
+log π(chain) = Σ_k log N(a^{k+1}; a^k + v_θ Δt, diag σ_θ'²)
+# 下式演示整链 surrogate；原整理尚未确认论文实现的 clip 粒度
+ρ_chain = exp(log π_{θ,θ'}(chain) - logp_old)
+L_joint = -min(ρ_chain A, clip(ρ_chain) A) - c_ent · H + L_V
+更新 θ, θ', φ
+部署: 丢弃 σ_θ', 回到确定性 flow</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\pi(a^{k+1}\mid a^k,s)=\mathcal N\big(a^k+v_\theta(t_k,a^k,s)\Delta t,\ \operatorname{diag}\sigma_{\theta'}^2(t_k,a^k,s)\big),\quad \log\pi(a^{0:K}\mid s)=\log p(a^0)+\sum_k\log\pi(a^{k+1}\mid a^k,s)\]</div><p class="limit">此处 ReinFlow 沿生成方向使用递增下标 a⁰→aᴷ，a⁰ 为初始噪声；与 DPPO 的递减下标约定不同。固定初始噪声先验在策略 ratio 中相消。</p></dd>
+<dt>和其他方法的区别</dt><dd>相对 DPPO：
+      <ol><li>模型换成少步 flow，步数 1–4。</li>
+<li>探索噪声由可学习网络 \(\sigma_{\theta'}(t_k,a^k,s)\) 给出（复用预训练策略的特征），而不是固定后验方差加下界。</li>
+<li>加熵正则。</li>
+<li>部署时丢弃噪声网络。</li>
+<li>论文写的是整链联合概率；ratio 是逐步还是整链 clip，我没有在原文中确认，不确定。</li></ol></dd>
+<dt>局限</dt><dd>边缘分布不再保证等于预训练 prior；噪声上下界要按关节设定；需要事先有少步模型。</dd>
+<dt>变体</dt><dd>πRL Flow-Noise：同样思路用于 \(\pi_0\) / \(\pi_{0.5}\)。</dd>
+</dl>
+</article>
+<article class="card" id="m-ogpo">
+<header class="card-head"><h3>OGPO</h3><span class="cite">Patil, Nakamoto, …, Levine, Gupta, Simchowitz · 2026 · <a href="https://arxiv.org/abs/2605.03065">2605.03065</a></span><span class="lane-tag">链内</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>仍是双层 MDP，但在环境转移处切开：环境层用 off-policy TD 学 \(Q\)；去噪层是纯计算、可以无限重采的 inner MDP，在上面跑 PPO，把 \(Q(s,a_0)\) 当链的终端奖励，ratio 是整链乘积。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="ogpo"></div></dd>
+<dt>训练一步</dt><dd><pre><code>与环境交互: a_{t,K:0} ~ π_θ(· | s_t), 存 (s, a_0, r, s') 到 replay D
+critic: Q_φ ← TD on D,  target = r + γ · mean_i Q_targ(s', a'^(i))
+for s ~ D:
+    采 N 条链 a^(j)_{K:0} ~ π_θ̄(· | s)        # 只算生成器, 不碰环境
+    V̂(s)  = mean_j Q_targ(s, a_0^(j))
+    Â_j   = Q_targ(s, a_0^(j)) - V̂(s)         # 可用多 critic 保守化
+    ρ_j   = Π_k π_θ(a_{k-1}^(j) | s, a_k^(j)) / π_θ̄(·)
+    L    += -min(ρ_j Â_j, clip(ρ_j, 1-ε, 1+ε) Â_j)
+OGPO+: L += λ_bc · L_BC(成功轨迹 buffer)</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\ell_{\text{PPO}}=\min\big(\rho\hat A,\operatorname{clip}(\rho,1\pm\epsilon)\hat A\big),\quad \rho=\prod_{k=1}^{K}\frac{\pi_\theta(a_{t,k-1}\mid s_t,a_{t,k})}{\pi_{\bar\theta}(a_{t,k-1}\mid s_t,a_{t,k})},\quad \hat A=Q_{\text{targ}}(s_t,a_{t,0})-\hat V\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 DPPO：
+      <ol><li>advantage 来自 off-policy \(Q\) 而不是 on-policy GAE：\(\hat A=Q(s,a_0)-\hat V\)，\(\hat V\) 是同一状态下 \(N\) 条链的 \(Q\) 均值，相当于 GRPO 式组内 baseline。</li>
+<li>ratio 从逐步变成整链乘积，整条链一个标量 advantage。</li>
+<li>去噪链可以在 replay 状态上任意重采，不需要新的环境交互。</li>
+<li>稳定化：成功 buffer 上的 BC、多 critic 符号一致才更新的保守 advantage、TD target 多采几个 next action 降方差。</li></ol></dd>
+<dt>局限</dt><dd>critic 会被策略利用（论文专门处理）；\(K\) 大时乘积 ratio 很容易被 clip；需要 replay 和多 critic。论文称样本效率约为 DPPO 的 10 倍。</dd>
+<dt>变体</dt><dd>OGPO+（成功 buffer BC）、OGPO+CA（保守 advantage）。</dd>
+</dl>
+</article>
+</section>
+<section id="lane-noise">
+<h2><span class="secnum">4</span>噪声空间：只把 \(x_K\) 当 action</h2>
+<p class="lane-intro">这一泳道里生成器完全冻结，所有去噪格都是灰色，只有最上面的噪声格是实心。likelihood 就是噪声策略自己的 Gaussian，和去噪链无关。</p>
+<article class="card" id="m-noiseppo">
+<header class="card-head"><h3>Noise PPO</h3><span class="cite">Miao, Loh, Poupart, Kothawade · 2025 · <a href="https://arxiv.org/abs/2506.12036">2506.12036</a></span><span class="lane-tag">噪声空间</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>冻结扩散模型；policy 是 prompt 条件的初始噪声分布 \(\pi_\theta(x_K\mid c)=\mathcal N(\mu_\theta(c),\Sigma_\theta(c))\)；单步 MDP；奖励是美学 / PickScore / HPSv2 加权和。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="noiseppo"></div></dd>
+<dt>训练一步</dt><dd><pre><code>c ~ prompts
+x_K ~ π_θold(· | c)                    # 输出头零初始化 ⇒ 初始即 N(0, I)
+x_0 = Sampler_frozen(x_K, c)           # LCM 4 步 / SDXL-Turbo
+r = 0.2·Aesthetic + 0.4·PickScore + 0.4·HPSv2
+Â = r - b                              # baseline 具体形式: 不确定
+ρ = π_θ(x_K | c) / π_θold(x_K | c)
+L = -min(ρ Â, clip(ρ) Â) + γ1 KL(π_θ(·|c) ‖ N(0,I)) - γ2 H(π_θ(·|c))
+θ ← θ - η ∇L</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\min_\theta\ -\mathcal J_{\text{PPO}}(\theta)+\gamma_1\,\mathrm{KL}\big(\pi_\theta(\cdot\mid c)\,\Vert\,\mathcal N(0,I)\big)-\gamma_2\,\mathcal H\big(\pi_\theta(\cdot\mid c)\big)\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 DDPO：
+      <ol><li>action 从“每个去噪转移”缩到“只有 \(x_K\)”，去噪链变成冻结的确定性函数。</li>
+<li>MDP 从 \(K\) 步变成 1 步。</li>
+<li>KL 的对象从预训练去噪器换成标准高斯 prior。</li>
+<li>不需要存轨迹，也不需要穿过扩散模型反传。</li></ol></dd>
+<dt>局限</dt><dd>受限于冻结生成器可达的输出；论文观察到更长采样过程下收益明显减小，这是所报告设置中的结果，不是关于所有采样器的定理；初始噪声维度也可能很高。</dd>
+<dt>变体</dt><dd>ReNO（<a href="https://arxiv.org/abs/2406.04312">2406.04312</a>）：推理时对单个 prompt 用可微奖励做噪声梯度上升，不是 RL。</dd>
+</dl>
+</article>
+<article class="card" id="m-dsrl">
+<header class="card-head"><h3>DSRL</h3><span class="cite">Wagenmaker et al. · 2025 · CoRL 2025 · <a href="https://arxiv.org/abs/2506.15799">2506.15799</a></span><span class="lane-tag">噪声空间</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>冻结扩散策略；policy 是 latent noise 上的 \(\pi^W(w\mid s)\)；执行 \(a=\pi_{\text{dp}}(s,w)\)（DDIM 确定性采样）；off-policy SAC。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="dsrl"></div></dd>
+<dt>训练一步</dt><dd><pre><code>w ~ π^W_ψ(· | s_t),   w ∈ [-b, b]^d      # 在线 b ∈ [1, 3]
+a_t = π_dp(s_t, w)                       # 冻结, DDIM σ = 0
+执行 a_t, 存 (s, a, w, r, s')
+DSRL-SAC:  Q^W(s, w) ← TD;   actor 最大化 Q^W - α log π^W
+DSRL-NA:   Q^A(s, a) ← TD                # 可用任意来源的 (s, a) 数据
+           Q^W(s, w) ← 回归到 Q^A(s, π_dp(s, w))
+           actor: max_ψ Q^W(s, π^W_ψ(s))</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\max_\psi\ \mathbb E_{s}\big[Q^W(s,\pi^W_\psi(s))\big],\qquad Q^W(s,w)\approx Q^A\big(s,\pi_{\text{dp}}(s,w)\big)\ \ (\text{NA})\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 Noise PPO（两者独立提出，比的是机制）：
+      <ol><li>从单步 bandit 变成多步环境 MDP，每个环境步选一次噪声。</li>
+<li>on-policy PPO 换成 off-policy SAC。</li>
+<li>不加到 \(\mathcal N(0,I)\) 的 KL，而是把 \(w\) 截在 \([-b,b]^d\)。</li>
+<li>NA 变体在动作空间学 \(Q^A\) 再蒸馏到噪声空间，利用“多个 \(w\) 映到同一 \(a\)”的结构，而且能吃任意来源的动作数据。</li></ol></dd>
+<dt>局限</dt><dd>能改到什么程度，取决于冻结的 BC 生成器和允许的 latent 范围。OGPO 的实验也讨论了 base 覆盖不足时的问题。另外还需要 critic，噪声维度通常和动作块一样大。这里说的是生成器能产生哪些输出，不是高斯分布在数学上的支持集。</dd>
+<dt>变体</dt><dd>DSRL-SAC、DSRL-NA。</dd>
+</dl>
+</article>
+</section>
+<section id="lane-free">
+<h2><span class="secnum">5</span>likelihood-free / 回归：不在链上算 \(\log\pi\)</h2>
+<p class="lane-intro">这一泳道的去噪格大多是空心：参数在训练，但用的是回归 / flow-matching 损失或 pathwise 梯度，不是 likelihood ratio。</p>
+<article class="card" id="m-ddpo-pref">
+<header class="card-head"><h3>Diffusion-DPO</h3><span class="cite">Wallace et al. · 2023 · <a href="https://arxiv.org/abs/2311.12908">2311.12908</a></span><span class="lane-tag">likelihood-free</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>没有 rollout 奖励；数据是离线偏好对 \((x_0^w,x_0^l)\)；用去噪损失差（ELBO 近似）代替 \(\log\pi\) 差做 DPO。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="ddpo_pref"></div></dd>
+<dt>训练一步</dt><dd><pre><code>(c, x_0^w, x_0^l) ~ 偏好数据集 (Pick-a-Pic)
+k ~ U(1..K);  ε^w, ε^l ~ N(0, I)
+x_k^w = q(x_0^w, k, ε^w);   x_k^l = q(x_0^l, k, ε^l)      # 前向加噪
+d_w = ‖ε^w - ε_θ(x_k^w, k, c)‖² - ‖ε^w - ε_ref(x_k^w, k, c)‖²
+d_l = ‖ε^l - ε_θ(x_k^l, k, c)‖² - ‖ε^l - ε_ref(x_k^l, k, c)‖²
+L = -log σ(-β T ω(λ_k) · (d_w - d_l))
+θ ← θ - η ∇L</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\mathcal L=-\mathbb E\log\sigma\Big(-\beta T\omega(\lambda_k)\big[d_w-d_l\big]\Big)\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 DDPO：
+      <ol><li>不采样、不在线打分，数据是固定的偏好对。</li>
+<li>不需要链上 \(\log\pi\)，用去噪损失差近似 log-likelihood 差。</li>
+<li>到 \(\epsilon_{\text{ref}}\) 的隐式 KL 来自 DPO 推导。</li>
+<li>每次只训一个随机 \(k\)，\(x_k\) 来自前向加噪。</li></ol></dd>
+<dt>局限</dt><dd>需要成对偏好；离线数据的分布偏移；ELBO 近似带来偏差。</dd>
+<dt>变体</dt><dd>D3PO（<a href="https://arxiv.org/abs/2311.13231">2311.13231</a>，逐步 DPO，假设整链偏好等于终端偏好）；SPO（<a href="https://arxiv.org/abs/2406.04314">2406.04314</a>，逐步采候选 + step-aware 偏好模型）；PhysMoDPO（<a href="https://arxiv.org/abs/2603.13228">2603.13228</a>，动作生成 + 全身控制器回路的 DPO，G1 真机）。</dd>
+</dl>
+</article>
+<article class="card" id="m-nft">
+<header class="card-head"><h3>DiffusionNFT</h3><span class="cite">Zheng et al. · 2025 · <a href="https://arxiv.org/abs/2509.16117">2509.16117</a></span><span class="lane-tag">likelihood-free</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>在前向过程上做 online RL：用任意采样器生成，把奖励归一化成 \(r\in[0,1]\)，对加噪后的样本做“正 / 负隐式策略”的 flow-matching 回归，不需要 \(\log\pi\)。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="nft"></div></dd>
+<dt>训练一步</dt><dd><pre><code>c ~ prompts;  采 G = 24 个 x_0 ~ π_θold   # 任意 solver (如二阶 ODE 40 步), 无 CFG
+r_raw = R(x_0, c)
+r = 0.5 + 0.5 · clip((r_raw - mean_c(r_raw)) / Z, -1, 1)
+for each x_0:
+    t ~ U;  ε ~ N(0, I)
+    x_t = α_t x_0 + σ_t ε;   v = α̇_t x_0 + σ̇_t ε
+    v⁺ = (1-β) v_old(x_t) + β v_θ(x_t)
+    v⁻ = (1+β) v_old(x_t) - β v_θ(x_t)
+    L += r ‖v⁺ - v‖² + (1-r) ‖v⁻ - v‖²
+θ ← θ - η ∇L;    θ_old ← η_i θ_old + (1-η_i) θ     # EMA</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\mathcal L(\theta)=\mathbb E\big[r\,\lVert v^+_\theta(x_t,c,t)-v\rVert^2+(1-r)\,\lVert v^-_\theta(x_t,c,t)-v\rVert^2\big]\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 Flow-GRPO：
+      <ol><li>不算 \(\log\pi\)，不需要 SDE，rollout 可用任意（ODE、高阶）solver。</li>
+<li>训练在前向加噪的随机 \(t\) 上，不在反向链的转移上。</li>
+<li>组内 advantage 变成权重 \(r\in[0,1]\)，分别拉动正、负隐式策略。</li>
+<li>没有 ratio clip，稳定性靠 \(\beta\) 和 \(\theta_{\text{old}}\) 的 EMA。</li>
+<li>CFG-free。</li></ol></dd>
+<dt>局限</dt><dd>没有显式 trust region；归一化尺度 \(Z\) 要选；按单样本加权，长 horizon 的 credit 要自己构造。论文报告 GenEval 约 1k 步到 0.98，FlowGRPO 5k+ 步到 0.95。</dd>
+<dt>变体</dt><dd>—</dd>
+</dl>
+</article>
+<article class="card" id="m-fpo">
+<header class="card-head"><h3>FPO</h3><span class="cite">McAllister et al. · 2025 · <a href="https://arxiv.org/abs/2507.21053">2507.21053</a></span><span class="lane-tag">likelihood-free</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>单层 PPO：每个环境步一个 action，即整个最终动作 \(a_t\)；ratio 由条件 flow-matching 损失差构造；采样器是黑盒。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="fpo"></div></dd>
+<dt>训练一步</dt><dd><pre><code>rollout: a_t = Sampler_θold(s_t)      # 任意采样器 / 步数, 可确定性
+         存 N_mc = 8 对 (τ_i, ε_i);  执行 a_t 得 r_t
+A_t = GAE(r, V_φ)
+for minibatch:
+    ℓ_θ(i)   = CFM 损失 of v_θ   at (a_t, τ_i, ε_i)    # 插值约定以原文为准
+    ℓ_old(i) = CFM 损失 of v_θold at 同一 (τ_i, ε_i)
+    ρ̂ = exp(-mean_i (ℓ_θ(i) - ℓ_old(i)))
+    L = -min(ρ̂ A_t, clip(ρ̂, 1-ε, 1+ε) A_t) + L_V</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\hat\rho^{\text{FPO}}(\theta)=\exp\Big(-\frac1{N_{\text{mc}}}\sum_{i=1}^{N_{\text{mc}}}\big(\ell_\theta(\tau_i,\epsilon_i)-\ell_{\theta_{\text{old}}}(\tau_i,\epsilon_i)\big)\Big)\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 DPPO：
+      <ol><li>action 从“每个去噪转移”变成“整个 \(a_t\)”，回到单层 MDP。</li>
+<li>ratio 用 CFM 损失差（ELBO 意义）代替精确的逐步 likelihood。</li>
+<li>采样器任意，可以是确定性的。</li>
+<li>critic 与 GAE 不变。</li></ol></dd>
+<dt>局限</dt><dd>ratio 有偏；MC 估计带来方差（默认 \(N_{\text{mc}}=8\)，论文称 \(N_{\text{mc}}=1\) 也优于 Gaussian PPO）；图像微调时 CFG 误差会在 RL 迭代中累积。</dd>
+<dt>变体</dt><dd>—</dd>
+</dl>
+</article>
+<article class="card" id="m-pathwise">
+<header class="card-head"><h3>ReFL / DRaFT / AlignProp（对照）</h3><span class="cite">Xu et al. 2023 · <a href="https://arxiv.org/abs/2304.05977">2304.05977</a>；Clark et al. 2023 · <a href="https://arxiv.org/abs/2309.17400">2309.17400</a>；Prabhudesai et al. 2023 · <a href="https://arxiv.org/abs/2310.03739">2310.03739</a></span><span class="lane-tag">pathwise</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>如果奖励可微，可以直接沿采样过程反传 \(\nabla_\theta r(x_0(\theta))\)。这里主要按梯度怎么求，把它和 likelihood-ratio policy gradient 分开讨论。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="pathwise"></div></dd>
+<dt>训练一步</dt><dd><pre><code>c ~ prompts;  x_K ~ N(0, I)
+with no_grad:  去噪到 k_stop
+    # ReFL: 随机较晚的一步;  DRaFT-K: 只留最后 K 步;  AlignProp: 随机截断
+with grad:     从 k_stop 去噪到 x_0      # ReFL: 一步预测 x̂_0
+r = R_diff(x_0, c)
+θ ← θ + η ∇_θ r                         # gradient checkpointing / LoRA</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\max_\theta\ \mathbb E_{c,\,x_K}\big[r\big(x_0(\theta;x_K,c),c\big)\big],\qquad \nabla_\theta r=\frac{\partial r}{\partial x_0}\frac{\partial x_0}{\partial\theta}\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 DDPO：
+      <ol><li>梯度估计从 score-function 换成 pathwise，通常能降低方差。</li>
+<li>不需要 \(\log\pi\)，也不需要随机采样器。</li>
+<li>要求 \(r\) 对 \(x_0\) 可微。</li>
+<li>三者在反传截断等设计上不同：ReFL 一步，DRaFT-K 最后 K 步（DRaFT-LV 在 K=1 时多次加噪降方差），AlignProp 随机截断。</li></ol></dd>
+<dt>局限</dt><dd>显存随反传步数增长；reward hacking 严重；奖励不可微时无法使用。</dd>
+<dt>变体</dt><dd>DRaFT-K、DRaFT-LV。</dd>
+</dl>
+</article>
+<article class="card" id="m-offq">
+<header class="card-head"><h3>Off-policy Q 对照：Diffusion-QL / DIPO / QSM / IDQL</h3><span class="cite"><a href="https://arxiv.org/abs/2208.06193">2208.06193</a> · <a href="https://arxiv.org/abs/2305.13122">2305.13122</a> · <a href="https://arxiv.org/abs/2312.11752">2312.11752</a> · <a href="https://arxiv.org/abs/2304.10573">2304.10573</a></span><span class="lane-tag">likelihood-free</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>先学 \(Q(s,a)\)，再用不同方式把扩散策略推向高 \(Q\)，都不需要链上 likelihood。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="offq"></div></dd>
+<dt>训练一步</dt><dd><pre><code>Q_φ ← TD on replay D
+Diffusion-QL: L = L_BC(θ) - α Q_φ(s, a_0(θ))     # 沿链反传 ∇_a Q
+DIPO:         a' = a + η ∇_a Q(s, a);  用 (s, a') 做扩散 BC
+QSM:          通过 Q-score matching 目标联系 score 与 Q 梯度（示意；噪声 / 温度权重见原文）
+IDQL:         从 BC 扩散策略采 N 个候选, 按 IQL 隐式权重重采样</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[\text{Diffusion-QL:}\ \ \min_\theta\ \mathcal L_{\text{BC}}(\theta)-\alpha\,\mathbb E_{s}\big[Q_\phi(s,a_0(\theta;s))\big]\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 DPPO：
+      <ol><li>不需要 likelihood。</li>
+<li>critic 从 \(V(s)\) 换成 \(Q(s,a)\)，而且 \(Q\) 对动作的梯度直接参与更新（Diffusion-QL、DIPO、QSM）。</li>
+<li>on-policy 换成 off-policy。</li></ol></dd>
+<dt>局限</dt><dd>critic 质量决定上限；高维动作上 \(Q\) 难学；DPPO 论文在难任务上报告这些方法弱于 DPPO。</dd>
+<dt>变体</dt><dd>DACER（<a href="https://arxiv.org/abs/2405.15177">2405.15177</a>）、PA-RL（<a href="https://arxiv.org/abs/2412.06685">2412.06685</a>）。</dd>
+</dl>
+</article>
+</section>
+<section id="lane-out">
+<h2><span class="secnum">6</span>链外 / 输出：在 \(x_0\) 之后加残差</h2>
+<p class="lane-intro">生成器整列冻结，只有残差行是实心。likelihood 是残差 actor 自己的 Gaussian。</p>
+<article class="card" id="m-residual">
+<header class="card-head"><h3>Residual RL：ResiP / Policy Decorator</h3><span class="cite">Ankile et al. 2024 · <a href="https://arxiv.org/abs/2407.16677">2407.16677</a>；Yuan et al. 2024 · <a href="https://arxiv.org/abs/2412.13630">2412.13630</a></span><span class="lane-tag">链外</span></header>
+<dl class="fields">
+<dt>思路</dt><dd>冻结 base 扩散策略，学一个小 Gaussian 残差 \(\Delta\)，执行 \(a^{\text{base}}+\lambda\Delta\)；残差是 RL action。</dd>
+<dt>计算网格</dt><dd><div class="gridfig" data-m="residual"></div></dd>
+<dt>训练一步</dt><dd><pre><code>for t:
+    若到重规划点: a^base_{t:t+32} = π_dp(s_t)   # 冻结, DDIM 4 步, 执行 8 步
+    Δ_t ~ π_res(· | s_t, a^base_t)               # 每个控制步
+    执行 a^base_t + 0.1 · Δ_t, 得 r_t
+A = GAE(r, V_φ)                                 # ResiP: PPO
+L = PPO-clip(π_res) + L_V
+# Policy Decorator: Δ = α·tanh(·), SAC;
+#   以概率 ε 用 base+Δ, 否则只用 base; ε 由 0 线性增到 1</code></pre></dd>
+<dt>目标函数</dt><dd><div class="eq">\[a_t=a_t^{\text{base}}+\lambda\,\Delta_t,\quad \Delta_t\sim\pi_\phi(\cdot\mid s_t,a_t^{\text{base}}),\quad \mathcal L=-\mathbb E\big[\min(\rho_tA_t,\operatorname{clip}(\rho_t,1\pm\epsilon)A_t)\big]\]</div></dd>
+<dt>和其他方法的区别</dt><dd>相对 DSRL：
+      <ol><li>action 空间从噪声 \(w\) 换成输出偏移 \(\Delta\)。</li>
+<li>能移动到冻结生成器映射之外的动作，但被缩放系数（ResiP 0.1）或上界 \(\alpha\)（Policy Decorator）限制在局部。</li>
+<li>ResiP 用 PPO，Policy Decorator 用 SAC 加渐进式探索调度。</li></ol></dd>
+<dt>局限</dt><dd>有界小残差主要做局部修正；收益保留在残差网络中，不进入 base 参数。残差可以按原始控制步决策，比 base 重规划更频繁。</dd>
+<dt>变体</dt><dd>EXPO（OGPO 论文中的 residual 基线）。</dd>
+</dl>
+</article>
+</section>
+<section id="cross-domain">
+<h2><span class="secnum">7</span>Image / video 与 robotics：哪些量能直接对照？</h2>
+<p>看完这些方法，我们再具体比较一下 image/video 和 robotics。主要还是这几个问题：<strong>生成什么，奖励从哪里来，ratio 是对哪个随机变量算的，以及怎么做跨时间的 credit assignment？</strong> 这里比较的是方法的写法，不把不同 benchmark 的分数拿来排名。</p>
+<div class="cross-worlds"><div><h3>Image / video</h3><p>一次生成中，条件 \(c\) 是固定的。\(x_0\) 可以是一张图，也可以是一整段视频，生成完再给奖励 \(R(x_0,c)\)。视频当然有时间维度，但如果中间没有执行动作、重新观测和决策，多生成几帧并不会多出一层环境 MDP。</p></div><div><h3>Robotics</h3><p>去噪链生成动作或动作块 \(A_j\)，执行后得到新的状态 \(s_{j+1}\)，再用它作为下一条链的条件。也就是说，下一次生成取决于上一次的输出和环境。这里有三个长度要分开：\(K\) 是生成的计算步数，\(H\) 是预测多少个动作，\(h\) 是实际执行多少个动作。</p></div></div>
+<h3>7.1 同一个 score-function 恒等式，两个不同的回报问题</h3>
+<p>单次图像 / 视频生成可写成下面的终端奖励问题。随机初始噪声的分布固定时，梯度只落在可训练的条件转移上；这里暂不加入 baseline、PPO clipping 和 KL。</p>
+<div class="eq">\[p_\theta(x_{0:K}\mid c)=p(x_K)\prod_{k=1}^{K}\pi_\theta(x_{k-1}\mid x_k,c),\qquad J_{\mathrm{gen}}=\mathbb E[R(x_0,c)].\]
+\[\nabla_\theta J_{\mathrm{gen}}=\mathbb E\!\left[R(x_0,c)\sum_{k=1}^{K}\nabla_\theta\log\pi_\theta(x_{k-1}\mid x_k,c)\right].\]</div>
+<p>机器人里，设最终动作分布是 \(\pi_\theta(A_j\mid s_j)\)。policy gradient 里乘的 advantage，要估计这个决策对<strong>之后环境回报</strong>的影响。实现时，还可以把 score-function 项展开到去噪层。DPPO 具体用了 \(\gamma_{\mathrm{denoise}}^k A_j\) 这样的估计和加权，所以光把图像的 \(R\) 换成当前步的 \(r_j\)，还得不到同一个更新。</p>
+<div class="eq">\[J_{\mathrm{robot}}=\mathbb E\!\left[\sum_{n\ge0}\gamma_{\mathrm{env}}^n r_n\right],\qquad \nabla_\theta J\;\propto\;\mathbb E_{s_j,A_j}\!\left[\nabla_\theta\log\pi_\theta(A_j\mid s_j)\,A^\pi(s_j,A_j)\right].\]</div>
+<p>上面的状态期望要用和折扣目标对应的访问分布。图像生成里，我们经常把最终分数分给整条链；控制里还要估计这次动作对未来状态有什么影响。critic 帮忙估计的就是这个量，并不是只要做 robotics 就一定得有 critic。</p>
+<h3>7.2 Action chunking：先写清楚环境一步有多长</h3>
+<p>设第 \(j\) 次重规划生成长度 \(H\) 的动作块，只执行前 \(h_j\le H\) 步；下次重规划前不再调用生成器。令 \(n_j\) 是该块开始的原始控制步，\(b_j=0\) 表示真正终止，否则为 1。若 \(\gamma\) 按原始控制步定义，则以重规划为单位的奖励和 bootstrap 应为：</p>
+<div class="eq">\[\bar r_j=\sum_{u=0}^{h_j-1}\gamma^u r_{n_j+u},\qquad \Gamma_j=\gamma^{h_j},\qquad \delta_j=\bar r_j+\Gamma_j b_j V(s_{j+1})-V(s_j).\]
+\[\hat A_j=\delta_j+\Gamma_j\lambda b_j\hat A_{j+1}.\]</div>
+<p>这里的 \(\lambda\) 是按每次重规划定义的。也可以把每个 chunk 当作一步来定义折扣，不过时间尺度就变了。算 bootstrap 时，还要区分时间上限截断和真正终止。后面 \(H-h_j\) 个动作没有执行，也就没有给这个 chunk 产生直接的环境奖励，不能把预测出来的动作当作已经执行过来累计回报。这里给出的是一种 chunk-level 写法，具体实现可能用别的约定。</p>
+<h3>7.3 为什么“同 prompt 组内比较”不能原样搬成“同 batch 比较”</h3>
+<p>Flow-GRPO / DanceGRPO 在同一个条件 \(c\) 下采一组样本，比较的是这个条件下生成得好不好。但机器人的一个 batch 里，\(s_1,s_2,\ldots\) 可能来自不同难度、不同进度的状态。如果直接把这些回报放在一起归一化，就会混淆“动作选得好”和“起始状态本来就好”。</p>
+<div class="eq">\[\hat A_i^{\mathrm{gen}}=\frac{R(x_0^{(i)},c)-\bar R_c}{\operatorname{std}_c(R)+\epsilon},\qquad \hat A_i^{Q}(s)=Q(s,a_i)-\frac1N\sum_{m=1}^{N}Q(s,a_m).\]</div>
+<p>一种办法是恢复到同一个状态，采几条后续轨迹来比较；另一种是在同一状态采几个候选动作，让 critic 估计它们的回报。前者需要能 reset 或 branching 的环境，后者则要看 critic 准不准，尤其是在分布外动作上。OGPO 的同状态候选链比较走的是后一条路。另外，上面两式的归一化也不一样：只减均值和再除以标准差，会得到不同的更新尺度。</p>
+<h3>7.4 “有 log-prob”到底是哪个 log-prob？</h3>
+<p>每步 Gaussian 的密度都能算，并不意味着最终动作的边缘密度也能算。存下整条潜变量轨迹，可以算 joint ratio；但要算最终动作的密度，还得把中间变量积分掉。所以，<strong>每步分别 clip、把整链 ratio 乘起来再 clip、对最终动作边缘分布做 PPO，是三个不同的目标。</strong></p>
+<div class="eq">\[\pi_\theta(a^0\mid s)=\int p(a^K)\prod_{k=1}^{K}\pi_\theta(a^{k-1}\mid a^k,s)\,\mathrm da^{1:K},\qquad \rho_{\mathrm{chain}}=\exp\!\left(\sum_k\Delta\log\pi_k\right).\]
+\[\sum_k\min(\rho_k A,\operatorname{clip}(\rho_k)A)\;\ne\;\min\!\left((\prod_k\rho_k)A,\operatorname{clip}(\prod_k\rho_k)A\right).\]</div>
+<p>读 DPPO、ReinFlow、OGPO、GenPO 时，这一点值得到代码里确认。固定的初始噪声先验可以在 ratio 里消掉；如果像 Noise PPO / DSRL 那样连噪声策略也训练，优化的对象就换了。FPO 的 CFM-loss ratio 则是 surrogate，和前面两种精确密度比要分开看。</p>
+<h3>7.5 对照实验应该对齐什么？</h3>
+<div class="tbl"><table><thead><tr><th>比较维度</th><th>Image / video</th><th>Robotics</th></tr></thead><tbody>
+<tr><td>采样预算</td><td>prompt 数、每 prompt 样本数 G、分辨率 / 帧数、采样步数 K、reward 调用数</td><td>环境交互步数、reset 数、执行步长 h、候选动作数、去噪计算量</td></tr>
+<tr><td>优化预算</td><td>实际更新的去噪步数、前后向次数、reference-model 调用、显存与 wall-clock</td><td>同样的模型计算，加 critic TD / GAE 成本；需单列环境采集时间</td></tr>
+<tr><td>训练 / 推理分布</td><td>SDE 训练与 ODE 推理、CFG、分辨率和采样步数改变</td><td>移除探索噪声、动作块执行方式、闭环频率及状态分布改变</td></tr>
+<tr><td>结果与失败</td><td>独立 reward / 人类偏好、prompt 泛化、多样性和 reward hacking</td><td>成功率、回报、完成时间、扰动恢复、越界动作及 critic exploitation</td></tr>
+</tbody></table></div>
+<p>所以看到“更省”时，我会先看省的是什么：训练 FLOPs、显存、reward 调用，还是环境交互。跑一次图像 reward model，和真实机器人失败后重新复位一次，成本显然不一样。上表列的是我会比较的几个方面，各个方法的具体配置还是看对应论文。</p>
+</section>
+<section id="compare">
+<h2><span class="secnum">8</span>两两对比器</h2>
+<p>选两个方法，并排看它们的计算网格，下表逐项列出差异，<strong>有差异的行会高亮</strong>。默认是 DDPO 对 DPPO：从单层去噪 MDP 到双层 MDP 到底改了哪几处。</p>
+<div class="cmp-controls">
+<label for="cmp-a">方法 A <select id="cmp-a"></select></label>
+<label for="cmp-b">方法 B <select id="cmp-b"></select></label>
+</div>
+<div class="cmp-grids">
+<div><h4 id="cmp-a-name">DDPO</h4><div class="gridfig" id="cmp-a-grid"></div></div>
+<div><h4 id="cmp-b-name">DPPO</h4><div class="gridfig" id="cmp-b-grid"></div></div>
+</div>
+<div class="tbl"><table id="cmp-table">
+<thead><tr><th>维度</th><th id="cmp-th-a">DDPO</th><th id="cmp-th-b">DPPO</th></tr></thead>
+<tbody></tbody>
+</table></div>
+<p class="cite">高亮行表示两者在该维度上不同。表中内容与对应卡片一致。</p>
+</section>
+<section id="table">
+<h2><span class="secnum">9</span>总对比表</h2>
+<p>“likelihood”指是否需要策略在去噪链（或噪声 / 残差）上的精确 log-prob。“on/off”指策略更新所用数据。</p>
+<div class="tbl wide-table"><table>
+<thead><tr><th>方法</th><th>领域</th><th>优化对象</th><th>likelihood</th><th>critic</th><th>on / off</th><th>奖励</th><th>主要局限</th></tr></thead>
+<tbody>
+<tr class="group"><td colspan="8">链上 likelihood-ratio（score function）</td></tr>
+<tr><td>DDPO</td><td>图像</td><td>整条链（逐步 ratio）</td><td class="y">是</td><td class="n">否</td><td>on</td><td>黑盒终端标量</td><td>方差大、无 KL 易过优化</td></tr>
+<tr><td>DPOK</td><td>图像</td><td>整条链 + 逐步 KL</td><td class="y">是</td><td>可选 \(V(x_k,c)\)</td><td>on</td><td>学习的偏好奖励</td><td>规模小、KL 上界保守</td></tr>
+<tr><td>Flow-GRPO</td><td>图像</td><td>整条链（SDE，减步训练）</td><td class="y">是（SDE）</td><td class="n">否（组内）</td><td>on</td><td>GenEval / OCR / 偏好</td><td>SDE 噪声需调；outcome-only credit</td></tr>
+<tr><td>DanceGRPO</td><td>图像 / 视频</td><td>约 60% 的时间步</td><td class="y">是（SDE）</td><td class="n">否（组内）</td><td>on</td><td>多奖励，advantage 相加</td><td>计算重；依赖共享噪声等技巧</td></tr>
+<tr><td>MixGRPO</td><td>图像</td><td>滑动窗口内的步</td><td class="y">是（窗口内 SDE）</td><td class="n">否</td><td>on</td><td>偏好</td><td>窗口调度是启发式</td></tr>
+<tr><td>DPPO</td><td>机器人</td><td>最后 \(K'\) 步（双层 MDP）</td><td class="y">是</td><td class="y">\(V(s_t)\)</td><td>on</td><td>环境稠密 / 稀疏回报</td><td>样本效率低；超参多</td></tr>
+<tr><td>ReinFlow</td><td>机器人</td><td>整条链 + 噪声网络</td><td class="y">是（注噪）</td><td class="y">是</td><td>on</td><td>环境回报</td><td>边缘分布偏离 prior</td></tr>
+<tr><td>πRL</td><td>VLA</td><td>整条链（Noise / SDE）</td><td class="y">是</td><td class="y">是</td><td>on</td><td>任务成功</td><td>大模型 rollout 成本</td></tr>
+<tr><td>GenPO</td><td>机器人</td><td>可逆扩散整体</td><td class="y">是（精确边缘）</td><td class="y">是</td><td>on</td><td>环境回报</td><td>动作维度加倍；结构受限</td></tr>
+<tr><td>OGPO</td><td>机器人</td><td>整条链（乘积 ratio）</td><td class="y">是</td><td class="y">\(Q\)（off-policy）</td><td>混合</td><td>\(Q\) 作终端奖励</td><td>critic 被利用；需保守化</td></tr>
+<tr class="group"><td colspan="8">链上 pathwise / 混合</td></tr>
+<tr><td>ReFL / DRaFT / AlignProp</td><td>图像</td><td>整条链或截断的最后 K 步</td><td class="n">否</td><td class="n">否</td><td>on（生成即训）</td><td>可微奖励</td><td>奖励必须可微；显存；hacking</td></tr>
+<tr><td>NCDPO</td><td>机器人</td><td>整条链（BPTT）+ 输出 Gaussian</td><td>输出头</td><td class="y">是</td><td>on</td><td>环境回报</td><td>显存随 \(K\) 增长</td></tr>
+<tr><td>Diffusion-QL / DIPO / QSM / DACER / IDQL / PA-RL</td><td>机器人</td><td>整条链 / 动作选择</td><td class="n">否</td><td class="y">\(Q\)</td><td>off</td><td>环境回报</td><td>critic 质量决定上限</td></tr>
+<tr class="group"><td colspan="8">不依赖链上 likelihood</td></tr>
+<tr><td>FPO</td><td>机器人（图像试过）</td><td>整个模型</td><td>否（CFM 替代）</td><td class="y">是</td><td>on</td><td>环境回报</td><td>ratio 有偏；CFG 下不稳</td></tr>
+<tr><td>DiffusionNFT</td><td>图像</td><td>整个模型（前向过程）</td><td class="n">否</td><td class="n">否</td><td>online</td><td>归一化到 [0,1]</td><td>无显式 trust region</td></tr>
+<tr><td>Diffusion-DPO / D3PO / SPO</td><td>图像</td><td>整个模型 / 逐步</td><td>否（ELBO 近似）</td><td class="n">否</td><td>off / 迭代</td><td>成对偏好</td><td>需偏好数据；离线分布偏移</td></tr>
+<tr class="group"><td colspan="8">噪声空间 / 输出残差（生成器冻结）</td></tr>
+<tr><td>Noise PPO</td><td>图像</td><td>初始噪声分布（单步 MDP）</td><td>噪声策略的 Gaussian</td><td class="n">原整理未确认</td><td>on</td><td>美学 / 偏好</td><td>多步推理时收益被洗掉</td></tr>
+<tr><td>DSRL</td><td>机器人</td><td>初始噪声 \(w\)</td><td>噪声策略的</td><td class="y">\(Q^W\) / \(Q^A\)</td><td>off</td><td>环境回报</td><td>受冻结生成器可达输出限制</td></tr>
+<tr><td>ResiP</td><td>机器人</td><td>输出残差</td><td>残差 Gaussian</td><td class="y">是</td><td>on</td><td>环境回报</td><td>只能局部修正</td></tr>
+<tr><td>Policy Decorator</td><td>机器人</td><td>有界输出残差</td><td>残差的</td><td class="y">\(Q\)</td><td>off</td><td>环境回报</td><td>只能局部修正</td></tr>
+</tbody></table></div>
+</section><section id="refs">
+<h2>参考文献</h2>
+<p class="cite">文献编号、标题与作者沿用 2026-10-07 的原始整理；年份按 arXiv 首次提交时间计。文中具体数值与配置均为所引论文或代码的设定，不是通用默认值。</p>
+<ol class="refs">
+<li>Black et al. Training Diffusion Models with Reinforcement Learning (DDPO). 2023. <a href="https://arxiv.org/abs/2305.13301">arXiv:2305.13301</a></li>
+<li>Fan et al. DPOK: Reinforcement Learning for Fine-tuning Text-to-Image Diffusion Models. 2023. <a href="https://arxiv.org/abs/2305.16381">arXiv:2305.16381</a></li>
+<li>Zhang et al. Large-scale Reinforcement Learning for Diffusion Models. 2024. <a href="https://arxiv.org/abs/2401.12244">arXiv:2401.12244</a></li>
+<li>Wallace et al. Diffusion Model Alignment Using Direct Preference Optimization. 2023. <a href="https://arxiv.org/abs/2311.12908">arXiv:2311.12908</a></li>
+<li>Yang et al. Using Human Feedback to Fine-tune Diffusion Models without Any Reward Model (D3PO). 2023. <a href="https://arxiv.org/abs/2311.13231">arXiv:2311.13231</a></li>
+<li>Liang et al. Aesthetic Post-Training Diffusion Models from Generic Preferences with Step-by-step Preference Optimization (SPO). 2024. <a href="https://arxiv.org/abs/2406.04314">arXiv:2406.04314</a></li>
+<li>Xu et al. ImageReward (ReFL). 2023. <a href="https://arxiv.org/abs/2304.05977">arXiv:2304.05977</a></li>
+<li>Clark et al. Directly Fine-Tuning Diffusion Models on Differentiable Rewards (DRaFT). 2023. <a href="https://arxiv.org/abs/2309.17400">arXiv:2309.17400</a></li>
+<li>Prabhudesai et al. Aligning Text-to-Image Diffusion Models with Reward Backpropagation (AlignProp). 2023. <a href="https://arxiv.org/abs/2310.03739">arXiv:2310.03739</a></li>
+<li>Liu et al. Flow-GRPO: Training Flow Matching Models via Online RL. 2025. <a href="https://arxiv.org/abs/2505.05470">arXiv:2505.05470</a></li>
+<li>Xue et al. DanceGRPO: Unleashing GRPO on Visual Generation. 2025. <a href="https://arxiv.org/abs/2505.07818">arXiv:2505.07818</a></li>
+<li>Li et al. MixGRPO: Unlocking Flow-based GRPO Efficiency with Mixed ODE-SDE. 2025. <a href="https://arxiv.org/abs/2507.21802">arXiv:2507.21802</a></li>
+<li>Zheng et al. DiffusionNFT: Online Diffusion Reinforcement with Forward Process. 2025. <a href="https://arxiv.org/abs/2509.16117">arXiv:2509.16117</a></li>
+<li>Miao et al. A Minimalist Method for Fine-tuning Text-to-Image Diffusion Models (Noise PPO). 2025. <a href="https://arxiv.org/abs/2506.12036">arXiv:2506.12036</a></li>
+<li>Eyring et al. ReNO: Reward-based Noise Optimization. 2024. <a href="https://arxiv.org/abs/2406.04312">arXiv:2406.04312</a></li>
+<li>Ren et al. Diffusion Policy Policy Optimization (DPPO). 2024. <a href="https://arxiv.org/abs/2409.00588">arXiv:2409.00588</a>，<a href="https://github.com/irom-princeton/dppo">代码</a></li>
+<li>Yang et al. Fine-tuning Diffusion Policies with Backpropagation Through Diffusion Timesteps (NCDPO). 2025. <a href="https://arxiv.org/abs/2505.10482">arXiv:2505.10482</a></li>
+<li>Zhang et al. ReinFlow: Fine-tuning Flow Matching Policy with Online Reinforcement Learning. 2025. <a href="https://arxiv.org/abs/2505.22094">arXiv:2505.22094</a></li>
+<li>McAllister et al. Flow Matching Policy Gradients (FPO). 2025. <a href="https://arxiv.org/abs/2507.21053">arXiv:2507.21053</a></li>
+<li>Ding et al. GenPO: Generative Diffusion Models Meet On-Policy Reinforcement Learning. 2025. <a href="https://arxiv.org/abs/2505.18763">arXiv:2505.18763</a></li>
+<li>Chen et al. πRL: Online RL Fine-tuning for Flow-based Vision-Language-Action Models. 2025. <a href="https://arxiv.org/abs/2510.25889">arXiv:2510.25889</a></li>
+<li>Patil et al. OGPO: Sample Efficient Full-Finetuning of Generative Control Policies. 2026. <a href="https://arxiv.org/abs/2605.03065">arXiv:2605.03065</a></li>
+<li>Wagenmaker et al. Steering Your Diffusion Policy with Latent Space Reinforcement Learning (DSRL). 2025. <a href="https://arxiv.org/abs/2506.15799">arXiv:2506.15799</a></li>
+<li>Ankile et al. From Imitation to Refinement: Residual RL for Precise Assembly (ResiP). 2024. <a href="https://arxiv.org/abs/2407.16677">arXiv:2407.16677</a></li>
+<li>Yuan et al. Policy Decorator: Model-Agnostic Online Refinement for Large Policy Model. 2024. <a href="https://arxiv.org/abs/2412.13630">arXiv:2412.13630</a></li>
+<li>Wang et al. Diffusion-QL. 2022. <a href="https://arxiv.org/abs/2208.06193">arXiv:2208.06193</a>；Hansen-Estruch et al. IDQL. 2023. <a href="https://arxiv.org/abs/2304.10573">arXiv:2304.10573</a>；Yang et al. DIPO. 2023. <a href="https://arxiv.org/abs/2305.13122">arXiv:2305.13122</a>；Psenka et al. QSM. 2023. <a href="https://arxiv.org/abs/2312.11752">arXiv:2312.11752</a>；Wang et al. DACER. 2024. <a href="https://arxiv.org/abs/2405.15177">arXiv:2405.15177</a>；Mark et al. PA-RL. 2024. <a href="https://arxiv.org/abs/2412.06685">arXiv:2412.06685</a></li>
+<li>Schulman et al. PPO. 2017. <a href="https://arxiv.org/abs/1707.06347">arXiv:1707.06347</a>；Schulman et al. GAE. 2015. <a href="https://arxiv.org/abs/1506.02438">arXiv:1506.02438</a></li>
+<li>Shao et al. DeepSeekMath (GRPO). 2024. <a href="https://arxiv.org/abs/2402.03300">arXiv:2402.03300</a>；Ahmadian et al. RLOO. 2024. <a href="https://arxiv.org/abs/2402.14740">arXiv:2402.14740</a>；Hu et al. REINFORCE++. 2025. <a href="https://arxiv.org/abs/2501.03262">arXiv:2501.03262</a></li>
+<li>Han et al. ReinDiffuse. 2024. <a href="https://arxiv.org/abs/2410.07296">arXiv:2410.07296</a>；Yue et al. RLPF. 2025. <a href="https://arxiv.org/abs/2506.12769">arXiv:2506.12769</a>；PhysMoDPO. 2026. <a href="https://arxiv.org/abs/2603.13228">arXiv:2603.13228</a></li>
+</ol>
+</section><footer>数值结果均引自各论文自述，未复现。标注“不确定”、“推测”或位于“观点”框内的内容是判断，不是论文结论。网格图中的 5 行去噪步是示意，不代表真实步数。</footer>
+</div></div></div>

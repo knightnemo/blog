@@ -1,0 +1,864 @@
+<div class="dr-full" lang="en"><section id="scope"><blockquote class="ai-note"><p><strong>Note:</strong> This post was written with the help of AI.</p></blockquote></section><div class="shell"><nav aria-label="Contents" class="toc">
+<div class="toc-inner">
+<details id="toc-details" open="">
+<summary>Contents</summary>
+<div class="label">Contents</div>
+<ol>
+<li><a href="#tldr">At a glance</a></li>
+<li><a href="#howto">0 How to read the diagrams</a></li>
+<li><a href="#genealogy">1 Method genealogy</a></li>
+<li><a href="#setup">2 Two-level MDP derivation</a>
+<ol>
+<li><a href="#single">2.1 Single denoising MDP</a></li>
+<li><a href="#dppo-mdp">2.2 The DPPO two-level MDP</a></li>
+<li><a href="#alts">2.3 Alternative factorizations</a></li>
+<li><a href="#sde">2.4 ODE → SDE</a></li>
+<li><a href="#grad-paths">2.5 Gradient paths</a></li>
+<li><a href="#onpolicy">2.6 On-policy estimators</a></li>
+</ol>
+</li>
+<li><a href="#lane-chain">3 Inside the chain: likelihood ratios</a>
+<ol>
+<li><a href="#m-ddpo">DDPO</a></li>
+<li><a href="#m-dpok">DPOK</a></li>
+<li><a href="#m-flowgrpo">Flow-GRPO</a></li>
+<li><a href="#m-dancegrpo">DanceGRPO</a></li>
+<li><a href="#m-mixgrpo">MixGRPO</a></li>
+<li><a href="#m-dppo">DPPO</a></li>
+<li><a href="#m-reinflow">ReinFlow</a></li>
+<li><a href="#m-ogpo">OGPO</a></li>
+</ol>
+</li>
+<li><a href="#lane-noise">4 Noise space</a>
+<ol>
+<li><a href="#m-noiseppo">Noise PPO</a></li>
+<li><a href="#m-dsrl">DSRL</a></li>
+</ol>
+</li>
+<li><a href="#lane-free">5 Likelihood-free / regression</a>
+<ol>
+<li><a href="#m-ddpo-pref">Diffusion-DPO</a></li>
+<li><a href="#m-nft">DiffusionNFT</a></li>
+<li><a href="#m-fpo">FPO</a></li>
+<li><a href="#m-pathwise">ReFL / DRaFT / AlignProp</a></li>
+<li><a href="#m-offq">Off-policy Q comparisons</a></li>
+</ol>
+</li>
+<li><a href="#lane-out">6 Outside the chain / output</a>
+<ol>
+<li><a href="#m-residual">Residual RL</a></li>
+</ol>
+</li>
+<li><a href="#cross-domain">7 Cross-domain derivation</a></li><li><a href="#compare">8 Pairwise comparison</a></li>
+<li><a href="#table">9 Overview table</a></li>
+<li><a href="#refs">References</a></li>
+</ol>
+</details>
+</div>
+</nav><div class="research-content">
+<section id="tldr">
+<div class="tldr">
+<h3 style="margin-top:14px">At a glance</h3>
+<ol>
+<li>There are two horizons in a diffusion policy: environment time \(t\) and denoising time \(k=K\dots0\). When comparing these methods, I mainly look at <strong>where they define the action, where they compute likelihood, and how they assign advantage to each denoising step</strong>.</li>
+<li>DDPO / DPOK treat the denoising process as one MDP. Each \(\pi_\theta(x_{k-1}\mid x_k,c)\) is Gaussian, so we can compute its log probability directly. Reward only appears at \(x_0\), and every step gets the same terminal reward.</li>
+<li>DPPO puts the denoising MDP inside the environment MDP, then flattens \((t,k)\) into one long chain. Reward appears at \(k=0\), after we have a clean action. The critic is \(V(s_t)\), and GAE runs at the environment level. All denoising steps for one environment decision use the same \(A_t\), multiplied by \(\gamma_{\text{denoise}}^k\). Here we use the destination index for each transition.</li>
+<li>The PPO ratio and clipping are evaluated separately at each \((t,k)\). The gradient passes through the current \(\mu_\theta(a^{k+1},s_t,k)\), <strong>not backward through the sampled denoising chain</strong>. This score-function estimator differs from the pathwise gradients in DRaFT / AlignProp.</li>
+<li>For a deterministic flow / ODE sampler, the <strong>conditional transition</strong> is a Dirac distribution. We cannot plug it into a Gaussian PPO ratio. The final output can still be random because the initial noise is random. Flow-GRPO and DanceGRPO deal with this by constructing an SDE; ReinFlow and πRL Flow-Noise add learned noise. DDIM with \(\eta=0\) has the same problem at each transition.</li>
+<li>There are also methods that do not use chain log probabilities: DSRL / Noise PPO learn over initial noise, FPO builds a surrogate ratio from flow-matching loss differences, and DiffusionNFT regresses positive and negative implicit policies.</li>
+</ol>
+</div>
+</section>
+<section id="howto">
+<h2><span class="secnum">0</span>How to read the diagrams</h2>
+<p>The diagrams below all use the same format. <strong>Columns</strong> are environment decisions: one condition \(c\) for image generation, or three robot decisions \(t,t+1,t+2\). <strong>Rows</strong> go from initial noise \(x_K\), through denoising \(x_k\to x_{k-1}\), to the output \(x_0\) / action \(a_t\), an optional residual, and finally the environment or reward model. I only draw five denoising rows, even for a 50-step sampler. The colors, stars, arrows, and weights mean the same thing across diagrams.</p>
+<ul class="legend">
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-cell-frozen" height="18" rx="3" width="36" x="2" y="2"></rect></svg><span><b>Gray:</b> frozen computation, or a timestep excluded from the loss.</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-cell-act" height="18" rx="3" width="36" x="2" y="2"></rect></svg><span><b>Solid accent:</b> the output is an RL action; evaluate \(\log\pi\) and a likelihood ratio here.</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-cell-train" height="18" rx="3" width="36" x="2" y="2"></rect></svg><span><b>Accent outline:</b> trainable computation without a local RL action, such as regression or a pathwise gradient.</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-cell-data" height="18" rx="3" width="36" x="2" y="2"></rect></svg><span><b>White:</b> data or the environment: samples, actions, simulator, reward model.</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-cell-reuse" height="18" rx="3" width="36" x="2" y="2"></rect></svg><span><b>Dashed:</b> reuse an earlier result instead of recomputing this column, as in chunked replanning.</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><text class="g-star" x="12" y="16">★</text></svg><span><b>Star:</b> where reward enters.</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><text class="g-t" style="font-size:11px" x="4" y="15">γ²Â</text></svg><span><b>Cell text:</b> the assigned advantage weight. \(\hat A\) means the same broadcast value; \(\gamma^k\hat A\) means step weighting. Lighter fill indicates lower weight.</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><line class="g-path" x1="20" x2="20" y1="20" y2="4"></line><path class="g-path" d="M15,8 L20,2 L25,8"></path></svg><span><b>Red reverse arrow:</b> pathwise backpropagation from a differentiable reward or \(\nabla_aQ\).</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-group" height="15" rx="3" width="32" x="5" y="5"></rect><rect class="g-group" height="15" rx="3" style="fill:var(--surface)" width="32" x="2" y="2"></rect></svg><span><b>Stacked dashed boxes ×G:</b> a group of sibling samples compared for relative advantages.</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><rect class="g-pill" height="16" rx="8" width="36" x="2" y="3"></rect><text class="g-side-acc" style="font-size:9px" text-anchor="middle" x="20" y="15">V(s)</text></svg><span><b>Teal pill:</b> the critic location, such as \(V(s_t)\) or \(Q(s,a)\).</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><line class="g-gae" x1="26" x2="6" y1="11" y2="11"></line><path class="g-gae" d="M11,6 L5,11 L11,16"></path></svg><span><b>Teal arrows below the environment:</b> backward recursion of GAE / discounted return across environment time.</span></li>
+<li><svg aria-hidden="true" height="22" width="40"><path class="g-bracket" d="M4,3 H10 V19 H4"></path></svg><span><b>Right bracket:</b> an operation spanning rows, such as transition KL, a moving window, or a joint-chain ratio.</span></li>
+</ul>
+<figure>
+<div class="fig-frame" style="max-width:520px"><div class="gridfig" data-m="example"></div></div>
+<figcaption><b>Example.</b> This is a made-up diagram to explain the notation. The numbers refer to the list below.</figcaption>
+</figure>
+<ol class="legend-num">
+<li><span class="num">1</span><span>Initial noise \(x_K\sim\mathcal N(0,I)\) is a white data cell here. A solid cell at this location (Noise PPO, DSRL) makes noise the RL action.</span></li>
+<li><span class="num">2</span><span>Gray: an early frozen denoising prefix, as in DPPO finetuning only the last \(K^{\prime}\) steps.</span></li>
+<li><span class="num">3</span><span>Outline: trainable parameters without a local log-probability term, updated through regression or pathwise gradients.</span></li>
+<li><span class="num">4</span><span>Solid: RL action with ratio \(\rho\). Labels \(\gamma\hat A\) and \(\hat A\) give its advantage weight; lighter fill means a smaller weight.</span></li>
+<li><span class="num">5</span><span>The final action \(a_t\) or sample \(x_0\).</span></li>
+<li><span class="num">6</span><span>An optional residual row. A solid cell makes the residual the RL action.</span></li>
+<li><span class="num">7</span><span>Environment / reward model. A star marks reward injection.</span></li>
+<li><span class="num">8</span><span>Critic attachment point.</span></li>
+<li><span class="num">9</span><span>Red arrow: how far the pathwise gradient is propagated backward.</span></li>
+<li><span class="num">10</span><span>Stacked ×G boxes: sibling samples under one condition.</span></li>
+</ol>
+<p>Below each grid are the three parts of a training iteration: rollout, reward calculation, and the update.</p>
+</section>
+<section id="genealogy">
+<h2><span class="secnum">1</span>Method genealogy</h2>
+<p>I group the methods by where RL acts: noise space, inside the chain with likelihood ratios, likelihood-free / regression, and after the output. Each edge describes what changes between two methods. It does not necessarily mean one paper builds on the other. Click a method to jump to its section.</p>
+<figure>
+<div class="fig-frame" id="genealogy-fig"></div>
+<figcaption><b>Figure 0.</b> Edges show one or two changes between methods. ReFL / DRaFT / AlignProp and the off-policy Q methods are included for comparison; they are not part of the main branch.</figcaption>
+</figure>
+</section>
+<section id="setup">
+<h2><span class="secnum">2</span>Two-level MDP derivation: two horizons</h2>
+<p>Environment time is \(t=0,1,\dots\); denoising time is \(k=K,\dots,1,0\), from pure noise to clean sample/action. Terminal-reward image generation has one denoising horizon conditioned on prompt \(c\). In robotics, the condition is observation \(s_t\), and each environment decision generates an entire chain to obtain \(a_t^0\).</p>
+<h3 id="single"><span class="secnum">2.1</span>A single denoising MDP: DDPO / DPOK</h3>
+<p>DDPO (Black et al., 2023) and DPOK (Fan et al., 2023) view one generation as a \(K\)-step episode:</p>
+<div class="eq">\[
+\mathbf s_k=(c,\,k,\,x_k),\qquad \mathbf a_k=x_{k-1},\qquad
+\pi_\theta(\mathbf a_k\mid \mathbf s_k)=\mathcal N\!\big(x_{k-1};\ \mu_\theta(x_k,k,c),\ \sigma_k^2 I\big),
+\]
+\[
+P(\mathbf s_{k-1}\mid \mathbf s_k,\mathbf a_k)=\delta_{(c,\,k-1,\,\mathbf a_k)},\qquad
+R(\mathbf s_k,\mathbf a_k)=\begin{cases} r(x_0,c) &amp; k=1\\ 0 &amp; \text{otherwise.}\end{cases}
+\]</div>
+<p>The MDP transition is deterministic: the next state contains the \(x_{k-1}\) we just sampled. The randomness comes from the policy. Since each policy is diagonal Gaussian, we can compute its log probability:</p>
+<div class="eq">\[
+\log\pi_\theta(x_{k-1}\mid x_k,c) = -\frac{\lVert x_{k-1}-\mu_\theta(x_k,k,c)\rVert^2}{2\sigma_k^2} + \text{const}.
+\]</div>
+<p>Intermediate rewards are zero, and the inner discount is one. Every transition therefore has return \(r(x_0,c)\). DDPO has two estimators:</p>
+<div class="eq">\[
+\text{DDPO}_{\text{SF}}:\ \ \nabla_\theta J=\mathbb E\Big[\textstyle\sum_{k=1}^{K}\nabla_\theta\log\pi_\theta(x_{k-1}\mid x_k,c)\;r(x_0,c)\Big]
+\]
+\[
+\text{DDPO}_{\text{IS}}:\ \ J=\mathbb E\Big[\textstyle\sum_{k}\min\big(\rho_k\hat A,\ \operatorname{clip}(\rho_k,1-\epsilon,1+\epsilon)\hat A\big)\Big],\quad
+\rho_k=\frac{\pi_\theta(x_{k-1}\mid x_k,c)}{\pi_{\text{old}}(x_{k-1}\mid x_k,c)}
+\]</div>
+<p>For \(\hat A\), we can normalize rewards using a running mean and standard deviation for each prompt. This gives us a baseline without training a critic. The idea is related to GRPO, although GRPO computes its statistics from samples in the same batch. DPOK adds a KL term to the same MDP. If the initial-noise distribution is unchanged, the chain-rule bound lets us replace the terminal KL with a sum of expected Gaussian transition KLs:</p>
+<div class="eq">\[
+\mathrm{KL}\big(p_\theta(x_0\mid c)\,\Vert\,p_{\text{pre}}(x_0\mid c)\big)\le
+\sum_{k}\mathbb E_{p_\theta}\Big[\mathrm{KL}\big(\pi_\theta(\cdot\mid x_k,c)\Vert\pi_{\text{pre}}(\cdot\mid x_k,c)\big)\Big]
+=\sum_k \mathbb E\Big[\tfrac{\lVert\mu_\theta-\mu_{\text{pre}}\rVert^2}{2\sigma_k^2}\Big].
+\]</div>
+<p>DPOK also considers a learned baseline \(V(x_k,c)\approx\mathbb E[r(x_0,c)\mid x_k]\) in its appendix: a <strong>critic over denoising states</strong>. Compare this with the environment-only critic in DPPO.</p>
+<div class="note"><p><strong>We need positive variance for the Gaussian ratio.</strong> The log density requires \(\sigma_k&gt;0\). For DDIM, the noise is controlled by \(\eta\), with \(\sigma_k(\eta)=\eta\sqrt{\tfrac{1-\bar\alpha_{k-1}}{1-\bar\alpha_k}}\sqrt{1-\tfrac{\bar\alpha_k}{\bar\alpha_{k-1}}}\). We need positive \(\eta\) where this coefficient is nonzero, and may still need to handle the endpoints separately or add a variance floor. With \(\eta=0\), each DDIM transition is deterministic, so this local density ratio does not apply.</p></div>
+<h3 id="dppo-mdp"><span class="secnum">2.2</span>The DPPO two-level MDP</h3>
+<p>DPPO (Ren et al., 2024) considers robots. At decision \(t\), start at \(a_t^K\sim\mathcal N(0,I)\), denoise to \(a_t^0\), execute the action (often a chunk), and transition to \(s_{t+1}\). Flatten the two levels using \(\bar t(t,k)=tK+(K-k-1)\). In this subsection, \(k=K-1,\dots,0\) indexes the <em>destination</em> of \(a^{k+1}\to a^k\):</p>
+<div class="eq">\[
+\bar s_{\bar t(t,k)}=(s_t,\ a_t^{k+1}),\qquad \bar a_{\bar t(t,k)}=a_t^{k},\qquad
+\bar R_{\bar t(t,k)}=\begin{cases}0 &amp; k\gt 0\\ R(s_t,a_t^0) &amp; k=0\end{cases}
+\]
+\[
+k\gt 0:\ (s_t,a_t^k)\ \text{deterministically becomes the next state};\qquad
+k=0:\ (s_{t+1},a_{t+1}^K)\sim P(s_{t+1}\mid s_t,a_t^0)\otimes\mathcal N(0,I).
+\]</div>
+<p>The policy is still Gaussian: \(\pi_\theta(a_t^k\mid s_t,a_t^{k+1})=\mathcal N(a_t^k;\mu_\theta(a_t^{k+1},s_t,k),\sigma_{k+1}^2I)\). We can compute the log probability. The remaining question is how to turn the environment reward at \(k=0\) into an advantage for each \((t,k)\).</p>
+<figure>
+<div class="fig-frame">
+<svg aria-label="DPPO two-level MDP: environment time horizontally, denoising steps vertically; environment-level GAE advantages are weighted across denoising transitions." role="img" viewbox="0 0 960 470">
+<defs>
+<marker id="ah" markerheight="7" markerwidth="7" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path></marker>
+<marker id="ah-acc" markerheight="7" markerwidth="7" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"></path></marker>
+<marker id="ah-rew" markerheight="7" markerwidth="7" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--reward)"></path></marker>
+</defs>
+<rect height="92" rx="6" style="fill:var(--frozen-soft)" width="642" x="196" y="40"></rect>
+<rect height="94" rx="6" style="fill:var(--accent-soft)" width="642" x="196" y="170"></rect>
+<text class="svg-muted" font-size="12" x="850" y="82">Frozen θ</text>
+<text class="svg-muted" font-size="11" x="850" y="98">(early steps)</text>
+<text class="svg-accent" font-size="12" x="850" y="208">Trainable θ_ft</text>
+<text class="svg-accent" font-size="11" x="850" y="224">(last K′ steps)</text>
+<text class="svg-muted" font-size="12" x="16" y="26">Denoising k ↓</text>
+<text class="svg-muted" font-size="12" text-anchor="middle" x="520" y="22">Environment t →</text>
+<text class="svg-ink" font-size="12" x="40" y="66">k = K</text>
+<text class="svg-ink" font-size="12" x="40" y="116">K−1</text>
+<text class="svg-ink" font-size="12" x="40" y="156">⋮</text>
+<text class="svg-ink" font-size="12" x="40" y="196">1</text>
+<text class="svg-ink" font-size="12" x="40" y="246">0 (execute)</text>
+<text class="svg-muted" font-size="12" x="40" y="310">Environment</text>
+<text class="svg-accent" font-size="12" x="40" y="404">advantage</text>
+<g fill="none" stroke="currentColor" stroke-width="1.3">
+<text class="svg-ink" font-size="13" stroke="none" text-anchor="middle" x="260" y="40">t</text>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="238" y="50"></rect>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="238" y="100"></rect>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="238" y="180"></rect>
+<rect height="24" rx="5" stroke-width="2" style="fill:var(--surface);stroke:var(--reward)" width="44" x="238" y="230"></rect>
+<line marker-end="url(#ah)" x1="260" x2="260" y1="74" y2="99"></line>
+<line x1="260" x2="260" y1="124" y2="140"></line>
+<line marker-end="url(#ah)" x1="260" x2="260" y1="162" y2="179"></line>
+<line marker-end="url(#ah)" x1="260" x2="260" y1="204" y2="229"></line>
+<line marker-end="url(#ah)" x1="260" x2="260" y1="254" y2="289"></line>
+<rect height="32" rx="5" style="fill:var(--surface)" width="72" x="224" y="290"></rect>
+<rect height="24" rx="12" style="fill:var(--surface)" width="54" x="130" y="294"></rect>
+<line marker-end="url(#ah)" x1="184" x2="223" y1="306" y2="306"></line>
+<line stroke-dasharray="3 4" x1="157" x2="157" y1="294" y2="62"></line>
+<line marker-end="url(#ah)" stroke-dasharray="3 4" x1="157" x2="237" y1="62" y2="62"></line>
+<line marker-end="url(#ah)" x1="296" x2="389" y1="306" y2="306"></line>
+<line marker-end="url(#ah-rew)" stroke-width="1.6" style="stroke:var(--reward)" x1="260" x2="260" y1="322" y2="384"></line>
+</g>
+<g class="svg-ink" font-size="12" text-anchor="middle">
+<text x="260" y="66">aᴷ</text><text x="260" y="116">aᴷ⁻¹</text><text x="260" y="156">⋮</text><text x="260" y="196">a¹</text><text x="260" y="246">a⁰</text>
+<text x="260" y="310">World P</text><text x="157" y="310">sₜ</text>
+</g>
+<text class="svg-muted" font-size="11" text-anchor="middle" x="157" y="338">V(sₜ)</text>
+<text class="svg-muted" font-size="11" x="168" y="54">Condition sₜ</text>
+<text class="svg-muted" font-size="11" text-anchor="middle" x="350" y="298">sₜ₊₁</text>
+<text class="svg-reward" font-size="12" x="268" y="352">rₜ</text>
+<g fill="none" stroke="currentColor" stroke-width="1.3">
+<text class="svg-ink" font-size="13" stroke="none" text-anchor="middle" x="520" y="40">t+1</text>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="498" y="50"></rect>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="498" y="100"></rect>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="498" y="180"></rect>
+<rect height="24" rx="5" stroke-width="2" style="fill:var(--surface);stroke:var(--reward)" width="44" x="498" y="230"></rect>
+<line marker-end="url(#ah)" x1="520" x2="520" y1="74" y2="99"></line>
+<line x1="520" x2="520" y1="124" y2="140"></line>
+<line marker-end="url(#ah)" x1="520" x2="520" y1="162" y2="179"></line>
+<line marker-end="url(#ah)" x1="520" x2="520" y1="204" y2="229"></line>
+<line marker-end="url(#ah)" x1="520" x2="520" y1="254" y2="289"></line>
+<rect height="32" rx="5" style="fill:var(--surface)" width="72" x="484" y="290"></rect>
+<rect height="24" rx="12" style="fill:var(--surface)" width="54" x="390" y="294"></rect>
+<line marker-end="url(#ah)" x1="444" x2="483" y1="306" y2="306"></line>
+<line stroke-dasharray="3 4" x1="417" x2="417" y1="294" y2="62"></line>
+<line marker-end="url(#ah)" stroke-dasharray="3 4" x1="417" x2="497" y1="62" y2="62"></line>
+<line marker-end="url(#ah)" x1="556" x2="649" y1="306" y2="306"></line>
+<line marker-end="url(#ah-rew)" stroke-width="1.6" style="stroke:var(--reward)" x1="520" x2="520" y1="322" y2="384"></line>
+</g>
+<g class="svg-ink" font-size="12" text-anchor="middle">
+<text x="520" y="66">aᴷ</text><text x="520" y="116">aᴷ⁻¹</text><text x="520" y="156">⋮</text><text x="520" y="196">a¹</text><text x="520" y="246">a⁰</text>
+<text x="520" y="310">World P</text><text x="417" y="310">sₜ₊₁</text>
+</g>
+<text class="svg-muted" font-size="11" text-anchor="middle" x="417" y="338">V(sₜ₊₁)</text>
+<text class="svg-reward" font-size="12" x="528" y="352">rₜ₊₁</text>
+<g fill="none" stroke="currentColor" stroke-width="1.3">
+<text class="svg-ink" font-size="13" stroke="none" text-anchor="middle" x="780" y="40">t+2</text>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="758" y="50"></rect>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="758" y="100"></rect>
+<rect height="24" rx="5" style="fill:var(--surface)" width="44" x="758" y="180"></rect>
+<rect height="24" rx="5" stroke-width="2" style="fill:var(--surface);stroke:var(--reward)" width="44" x="758" y="230"></rect>
+<line marker-end="url(#ah)" x1="780" x2="780" y1="74" y2="99"></line>
+<line x1="780" x2="780" y1="124" y2="140"></line>
+<line marker-end="url(#ah)" x1="780" x2="780" y1="162" y2="179"></line>
+<line marker-end="url(#ah)" x1="780" x2="780" y1="204" y2="229"></line>
+<line marker-end="url(#ah)" x1="780" x2="780" y1="254" y2="289"></line>
+<rect height="32" rx="5" style="fill:var(--surface)" width="72" x="744" y="290"></rect>
+<rect height="24" rx="12" style="fill:var(--surface)" width="54" x="650" y="294"></rect>
+<line marker-end="url(#ah)" x1="704" x2="743" y1="306" y2="306"></line>
+<line stroke-dasharray="3 4" x1="677" x2="677" y1="294" y2="62"></line>
+<line marker-end="url(#ah)" stroke-dasharray="3 4" x1="677" x2="757" y1="62" y2="62"></line>
+<line stroke-dasharray="2 3" x1="816" x2="900" y1="306" y2="306"></line>
+<line marker-end="url(#ah-rew)" stroke-width="1.6" style="stroke:var(--reward)" x1="780" x2="780" y1="322" y2="384"></line>
+</g>
+<g class="svg-ink" font-size="12" text-anchor="middle">
+<text x="780" y="66">aᴷ</text><text x="780" y="116">aᴷ⁻¹</text><text x="780" y="156">⋮</text><text x="780" y="196">a¹</text><text x="780" y="246">a⁰</text>
+<text x="780" y="310">World P</text><text x="677" y="310">sₜ₊₂</text>
+</g>
+<text class="svg-muted" font-size="11" text-anchor="middle" x="677" y="338">V(sₜ₊₂)</text>
+<text class="svg-reward" font-size="12" x="788" y="352">rₜ₊₂</text>
+<g class="svg-accent" font-size="12" text-anchor="middle">
+<text font-weight="600" x="260" y="404">Aₜ</text>
+<text font-weight="600" x="520" y="404">Aₜ₊₁</text>
+<text font-weight="600" x="780" y="404">Aₜ₊₂</text>
+</g>
+<g fill="none" stroke-width="1.6" style="stroke:var(--accent)">
+<line marker-end="url(#ah-acc)" x1="488" x2="296" y1="400" y2="400"></line>
+<line marker-end="url(#ah-acc)" x1="748" x2="560" y1="400" y2="400"></line>
+<line marker-end="url(#ah-acc)" stroke-dasharray="2 3" x1="920" x2="820" y1="400" y2="400"></line>
+</g>
+<text class="svg-accent" font-size="11" text-anchor="middle" x="392" y="422">GAE：δₜ = rₜ + γV(sₜ₊₁) − V(sₜ)</text>
+<text class="svg-accent" font-size="11" text-anchor="middle" x="654" y="422">Aₜ = Σ (γλ)ˡ δₜ₊ₗ</text>
+<g fill="none" stroke-width="1.6" style="stroke:var(--accent)">
+<line x1="304" x2="304" y1="388" y2="62"></line>
+<line marker-end="url(#ah-acc)" opacity="1" x1="304" x2="284" y1="242" y2="242"></line>
+<line marker-end="url(#ah-acc)" opacity="0.8" x1="304" x2="284" y1="192" y2="192"></line>
+<line marker-end="url(#ah-acc)" opacity="0.55" x1="304" x2="284" y1="112" y2="112"></line>
+<line marker-end="url(#ah-acc)" opacity="0.4" x1="304" x2="284" y1="62" y2="62"></line>
+<line x1="564" x2="564" y1="388" y2="62"></line>
+<line marker-end="url(#ah-acc)" x1="564" x2="544" y1="242" y2="242"></line>
+<line marker-end="url(#ah-acc)" opacity="0.8" x1="564" x2="544" y1="192" y2="192"></line>
+<line marker-end="url(#ah-acc)" opacity="0.55" x1="564" x2="544" y1="112" y2="112"></line>
+<line marker-end="url(#ah-acc)" opacity="0.4" x1="564" x2="544" y1="62" y2="62"></line>
+<line x1="824" x2="824" y1="388" y2="62"></line>
+<line marker-end="url(#ah-acc)" x1="824" x2="804" y1="242" y2="242"></line>
+<line marker-end="url(#ah-acc)" opacity="0.8" x1="824" x2="804" y1="192" y2="192"></line>
+<line marker-end="url(#ah-acc)" opacity="0.55" x1="824" x2="804" y1="112" y2="112"></line>
+<line marker-end="url(#ah-acc)" opacity="0.4" x1="824" x2="804" y1="62" y2="62"></line>
+</g>
+<g>
+<rect height="10" style="fill:var(--surface)" width="8" x="300" y="301"></rect><line stroke="currentColor" stroke-width="1.3" x1="298" x2="310" y1="306" y2="306"></line>
+<rect height="10" style="fill:var(--surface)" width="8" x="560" y="301"></rect><line stroke="currentColor" stroke-width="1.3" x1="558" x2="570" y1="306" y2="306"></line>
+<rect height="10" style="fill:var(--surface)" width="8" x="820" y="301"></rect><line stroke="currentColor" stroke-dasharray="2 3" stroke-width="1.3" x1="818" x2="830" y1="306" y2="306"></line>
+</g>
+<text class="svg-accent" font-size="12" x="850" y="150">Âₜ,ₖ = γ_dᵏ · Aₜ</text>
+<text class="svg-muted" font-size="11" x="850" y="166">One ρₜ,ₖ per cell</text>
+<g font-size="11">
+<line marker-end="url(#ah)" stroke="currentColor" stroke-width="1.3" x1="40" x2="70" y1="452" y2="452"></line>
+<text class="svg-ink" x="78" y="456">Transition πθ: gradient is local to this step</text>
+<line marker-end="url(#ah-rew)" stroke-width="1.6" style="stroke:var(--reward)" x1="440" x2="470" y1="452" y2="452"></line>
+<text class="svg-reward" x="478" y="456">Reward after the clean action</text>
+<line marker-end="url(#ah-acc)" stroke-width="1.6" style="stroke:var(--accent)" x1="650" x2="680" y1="452" y2="452"></line>
+<text class="svg-accent" x="688" y="456">Advantage flow; lighter = smaller</text>
+</g>
+</svg>
+</div>
+<figcaption><b>Figure 1.</b> DPPO on a \(t\times k\) grid. Orange: reward \(r_t\) arrives after executing \(a_t^0\). Teal: \(V(s_t)\) depends only on environment state; GAE propagates right-to-left across decisions to obtain \(A_t\). Denoising steps in the same column reuse it with weight \(\gamma_{\text{denoise}}^k\). Only the shaded suffix of \(K^{\prime}\) steps is finetuned.</figcaption>
+</figure>
+<p><strong>Computing and distributing advantage.</strong> DPPO uses two levels:</p>
+<div class="eq">\[
+\delta_t=r_t+\gamma_{\text{env}}V_\phi(s_{t+1})-V_\phi(s_t),\qquad
+A_t=\sum_{l\ge0}(\gamma_{\text{env}}\lambda)^l\,\delta_{t+l},\qquad
+\hat A_{t,k}=\gamma_{\text{denoise}}^{\,k}\,A_t .
+\]</div>
+<ul>
+<li><strong>The critic depends on \(s_t\)</strong>, not the intermediate noisy action \(a_t^{k+1}\). The paper reports instability in an ablation that also conditions the value function on the noisy action.</li>
+<li><strong>We compute advantage once per environment decision.</strong> All \(k\) use the same \(A_t\), with a weight \(\gamma_{\text{denoise}}^k\) (0.99 in the configurations discussed here). In the code, this is <code>advantages *= gamma_denoising ** (ft_denoising_steps - i - 1)</code>. The index \(i\) increases through the trainable steps, so the last step has weight one.</li>
+<li>My understanding is the following. If the critic only sees \(s_t\) and the inner discount is one, the inner TD error is \(0+V(s_t)-V(s_t)=0\). We can then pass the environment advantage to the denoising steps. The extra \(\gamma_{\text{denoise}}\) downweights early, noisy steps; it does not discount physical time. This is an intuition, though. It does not prove that running GAE on an arbitrarily flattened chain gives the same estimator as the environment-level implementation.</li>
+</ul>
+<p><strong>PPO ratios and clipping.</strong> Each \((t,k)\) contributes a separate PPO sample:</p>
+<div class="eq">\[
+\rho_{t,k}(\theta)=\frac{\pi_\theta(a_t^k\mid s_t,a_t^{k+1})}{\pi_{\theta_{\text{old}}}(a_t^k\mid s_t,a_t^{k+1})},\qquad
+\mathcal L_{\text{PPO}}=-\,\mathbb E_{t,k}\Big[\min\big(\rho_{t,k}\hat A_{t,k},\ \operatorname{clip}(\rho_{t,k},1-\epsilon_k,1+\epsilon_k)\hat A_{t,k}\big)\Big].
+\]</div>
+<ul>
+<li>We save \(a_t^{k+1}\) and \(a_t^k\) during rollout and treat them as constants when updating. The gradient \(\nabla_\theta\log\pi_\theta\) only goes through the current \(\mu_\theta(a_t^{k+1},s_t,k)\). <strong>It does not backpropagate through the sampled denoising chain.</strong> If we batch the updates by step, we do not need to keep the whole chain’s activations in memory. We still have to store the rollout, and both storage and total computation grow with \(K\).</li>
+<li>The implementation supports timestep-dependent clipping: \(\epsilon_k=\epsilon_{\text{base}}+(\epsilon-\epsilon_{\text{base}})\frac{e^{\beta\tau_k}-1}{e^{\beta}-1}\), with \(\tau_k\in[0,1]\) increasing along denoising. Later transitions can have a wider clipping interval. The cited Robomimic configuration goes from <code>clip_ploss_coef_base=0.001</code> to <code>clip_ploss_coef=0.01</code>; Gym uses 0.01 for both, giving no schedule.</li>
+</ul>
+<p><strong>Exploration and numerical stability.</strong> Small posterior \(\sigma_k\) near the clean end gives weak exploration and makes log probability highly sensitive to small mean changes. DPPO distinguishes a sampling floor \(\sigma^{\text{exp}}_{\min}\) (0.01–0.1 across cited tasks) from a log-probability floor \(\sigma^{\text{prob}}_{\min}=0.1\). Both are 0.1 in the cited Gym / Robomimic configurations.</p>
+<p><strong>Only finetune the last few steps.</strong> Make a copy \(\theta_{\text{ft}}\). Use frozen \(\theta\) for the first \(K-K^{\prime}\) transitions, then the trainable copy for the last \(K^{\prime}\), which enter the PPO loss. The configurations discussed here use \(K=20,K^{\prime}=10\). Another option is roughly five stochastic DDIM steps with \(\eta=1\) during training and \(\eta=0\) for evaluation. Execute \(T_a\) primitive actions from a chunk, then replan.</p>
+<h3 id="alts"><span class="secnum">2.3</span>Other factorizations</h3>
+<p><strong>(a) Treat the whole chain as one action.</strong> Add the transition log probabilities to get the joint log probability; multiply the ratios to get the joint ratio:</p>
+<div class="eq">\[
+\log\pi_\theta(a^{0:K}\mid s)=\log\mathcal N(a^K;0,I)+\sum_{k=1}^{K}\log\pi_\theta(a^{k-1}\mid a^k,s),\qquad
+\rho^{\text{chain}}=\prod_{k=1}^{K}\rho_k=\exp\Big(\sum_k\Delta\ell_k\Big).
+\]</div>
+<p>The clean-action marginal ratio \(\pi_\theta(a^0)/\pi_{\mathrm{old}}(a^0)\) is generally intractable, but \(\rho^{\mathrm{chain}}\) is a valid weight on the extended trajectory space. At the on-policy point, the score gradients have the same form \(\mathbb E[A\sum_k\nabla\log\pi_k]\). Clipping their product and clipping individual ratios are different surrogates: many small local changes can accumulate as roughly \((1\pm\epsilon)^K\), while joint clipping can activate frequently on long chains. PPO clipping is not a hard constraint on either ratio or KL. OGPO uses the joint product.</p>
+<p><strong>(b) Outcome-only group comparison.</strong> Sample \(G\) chains for condition \(c\), compute \(\hat A_i=(r_i-\bar r)/(\operatorname{std}(r)+\varepsilon)\), and broadcast it through each chain before per-step ratio clipping (Flow-GRPO, DanceGRPO). No critic is needed, but the signal remains terminal rather than denoising-step-specific. SDE construction, sample grouping, fewer steps, and shared initial noise make practical differences.</p>
+<p><strong>(c) RL only in noise / latent space.</strong> Freeze \(f_\theta\), absorb it into the environment, and learn \(\pi_\psi(w\mid s)\) with output \(a=f_\theta(s,w)\), often using deterministic DDIM. The density belongs to the noise policy, not the denoising chain. DSRL uses off-policy SAC; Noise PPO uses a one-decision PPO formulation.</p>
+<p><strong>(d) Avoid chain likelihoods altogether.</strong> One family builds surrogate ratios from ELBO / flow-matching losses (FPO). Another learns through regression, including DiffusionNFT’s positive and negative implicit policies. A simpler related baseline is advantage-weighted regression:</p>
+<div class="eq">\[
+\mathcal L_{\text{wFM}}(\theta)=\mathbb E_{(s,a)\sim\mathcal D,\ \tau,\ \varepsilon}\Big[\,w(s,a)\,\big\lVert v_\theta(x_\tau,\tau,s)-(\varepsilon-a)\big\rVert^2\Big],\qquad w=\exp(A/\beta)\ \text{or}\ r\in[0,1].
+\]</div>
+<p>These losses do not require the reverse chain’s likelihood, so we can use ODE or higher-order samplers. The training objectives are still different: NFT uses positive/negative implicit policies, while FPO uses a surrogate ratio. We also need to check whether each method works with classifier-free guidance.</p>
+<h3 id="sde"><span class="secnum">2.4</span>ODE → SDE: why flow policies use it</h3>
+<p>Flow matching / rectified flow samples with the ODE \(\mathrm dx_\tau=v_\theta(x_\tau,\tau)\,\mathrm d\tau\). Given the current state, the next step is deterministic. Its Dirac transition cannot give us the ordinary stochastic density needed for local PPO. This says nothing about whether the final output has a density. Let \(\tau=1\) denote noise and \(\tau=0\) denote data, so generation runs with \(\mathrm d\tau&lt;0\). With an ideal velocity field / score in continuous time, we can construct a reverse SDE with the same marginals:</p>
+<div class="eq">\[\mathrm dx_\tau=\left[v_\theta(x_\tau,\tau)-\frac{\sigma_\tau^2}{2}\nabla_x\log p_\tau(x_\tau)\right]\mathrm d\tau+\sigma_\tau\,\mathrm d\bar W_\tau,\qquad \operatorname{Var}(\mathrm d\bar W_\tau)=|\mathrm d\tau|I.\]</div>
+<p>For rectified flow, \(x_t=(1-t)x_0+t\varepsilon\), and the score is \(\nabla\log p_t(x)=-[x+(1-t)v_\theta(x,t)]/t\). Substitution and Euler–Maruyama discretization give the Flow-GRPO transition below. Here \(t\) is the flow interpolation variable, not environment time:</p>
+<div class="eq">\[
+x_{t+\Delta t}=x_t+\Big[v_\theta(x_t,t)+\frac{\sigma_t^2}{2t}\big(x_t+(1-t)v_\theta(x_t,t)\big)\Big]\Delta t+\sigma_t\sqrt{|\Delta t|}\,\epsilon,\qquad \sigma_t=a\sqrt{\tfrac{t}{1-t}} .
+\]</div>
+<p>Each discrete transition is isotropic Gaussian. With the same diffusion coefficient, its KL is \(\mathrm{KL}=\frac{|\Delta t|}{2}\big(\frac{\sigma_t(1-t)}{2t}+\frac1{\sigma_t}\big)^2\lVert v_\theta-v_{\mathrm{ref}}\rVert^2\). The hyperparameter \(a\) controls exploration. Generation has \(\Delta t&lt;0\); covariance and KL use \(|\Delta t|\). Finite-step solvers need not exactly preserve continuous-time marginals, and endpoints require appropriate treatment.</p>
+<p>ReinFlow instead adds a <strong>learned noise network</strong> directly to each flow step:</p>
+<div class="eq">\[
+a^{k+1}=a^k+v_\theta(t_k,a^k,s)\,\Delta t_k+\sigma_{\theta'}(t_k,a^k,s)\,\epsilon,\qquad
+\pi(a^{k+1}\mid a^k,s)=\mathcal N\big(a^k+v_\theta\Delta t_k,\ \operatorname{diag}\sigma_{\theta'}^2\big).
+\]</div>
+<p>This gives us a discrete Markov chain, whose joint likelihood is a product of Gaussian transitions. RL learns the noise scale within upper and lower bounds, and the models discussed here use only 1–4 steps. The price is that we no longer have a guarantee of preserving the pretrained marginals. πRL tries both approaches: Flow-Noise uses learned noise and a single-level formulation; Flow-SDE uses an SDE and a DPPO-like two-level MDP.</p>
+<h3 id="grad-paths"><span class="secnum">2.5</span>Where does the gradient go?</h3>
+<div class="tbl"><table>
+<thead><tr><th>Gradient path</th><th>Requirements</th><th>Examples</th><th>Properties</th></tr></thead>
+<tbody>
+<tr><td>Score function; local transition</td><td>Per-step \(\log\pi\); stochastic sampler</td><td>DDPO、DPOK、DPPO、Flow-GRPO、DanceGRPO、ReinFlow</td><td>Black-box rewards allowed; potentially high variance; no cross-step activation graph with stepwise updates</td></tr>
+<tr><td>Pathwise; backpropagate through the chain</td><td>Differentiable reward and sampling path</td><td>ReFL、DRaFT、AlignProp</td><td>Often lower variance; memory grows with the backpropagated graph; reward hacking remains possible; ordinary black-box simulation supplies no reward gradient</td></tr>
+<tr><td>Pathwise chain + Gaussian output head</td><td>Store the entire noise sequence</td><td>NCDPO</td><td>Condition on noise to obtain deterministic \(f_\theta(s,a^K,z_{1:K})\), attach a Gaussian output policy, and differentiate the PPO objective through generation</td></tr>
+<tr><td>Noise-space policy</td><td>Black-box access to \(f_\theta\)</td><td>DSRL、Noise PPO</td><td>Freeze \(\theta\); reachable behavior depends on the frozen mapping and permitted latent region</td></tr>
+<tr><td>Surrogate likelihood / weighted regression</td><td>Flow-matching loss</td><td>FPO, DiffusionNFT, AWR-style methods</td><td>Decoupled from transition likelihood; surrogate bias and/or estimation variance</td></tr>
+</tbody></table></div>
+</section><section id="onpolicy">
+<h3><span class="secnum">2.6</span>General on-policy estimators</h3>
+<div class="method">
+<div class="method-head"><h4>PPO + GAE</h4><span class="cite">Schulman et al. 2017 · <a href="https://arxiv.org/abs/1707.06347">1707.06347</a>；GAE 2015 · <a href="https://arxiv.org/abs/1506.02438">1506.02438</a></span></div>
+<div class="eq">\[
+  \mathcal L^{\text{CLIP}}=\mathbb E\big[\min(\rho_t A_t,\operatorname{clip}(\rho_t,1\pm\epsilon)A_t)\big],\quad
+  \rho_t=\tfrac{\pi_\theta(a_t\mid s_t)}{\pi_{\text{old}}(a_t\mid s_t)},\quad
+  A_t^{\text{GAE}}=\textstyle\sum_l(\gamma\lambda)^l\delta_{t+l}
+  \]</div>
+<p>Train \(V_\phi\) using a value loss, often with value clipping. Policy clipping is a surrogate that discourages large updates, not a hard KL bound. Several epochs reuse one rollout batch. Common implementation choices include normalized advantages and target-KL early stopping.</p>
+</div>
+<div class="method">
+<div class="method-head"><h4>GRPO</h4><span class="cite">Shao et al. 2024（DeepSeekMath）· <a href="https://arxiv.org/abs/2402.03300">2402.03300</a></span></div>
+<div class="eq">\[
+  \hat A_i=\frac{r_i-\operatorname{mean}(r_{1:G})}{\operatorname{std}(r_{1:G})},\qquad
+  \mathcal J=\mathbb E\Big[\tfrac1G\textstyle\sum_i\tfrac1{|o_i|}\sum_t\min(\rho_{i,t}\hat A_i,\operatorname{clip}(\cdot)\hat A_i)-\beta\,\mathbb D_{\text{KL}}\Big],\quad
+  \mathbb D_{\text{KL}}\approx\tfrac{\pi_{\text{ref}}}{\pi_\theta}-\log\tfrac{\pi_{\text{ref}}}{\pi_\theta}-1
+  \]</div>
+<p>GRPO uses the mean of \(G\) samples under the same condition as its baseline, so there is no learned critic. Each sample’s tokens or denoising steps share one outcome advantage. The k3 expression above estimates \(D_{\mathrm{KL}}(\pi_\theta\Vert\pi_{\mathrm{ref}})\) on samples from \(\pi_\theta\). If we reuse old-policy samples, we need to account for that change in distribution. In the original GRPO objective, this KL penalty goes directly into the loss.</p>
+</div>
+<div class="method">
+<div class="method-head"><h4>RLOO / REINFORCE++</h4><span class="cite">Ahmadian et al. 2024 · <a href="https://arxiv.org/abs/2402.14740">2402.14740</a>；Hu et al. 2025 · <a href="https://arxiv.org/abs/2501.03262">2501.03262</a></span></div>
+<p>RLOO uses \(\hat A_i=r_i-\frac1{G-1}\sum_{j\ne i}r_j\), without dividing by a standard deviation. With independent sibling samples, the leave-one-out baseline does not bias the score-function estimator. REINFORCE++ uses a critic-free, globally normalized batch advantage rather than group normalization, and puts KL into token-level rewards. These estimator choices can be considered separately from the diffusion policy parameterization.</p>
+</div>
+<h4 style="margin-top:22px">Practical difficulties for diffusion policies</h4>
+<ol>
+<li><strong>Which likelihood is tractable?</strong> Deterministic ODE / DDIM steps do not supply ordinary local stochastic densities; Gaussian stochastic transitions do. The marginal \(\pi(a^0\mid s)\) still generally requires integrating out the chain. Flow policies can use SDEs, injected noise, or alternative objectives (FPO / NFT). GenPO uses a specialized invertible construction with augmented dummy actions to obtain tractable likelihoods.</li>
+<li><strong>Credit within denoising.</strong> Reward arrives only at \(x_0\). Common choices share that signal (DPPO adds \(\gamma_{\text{denoise}}^k\); GRPO broadcasts), or learn a denoising-state critic, such as DPOK’s optional \(V(x_k,c)\). Step-aware preference/reward methods require additional models or sampling.</li>
+<li><strong>Variance.</strong> There are \(K\) terms in the score sum. Its variance depends on each term and on their covariances, so it does not simply grow with \(K\). Still, long chains can be hard to optimize. DPPO only trains the last few steps, DanceGRPO samples a subset (about 60% in the setup discussed here), and MixGRPO trains a moving window.</li>
+<li><strong>Compute.</strong> Each environment decision requires \(K\) model evaluations, and every trained transition adds another forward/backward evaluation. Examples include 10 training steps versus 40 inference steps in Flow-GRPO, five-step DDIM, and 1–4-step shortcut / ReFlow policies in ReinFlow.</li>
+<li><strong>Exploration noise.</strong> Tiny late-step variance weakens exploration and can make likelihood ratios numerically unstable. Solutions include DPPO variance floors, Flow-GRPO’s noise multiplier \(a\), and ReinFlow’s learned noise. Larger perturbations can also reduce sample quality and move samples away from familiar behavior.</li>
+<li><strong>KL to the pretrained model.</strong> When the initial-noise distribution is the same, the sum of expected transition KLs upper-bounds the terminal KL. For Gaussians with equal covariance, we can calculate it in closed form. DanceGRPO reports little benefit from KL in its experiments. I would not take that as a reason to drop regularization everywhere: learned rewards can be exploited, so KL, BC, and independent evaluation may still be needed.</li>
+</ol>
+</section>
+<section id="lane-chain">
+<h2><span class="secnum">3</span>Inside the chain: likelihood ratios on denoising transitions</h2>
+<p class="lane-intro">These methods treat some denoising transitions as RL actions. Those are the solid cells, where we compute log probabilities and ratios. The differences are which steps get updated, how we compute their advantages, and where we put the critic. We use condition \(c\) or \(s_t\), latent \(x_k\), old policy \(\theta_{\mathrm{old}}\), reference \(\theta_{\mathrm{ref}}\), advantage \(\hat A\), and ratio \(\rho\) throughout.</p>
+<article class="card" id="m-ddpo">
+<header class="card-head"><h3>DDPO</h3><span class="cite">Black, Janner, Du, Kostrikov, Levine · 2023 · <a href="https://arxiv.org/abs/2305.13301">2305.13301</a></span><span class="lane-tag">Inside chain</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>The policy is each \(\pi_\theta(x_{k-1}\mid x_k,c)\); the action is \(x_{k-1}\). The terminal reward \(r(x_0,c)\) may be a black-box compressibility, aesthetic, or VLM-alignment score.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="ddpo"></div></dd>
+<dt>One update</dt><dd><pre><code>c ~ prompts; x_K ~ N(0,I)
+for k = K..1:                    # cited ddpo-pytorch: DDIM 50, η=1, CFG=5
+    x_{k-1} ~ N(μ_θold(x_k,k,c), σ_k² I)
+    store x_k, x_{k-1}, logp_old[k]
+r = R(x_0,c)
+Â = clip((r - mean_c) / std_c, -5, 5)  # running prompt statistics; no critic
+for epoch, minibatch, k in all K steps:
+    ρ_k = exp(log π_θ(x_{k-1}|x_k,c) - logp_old[k])
+    L += -min(ρ_k Â, clip(ρ_k,1-ε,1+ε) Â)  # cited ε=1e-4
+θ ← θ - learning_rate · ∇L</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\mathcal J_{\text{DDPO}_\text{IS}}=\mathbb E\Big[\sum_{k=1}^{K}\min\big(\rho_k\hat A,\ \operatorname{clip}(\rho_k,1-\epsilon,1+\epsilon)\hat A\big)\Big],\quad \rho_k=\frac{\pi_\theta(x_{k-1}\mid x_k,c)}{\pi_{\theta_{\text{old}}}(x_{k-1}\mid x_k,c)}\]</div></dd>
+<dt>Comparison</dt><dd>Compared with ordinary PPO:<ol><li>One generation becomes a \(K\)-step MDP with deterministic state transitions, Gaussian policies, and terminal reward.</li><li>No learned critic: running per-prompt reward statistics provide the baseline.</li><li>All \(K\) steps share \(\hat A\), without an explicit reference KL in the cited configuration. DDPO\(_{\mathrm{SF}}\) is the REINFORCE-style version.</li></ol></dd>
+<dt>Limitations</dt><dd>Needs stochastic transitions for ordinary log densities and stores \(K\) transitions per sample. Shared terminal credit can have high variance. The paper reports reward over-optimization; the cited \(10^{-4}\) clipping interval makes updates conservative.</dd>
+<dt>Variants</dt><dd>DDPO\(_{\mathrm{SF}}\); <a href="https://arxiv.org/abs/2401.12244">Large-scale RL for diffusion</a> (Zhang et al., 2024) extends this direction to a million-scale prompt pool and multiple rewards.</dd>
+</dl>
+</article>
+<article class="card" id="m-dpok">
+<header class="card-head"><h3>DPOK</h3><span class="cite">Fan et al. · 2023 · <a href="https://arxiv.org/abs/2305.16381">2305.16381</a></span><span class="lane-tag">Inside chain</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>The same single denoising MDP, now with transition KL to the pretrained model and an optional denoising-state baseline \(V(x_k,c)\). The reward is ImageReward.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="dpok"></div></dd>
+<dt>One update</dt><dd><pre><code>c ~ prompts; sample x_K..x_0 with a stochastic policy; store transitions
+r = ImageReward(x_0,c)
+for k = K..1:
+    A_k = r - V_φ(x_k,c)       # optional; otherwise A_k = r
+    L_pg += -α A_k log π_θ(x_{k-1}|x_k,c)
+    L_kl += β ‖μ_θ(x_k,k,c)-μ_ref(x_k,k,c)‖² / (2σ_k²)
+L_V = Σ_k (V_φ(x_k,c)-r)²
+θ ← θ - learning_rate · ∇(L_pg+L_kl)
+φ ← φ - learning_rate · ∇L_V</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\min_\theta\ \mathbb E_{c}\Big[\alpha\,\mathbb E_{p_\theta}[-r(x_0,c)]+\beta\sum_{k}\mathbb E_{p_\theta}\big[\mathrm{KL}\big(p_\theta(x_{k-1}\mid x_k,c)\,\Vert\,p_{\text{pre}}(x_{k-1}\mid x_k,c)\big)\big]\Big]\]</div></dd>
+<dt>Comparison</dt><dd>Compared with DDPO:<ol><li>Add expected transition KLs; their sum upper-bounds terminal KL. With matching fixed covariance, each is \(\|\mu_\theta-\mu_{\mathrm{pre}}\|^2/(2\sigma_k^2)\).</li><li>An optional \(V(x_k,c)\) makes the baseline depend on the noisy state and timestep.</li><li>The reward is ImageReward. I have not confirmed whether the paper uses PPO-style ratio clipping, so I leave that unspecified here.</li></ol></dd>
+<dt>Limitations</dt><dd>We need an extra reference-model forward pass at each step. The KL bound can also be conservative. The paper’s experiments use a relatively small set of prompts.</dd>
+<dt>Variants</dt><dd>—</dd>
+</dl>
+</article>
+<article class="card" id="m-flowgrpo">
+<header class="card-head"><h3>Flow-GRPO</h3><span class="cite">Liu et al. · 2025 · <a href="https://arxiv.org/abs/2505.05470">2505.05470</a></span><span class="lane-tag">Inside chain</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>A rectified-flow model (SD3.5-M) with an ODE-to-SDE construction that preserves marginals in the ideal continuous-time setting. Each SDE transition is a Gaussian policy. GenEval, OCR, or PickScore supplies terminal reward, normalized within a prompt group.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="flowgrpo"></div></dd>
+<dt>One update</dt><dd><pre><code>c ~ prompts
+for i = 1..G:                         # cited G=24
+    x_1 ~ N(0,I)
+    sample T=10 SDE steps; store logp_old
+    # σ_t = a sqrt(t/(1-t)), a=0.7; handle endpoints
+    r_i = R(x_0^i,c)
+Â_i = (r_i-mean(r)) / std(r)           # broadcast across the chain
+for i, t in group × training steps:
+    ρ = exp(log π_θ(x_{t+Δt}|x_t,c)-logp_old)
+    L += -min(ρ Â_i,clip(ρ,1-ε,1+ε) Â_i) + β KL_t(θ||θ_ref)
+θ ← θ - learning_rate · ∇L            # inference: ODE, T=40</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\mathcal J=\mathbb E\Big[\frac1G\sum_{i=1}^{G}\frac1T\sum_{t}\Big(\min\big(\rho_t^i\hat A^i,\operatorname{clip}(\rho_t^i,1\pm\epsilon)\hat A^i\big)-\beta\,D_{\text{KL}}(\pi_\theta\Vert\pi_{\text{ref}})\Big)\Big]\]</div></dd>
+<dt>Comparison</dt><dd>Compared with DDPO:<ol><li>Rectified flow replaces the diffusion model; ODE→SDE gives Gaussian transitions (§2.4).</li><li>Same-prompt groups (\(G=24\) in the cited setup) replace historical prompt statistics.</li><li>Analytic transition KL uses \(\beta=0.04\) for GenEval/OCR and 0.01 for PickScore in the cited experiments.</li><li>Denoising Reduction uses 10 steps in training and 40 at inference.</li></ol></dd>
+<dt>Limitations</dt><dd>Noise scale \(a\) must balance exploration and quality. Every step shares outcome credit. Each group costs \(G\times T\) forward evaluations, plus a comparable amount of forward/backward work for updates.</dd>
+<dt>Variants</dt><dd><a href="https://arxiv.org/abs/2510.25889">πRL Flow-SDE</a> applies a related SDE construction to \(\pi_0\) / \(\pi_{0.5}\) VLAs within an environment-coupled two-level MDP.</dd>
+</dl>
+</article>
+<article class="card" id="m-dancegrpo">
+<header class="card-head"><h3>DanceGRPO</h3><span class="cite">Xue et al. · 2025 · <a href="https://arxiv.org/abs/2505.07818">2505.07818</a></span><span class="lane-tag">Inside chain</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>SDE sampling plus group-relative advantages across diffusion and rectified-flow generators: T2I, T2V, and I2V with SD, FLUX, HunyuanVideo, and SkyReels, using multiple reward models.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="dancegrpo"></div></dd>
+<dt>One update</dt><dd><pre><code>c ~ prompts; x_K ~ N(0,I)             # shared initial noise within a group
+for i = 1..G:                          # cited image setup: G=12
+    sample stochastic transitions; store logp_old
+    # SD: 50 steps; FLUX / HunyuanVideo: 25
+for each reward model m:
+    A_i^m = (r_i^m-μ^m) / σ^m
+Â_i = Σ_m A_i^m                        # normalize separately, then combine
+S = a random 60% subset of timesteps
+for i,k in group × S:
+    L += -min(ρ Â_i,clip(ρ,1-ε,1+ε) Â_i)  # cited ε=1e-4; no KL
+θ ← θ - learning_rate · ∇L             # jointly train cond / uncond under CFG</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\mathcal J=\mathbb E\Big[\frac1G\sum_i\frac{1}{|S|}\sum_{k\in S}\min\big(\rho_k^i\hat A^i,\operatorname{clip}(\rho_k^i,1\pm\epsilon)\hat A^i\big)\Big],\quad \hat A^i=\sum_m\frac{r_i^m-\mu^m}{\sigma^m}\]</div></dd>
+<dt>Comparison</dt><dd>Compared mechanistically with Flow-GRPO (not a claim of chronological inheritance):<ol><li>Share initial noise across siblings; the paper reports more stable video optimization than independent initial noise.</li><li>Compute the loss on a random 60% of timesteps.</li><li>Normalize each reward advantage separately before combining.</li><li>Omit KL in the reported default setup.</li><li>Jointly optimize conditional and unconditional branches when using CFG; the reported conditional-only setup diverges.</li></ol></dd>
+<dt>Limitations</dt><dd>Video rollout is still expensive, and the clipping interval is small. Shared initial noise helped in the experiments, but does not by itself prevent reward hacking. Later stochastic steps still need to produce different samples within the group.</dd>
+<dt>Variants</dt><dd>—</dd>
+</dl>
+</article>
+<article class="card" id="m-mixgrpo">
+<header class="card-head"><h3>MixGRPO</h3><span class="cite">Li et al. · 2025 · <a href="https://arxiv.org/abs/2507.21802">2507.21802</a></span><span class="lane-tag">Inside chain</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>MixGRPO tries to reduce GRPO’s training cost. It uses SDE transitions and ratio/KL losses only inside a moving window; the other steps use a deterministic ODE.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="mixgrpo"></div></dd>
+<dt>One update</dt><dd><pre><code>W = [l,l+w); w=4; T=25                # cited FLUX.1-dev setup
+c ~ prompts
+for i = 1..G:                         # G=12
+    before W: ODE (Euler)
+    inside W: SDE (Euler–Maruyama); store logp_old
+    after W: ODE; Flash uses second-order DPM-Solver++
+Â_i = group_normalize(rewards)
+L = Σ_{i,k∈W} -min(ρ Â_i,clip(ρ) Â_i) + β KL_k
+θ ← θ - learning_rate · ∇L
+every 25 iterations: l ← l+1         # move from high noise to low noise</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\mathcal J=\mathbb E\Big[\frac1G\sum_i\frac1{w}\sum_{k\in W}\Big(\min\big(\rho_k^i\hat A^i,\operatorname{clip}(\rho_k^i,1\pm\epsilon)\hat A^i\big)-\beta D_{\text{KL},k}\Big)\Big]\]</div></dd>
+<dt>Comparison</dt><dd>Compared with DanceGRPO:<ol><li>Both injected SDE noise and the loss are restricted to \(W\) (4 of 25 steps in the cited setup), instead of a random 60% loss subset.</li><li>ODE segments can use higher-order solvers (Flash).</li><li>The progressive schedule advances one timestep every 25 iterations, from low SNR to high SNR.</li><li>The paper reports about 50% less training time than DanceGRPO in its comparison, or about 71% with Flash. These numbers are from those experiments; I have not reproduced them.</li></ol></dd>
+<dt>Limitations</dt><dd>The window size and schedule are chosen heuristically. At each iteration, only the steps inside the window get a direct gradient update.</dd>
+<dt>Variants</dt><dd>MixGRPO-Flash。</dd>
+</dl>
+</article>
+<article class="card" id="m-dppo">
+<header class="card-head"><h3>DPPO</h3><span class="cite">Ren et al. · 2024 · <a href="https://arxiv.org/abs/2409.00588">2409.00588</a> · <a href="https://github.com/irom-princeton/dppo">code</a></span><span class="lane-tag">Inside chain</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>A robot diffusion policy: one denoising chain per environment decision, with each transition output \(a_t^{k-1}\) as an inner action. Environment rewards feed \(V(s_t)\) and GAE; only the last \(K^{\prime}\) steps are finetuned. See §2.2 for the full derivation.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="dppo"></div></dd>
+<dt>One update</dt><dd><pre><code>for t = 0..T-1 in parallel environments:
+    a_t^K ~ N(0,I)
+    for k = K..1:                    # first K-K′ transitions use frozen θ
+        a_t^{k-1} ~ N(μ(a_t^k,s_t,k), max(σ_k,0.1)² I)
+    execute a_t^0; obtain r_t,s_{t+1}; store suffix logp_old
+A_t = GAE(r,V_φ(s))                   # environment level only
+for t,k in the final K′ transitions:
+    Â_{t,k} = γ_denoise^(k-1) · A_t   # source index k; final k=1 has weight 1
+    ρ = exp(log π_θft(a_t^{k-1}|a_t^k,s_t)-logp_old)
+    L += -min(ρ Â,clip(ρ,1-ε_k,1+ε_k) Â)  # scheduled clipping
+L_V = (V_φ(s_t)-R_t)²
+# cited variance floors: 0.1; γ_denoise=0.99
+# equivalent destination-index notation in §2.2 uses γ_denoise^k</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\mathcal L=-\mathbb E_{t,k}\Big[\min\big(\rho_{t,k}\hat A_{t,k},\operatorname{clip}(\rho_{t,k},1\pm\epsilon_k)\hat A_{t,k}\big)\Big],\quad \hat A_{t,k}=\gamma_{\text{denoise}}^{\,k}\,A_t^{\text{GAE}}\]</div></dd>
+<dt>Comparison</dt><dd>Compared with DDPO:<ol><li>Nest denoising inside an environment MDP, with one chain per executed decision.</li><li>Add an environment-state critic \(V(s_t)\) and GAE.</li><li>Reuse environment advantage within the chain, with denoising weights (destination-index \(\gamma_d^k\)).</li><li>Finetune a suffix; cited Gym/Robomimic configurations use \(K=20,K^{\prime}=10\).</li><li>Separate sampling and log-probability variance floors, both 0.1 in those configurations.</li><li>Robomimic clipping runs from 0.001 to 0.01; Gym uses 0.01 at both ends.</li></ol></dd>
+<dt>Limitations</dt><dd>On-policy training can be expensive when collecting environment data is expensive. There are also quite a few choices to tune: \(K^{\prime}\), denoising weights, two noise floors, and the clipping schedule. The original notes give roughly twice the wall-clock cost of Gaussian PPO for the comparison cited there; the ratio will depend on the hardware and setup.</dd>
+<dt>Variants</dt><dd><a href="https://arxiv.org/abs/2505.10482">NCDPO</a> stores noise, deterministically recomputes \(a^0\), uses a Gaussian output policy, and backpropagates through the chain. <a href="https://arxiv.org/abs/2505.18763">GenPO</a> augments actions with dummy variables in an invertible diffusion construction to obtain tractable policy likelihoods.</dd>
+</dl>
+</article>
+<article class="card" id="m-reinflow">
+<header class="card-head"><h3>ReinFlow</h3><span class="cite">Zhang, Yu, Su, Wang · 2025 · NeurIPS 2025 · <a href="https://arxiv.org/abs/2505.22094">2505.22094</a></span><span class="lane-tag">Inside chain</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>Start with a few-step flow policy, e.g., ReFlow / Shortcut with 1–4 steps in these experiments. Add learned noise \(\sigma_{\theta\prime}\) to make each transition Gaussian. We can then compute the chain’s joint likelihood and use a PPO-style update.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="reinflow"></div></dd>
+<dt>One update</dt><dd><pre><code>for each environment decision:
+    a^0 ~ N(0,I)
+    for k = 0..K-1:                  # cited K=1..4; index runs noise → data
+        a^{k+1} = a^k + v_θ(t_k,a^k,s) Δt + σ_θ′(t_k,a^k,s) ε
+    execute a^K; obtain r_t; store chain logp_old
+A_t = GAE(r,V_φ)
+log π(chain) = Σ_k log N(a^{k+1}; a^k+v_θ Δt,diag σ_θ′²)
+# Illustrative JOINT surrogate; original notes did not verify clipping granularity.
+ρ_chain = exp(log π_{θ,θ′}(chain)-logp_old)
+L_joint = -min(ρ_chain A,clip(ρ_chain) A) - c_ent H + L_V
+update θ, θ′, φ
+deployment: remove σ_θ′ and return to deterministic flow</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\pi(a^{k+1}\mid a^k,s)=\mathcal N\big(a^k+v_\theta(t_k,a^k,s)\Delta t,\ \operatorname{diag}\sigma_{\theta'}^2(t_k,a^k,s)\big),\quad \log\pi(a^{0:K}\mid s)=\log p(a^0)+\sum_k\log\pi(a^{k+1}\mid a^k,s)\]</div><p class="limit">Here ReinFlow uses increasing generation indices a⁰→aᴷ, with a⁰ the initial noise, unlike DPPO’s decreasing indices. A fixed initial-noise prior cancels in the policy ratio.</p></dd>
+<dt>Comparison</dt><dd>Compared with DPPO:<ol><li>Use a 1–4-step flow model.</li><li>Learn bounded exploration noise \(\sigma_{\theta\prime}(t_k,a^k,s)\), reusing policy features, rather than a fixed posterior variance plus floor.</li><li>Add entropy regularization.</li><li>Remove the noise network at deployment.</li><li>The original notes work out the joint density, but leave it unclear whether the implementation clips per-step ratios or the joint ratio. The pseudocode uses joint-ratio clipping as an example; I have not confirmed that implementation detail.</li></ol></dd>
+<dt>Limitations</dt><dd>The marginals may drift from the pretrained model. Noise bounds depend on how the control coordinates are defined, and the speed benefit assumes we already have a few-step model.</dd>
+<dt>Variants</dt><dd>πRL Flow-Noise applies the same idea to \(\pi_0\) / \(\pi_{0.5}\).</dd>
+</dl>
+</article>
+<article class="card" id="m-ogpo">
+<header class="card-head"><h3>OGPO</h3><span class="cite">Patil, Nakamoto, …, Levine, Gupta, Simchowitz · 2026 · <a href="https://arxiv.org/abs/2605.03065">2605.03065</a></span><span class="lane-tag">Inside chain</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>We still have two MDP levels, but split them at environment transitions. Learn \(Q\) with off-policy TD. Then we can resample the inner denoising MDP without collecting more environment data. A modified PPO objective treats \(Q(s,a_0)\) as the terminal reward and uses the product of transition ratios.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="ogpo"></div></dd>
+<dt>One update</dt><dd><pre><code>interact: sample a_{t,K:0} ~ π_θ(·|s_t); store (s,a_0,r,s′) in replay D
+critic: Q_φ ← TD on D
+        target = r + γ mean_i Q_target(s′,a′^(i))
+for s ~ D:
+    sample N chains a^(j)_{K:0} ~ π_θbar(·|s)  # generator only; no environment
+    Vhat(s) = mean_j Q_target(s,a_0^(j))
+    Â_j = Q_target(s,a_0^(j)) - Vhat(s)         # optionally conservative critics
+    ρ_j = Π_k π_θ(a_{k-1}^(j)|s,a_k^(j)) / π_θbar(·)
+    L += -min(ρ_j Â_j,clip(ρ_j,1-ε,1+ε) Â_j)
+OGPO+: L += λ_bc L_BC(success_buffer)</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\ell_{\text{PPO}}=\min\big(\rho\hat A,\operatorname{clip}(\rho,1\pm\epsilon)\hat A\big),\quad \rho=\prod_{k=1}^{K}\frac{\pi_\theta(a_{t,k-1}\mid s_t,a_{t,k})}{\pi_{\bar\theta}(a_{t,k-1}\mid s_t,a_{t,k})},\quad \hat A=Q_{\text{targ}}(s_t,a_{t,0})-\hat V\]</div></dd>
+<dt>Comparison</dt><dd>Compared with DPPO:<ol><li>Advantage comes from off-policy \(Q\), not rollout GAE: \(\hat A=Q(s,a_0)-\hat V\), where \(\hat V\) averages sibling-chain values at the same state.</li><li>Use a joint product ratio with one scalar advantage per chain.</li><li>Resample chains at replay states without fresh environment transitions.</li><li>Stabilize with success-buffer BC, conservative advantages from multiple critics, and multiple next-action samples for lower-variance TD targets.</li></ol></dd>
+<dt>Limitations</dt><dd>The policy can exploit errors in the critic, and the paper spends effort dealing with this. For large \(K\), the joint ratio can trigger clipping frequently; we also need replay and multiple critics. The paper’s comparison gives roughly 10× DPPO’s sample efficiency. I have not reproduced this, and would not expect the same ratio in every setting.</dd>
+<dt>Variants</dt><dd>OGPO+ adds success-buffer BC; OGPO+CA adds conservative advantages.</dd>
+</dl>
+</article>
+</section>
+<section id="lane-noise">
+<h2><span class="secnum">4</span>Noise space: only \(x_K\) is the action</h2>
+<p class="lane-intro">The generator is frozen: all denoising cells are gray and only the initial-noise cell is solid. Any required density belongs to the noise policy itself, independently of the denoising chain.</p>
+<article class="card" id="m-noiseppo">
+<header class="card-head"><h3>Noise PPO</h3><span class="cite">Miao, Loh, Poupart, Kothawade · 2025 · <a href="https://arxiv.org/abs/2506.12036">2506.12036</a></span><span class="lane-tag">Noise space</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>Freeze the diffusion model. The learned policy is a prompt-conditioned initial-noise distribution \(\pi_\theta(x_K\mid c)=\mathcal N(\mu_\theta(c),\Sigma_\theta(c))\). This is a one-step MDP with a weighted aesthetic / PickScore / HPSv2 reward.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="noiseppo"></div></dd>
+<dt>One update</dt><dd><pre><code>c ~ prompts
+x_K ~ π_θold(·|c)                 # zero-initialized heads start at N(0,I)
+x_0 = Sampler_frozen(x_K,c)       # cited LCM 4-step / SDXL-Turbo setup
+r = 0.2 Aesthetic + 0.4 PickScore + 0.4 HPSv2
+Â = r-b                          # exact baseline unresolved in source notes
+ρ = π_θ(x_K|c) / π_θold(x_K|c)
+L = -min(ρ Â,clip(ρ) Â) + γ1 KL(π_θ(·|c)||N(0,I)) - γ2 H(π_θ(·|c))
+θ ← θ - learning_rate · ∇L</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\min_\theta\ -\mathcal J_{\text{PPO}}(\theta)+\gamma_1\,\mathrm{KL}\big(\pi_\theta(\cdot\mid c)\,\Vert\,\mathcal N(0,I)\big)-\gamma_2\,\mathcal H\big(\pi_\theta(\cdot\mid c)\big)\]</div></dd>
+<dt>Comparison</dt><dd>Compared with DDPO:<ol><li>The action moves from every transition to only \(x_K\); denoising becomes a frozen function.</li><li>The MDP shrinks from \(K\) decisions to one.</li><li>KL compares the noise policy with a standard Gaussian, not the denoiser with a reference model.</li><li>No denoising trajectory storage or generator backpropagation is needed.</li></ol></dd>
+<dt>Limitations</dt><dd>The frozen generator and allowed noise distribution limit which outputs we can reach. The paper finds smaller gains with longer sampling chains, though this depends on the model and sampler. The noise itself can also be high-dimensional.</dd>
+<dt>Variants</dt><dd><a href="https://arxiv.org/abs/2406.04312">ReNO</a> instead performs inference-time noise gradient ascent for a single prompt using a differentiable reward; it does not train a noise-space RL policy.</dd>
+</dl>
+</article>
+<article class="card" id="m-dsrl">
+<header class="card-head"><h3>DSRL</h3><span class="cite">Wagenmaker et al. · 2025 · CoRL 2025 · <a href="https://arxiv.org/abs/2506.15799">2506.15799</a></span><span class="lane-tag">Noise space</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>Freeze the diffusion policy. Learn \(\pi^W(w\mid s)\) in latent-noise space and execute \(a=\pi_{\mathrm{dp}}(s,w)\) through deterministic DDIM. The outer learning algorithm is off-policy SAC.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="dsrl"></div></dd>
+<dt>One update</dt><dd><pre><code>w ~ π^W_ψ(·|s_t), w ∈ [-b,b]^d    # cited online b between 1 and 3
+a_t = π_dp(s_t,w)                  # frozen; deterministic DDIM
+execute a_t; store (s,a,w,r,s′)
+DSRL-SAC: Q^W(s,w) ← TD
+          actor maximizes Q^W - α log π^W
+DSRL-NA:  Q^A(s,a) ← TD            # arbitrary-source action transitions
+          regress Q^W(s,w) toward Q^A(s,π_dp(s,w))
+          improve the latent actor using Q^W</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\max_\psi\ \mathbb E_{s}\big[Q^W(s,\pi^W_\psi(s))\big],\qquad Q^W(s,w)\approx Q^A\big(s,\pi_{\text{dp}}(s,w)\big)\ \ (\text{NA})\]</div></dd>
+<dt>Comparison</dt><dd>Compared mechanistically with independently proposed Noise PPO:<ol><li>A multi-step environment MDP replaces the one-step generation problem; select noise at each decision.</li><li>Off-policy SAC replaces PPO.</li><li>Bound \(w\) within \([-b,b]^d\), instead of explicitly penalizing KL to \(\mathcal N(0,I)\).</li><li>The NA variant learns \(Q^A\) in action space, then distills it into noise-space values. This exploits the many-to-one noise/action map and enables learning from arbitrary action data.</li></ol></dd>
+<dt>Limitations</dt><dd>We need critics, and the latent dimension is tied to the action chunk. If the frozen policy cannot produce a useful behavior within the allowed latent region, changing the noise cannot fix it. OGPO reports this problem when the base policy is poorly initialized.</dd>
+<dt>Variants</dt><dd>DSRL-SAC、DSRL-NA。</dd>
+</dl>
+</article>
+</section>
+<section id="lane-free">
+<h2><span class="secnum">5</span>Likelihood-free / regression: no chain \(\log\pi\)</h2>
+<p class="lane-intro">Here most denoising cells are outlined. We still train the parameters, but use regression, flow-matching losses, or pathwise gradients instead of local likelihood ratios.</p>
+<article class="card" id="m-ddpo-pref">
+<header class="card-head"><h3>Diffusion-DPO</h3><span class="cite">Wallace et al. · 2023 · <a href="https://arxiv.org/abs/2311.12908">2311.12908</a></span><span class="lane-tag">likelihood-free</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>We start with offline preference pairs \((x_0^w,x_0^l)\), so there is no online rollout reward. Denoising-loss differences, using an ELBO approximation, replace the log-likelihood differences in the DPO objective.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="ddpo_pref"></div></dd>
+<dt>One update</dt><dd><pre><code>(c,x_0^w,x_0^l) ~ preference data (Pick-a-Pic)
+k ~ U(1..K); ε^w,ε^l ~ N(0,I)
+x_k^w = q(x_0^w,k,ε^w); x_k^l = q(x_0^l,k,ε^l)  # forward noise
+d_w = ‖ε^w-ε_θ(x_k^w,k,c)‖² - ‖ε^w-ε_ref(x_k^w,k,c)‖²
+d_l = ‖ε^l-ε_θ(x_k^l,k,c)‖² - ‖ε^l-ε_ref(x_k^l,k,c)‖²
+L = -log sigmoid(-β T ω(λ_k) (d_w-d_l))
+θ ← θ - learning_rate · ∇L</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\mathcal L=-\mathbb E\log\sigma\Big(-\beta T\omega(\lambda_k)\big[d_w-d_l\big]\Big)\]</div></dd>
+<dt>Comparison</dt><dd>Compared with DDPO:<ol><li>Train on fixed preference pairs, without online sampling and scoring.</li><li>Use denoising-loss differences rather than chain \(\log\pi\).</li><li>Reference regularization is implicit in the DPO derivation.</li><li>Train at a randomly chosen \(k\) using forward-noised data.</li></ol></dd>
+<dt>Limitations</dt><dd>We need preference pairs, and offline data may not cover the distribution we want. The ELBO approximation also introduces a difference from the exact marginal-likelihood objective.</dd>
+<dt>Variants</dt><dd><a href="https://arxiv.org/abs/2311.13231">D3PO</a> assigns stepwise preferences from terminal outcomes; <a href="https://arxiv.org/abs/2406.04314">SPO</a> samples stepwise candidates and uses a step-aware preference model. <a href="https://arxiv.org/abs/2603.13228">PhysMoDPO</a> applies preference optimization to motion generation with a whole-body controller in the evaluation loop and reports G1 robot experiments.</dd>
+</dl>
+</article>
+<article class="card" id="m-nft">
+<header class="card-head"><h3>DiffusionNFT</h3><span class="cite">Zheng et al. · 2025 · <a href="https://arxiv.org/abs/2509.16117">2509.16117</a></span><span class="lane-tag">likelihood-free</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>Online reinforcement through the forward process. Generate samples, normalize rewards to \(r\in[0,1]\), forward-noise the outputs, and regress positive/negative implicit flow policies without \(\log\pi\).</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="nft"></div></dd>
+<dt>One update</dt><dd><pre><code>c ~ prompts; sample G=24 outputs x_0 ~ π_θold
+# arbitrary solver, e.g. a 40-step second-order ODE; cited setup is CFG-free
+r_raw = R(x_0,c)
+r = 0.5 + 0.5 clip((r_raw-mean_c(r_raw))/Z,-1,1)
+for each x_0:
+    t ~ U; ε ~ N(0,I)
+    x_t = α_t x_0 + σ_t ε; v = α̇_t x_0 + σ̇_t ε
+    v⁺ = (1-β) v_old(x_t) + β v_θ(x_t)
+    v⁻ = (1+β) v_old(x_t) - β v_θ(x_t)
+    L += r ‖v⁺-v‖² + (1-r) ‖v⁻-v‖²
+θ ← θ - learning_rate · ∇L
+θ_old ← η_i θ_old + (1-η_i) θ          # EMA</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\mathcal L(\theta)=\mathbb E\big[r\,\lVert v^+_\theta(x_t,c,t)-v\rVert^2+(1-r)\,\lVert v^-_\theta(x_t,c,t)-v\rVert^2\big]\]</div></dd>
+<dt>Comparison</dt><dd>Compared with Flow-GRPO:<ol><li>No transition log probabilities or SDE requirement; sampling can use ODE/higher-order solvers.</li><li>Train on forward-noised outputs at random \(t\), not sampled reverse-chain transitions.</li><li>Transform group rewards into \(r\in[0,1]\) weights for positive and negative implicit policies.</li><li>No ratio clipping; stability depends on \(\beta\) and old-model EMA.</li><li>The cited setup is CFG-free.</li></ol></dd>
+<dt>Limitations</dt><dd>There is no explicit PPO trust-region surrogate, and we need to choose the normalization scale \(Z\). For long-horizon control, we still have to work out the environment credit. The paper reports about 0.98 GenEval after roughly 1k steps, compared with 0.95 after 5k+ steps for Flow-GRPO in its experiments. I have not reproduced these numbers.</dd>
+<dt>Variants</dt><dd>—</dd>
+</dl>
+</article>
+<article class="card" id="m-fpo">
+<header class="card-head"><h3>FPO</h3><span class="cite">McAllister et al. · 2025 · <a href="https://arxiv.org/abs/2507.21053">2507.21053</a></span><span class="lane-tag">likelihood-free</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>Treat the complete \(a_t\) as one action per environment decision. Build a surrogate ratio from the difference in conditional flow-matching losses, and use the numerical sampler as a black box.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="fpo"></div></dd>
+<dt>One update</dt><dd><pre><code>rollout: a_t = Sampler_θold(s_t)      # arbitrary sampler / number of steps
+         store N_mc=8 probes (τ_i,ε_i); execute a_t and get r_t
+A_t = GAE(r,V_φ)
+for minibatch:
+    ℓ_θ(i) = CFM_loss(v_θ; a_t,s_t,τ_i,ε_i)
+    ℓ_old(i) = CFM_loss(v_θold; same a_t,s_t,τ_i,ε_i)
+    ρhat = exp(-mean_i(ℓ_θ(i)-ℓ_old(i)))
+    L = -min(ρhat A_t,clip(ρhat,1-ε,1+ε) A_t) + L_V
+# interpolation, normalization, and objective scaling follow the paper</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\hat\rho^{\text{FPO}}(\theta)=\exp\Big(-\frac1{N_{\text{mc}}}\sum_{i=1}^{N_{\text{mc}}}\big(\ell_\theta(\tau_i,\epsilon_i)-\ell_{\theta_{\text{old}}}(\tau_i,\epsilon_i)\big)\Big)\]</div></dd>
+<dt>Comparison</dt><dd>Compared with DPPO:<ol><li>The action is the final \(a_t\), not each denoising transition.</li><li>A CFM-loss surrogate replaces exact local transition ratios.</li><li>Sampling can be deterministic and use different solvers.</li><li>The environment critic and GAE remain.</li></ol></dd>
+<dt>Limitations</dt><dd>This is not the exact importance ratio of the sampler used at deployment. The Monte Carlo estimate adds variance (the default discussed here is \(N_{\mathrm{mc}}=8\); the paper also tests one probe). In the image-finetuning experiments, the paper discusses how CFG mismatch accumulates.</dd>
+<dt>Variants</dt><dd>—</dd>
+</dl>
+</article>
+<article class="card" id="m-pathwise">
+<header class="card-head"><h3>ReFL / DRaFT / AlignProp: pathwise comparisons</h3><span class="cite">Xu et al. 2023 · <a href="https://arxiv.org/abs/2304.05977">2304.05977</a>；Clark et al. 2023 · <a href="https://arxiv.org/abs/2309.17400">2309.17400</a>；Prabhudesai et al. 2023 · <a href="https://arxiv.org/abs/2310.03739">2310.03739</a></span><span class="lane-tag">pathwise</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>If the reward is differentiable, we can directly backpropagate \(\nabla_\theta r(x_0(\theta))\) through sampling. This uses a different gradient estimator from likelihood-ratio policy gradients. Calling it RL or direct reward optimization does not change that distinction.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="pathwise"></div></dd>
+<dt>One update</dt><dd><pre><code>c ~ prompts; x_K ~ N(0,I)
+with no_grad: denoise to k_stop
+    # ReFL: a random late step; DRaFT-K: last K steps; AlignProp: random truncation
+with grad: denoise from k_stop to x_0
+    # ReFL instead predicts xhat_0 from the selected late step
+r = R_diff(x_0,c)
+θ ← θ + learning_rate · ∇_θ r
+# gradient checkpointing / LoRA can reduce training cost</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\max_\theta\ \mathbb E_{c,\,x_K}\big[r\big(x_0(\theta;x_K,c),c\big)\big],\qquad \nabla_\theta r=\frac{\partial r}{\partial x_0}\frac{\partial x_0}{\partial\theta}\]</div></dd>
+<dt>Comparison</dt><dd>Compared with DDPO:<ol><li>A pathwise derivative replaces the score-function estimator, often reducing variance.</li><li>No log probability or stochastic transition is required.</li><li>The reward must be differentiable with respect to the output.</li><li>Truncation differs: ReFL uses a selected late prediction; DRaFT-K keeps the last K steps, with DRaFT-LV adding repeated noising at K=1; AlignProp uses random truncation.</li></ol></dd>
+<dt>Limitations</dt><dd>We have to keep the activations for the steps we backpropagate through. Reward over-optimization is still a problem. A black-box reward cannot give us the direct gradient these methods need.</dd>
+<dt>Variants</dt><dd>DRaFT-K、DRaFT-LV。</dd>
+</dl>
+</article>
+<article class="card" id="m-offq">
+<header class="card-head"><h3>Off-policy Q comparisons: Diffusion-QL / DIPO / QSM / IDQL</h3><span class="cite"><a href="https://arxiv.org/abs/2208.06193">2208.06193</a> · <a href="https://arxiv.org/abs/2305.13122">2305.13122</a> · <a href="https://arxiv.org/abs/2312.11752">2312.11752</a> · <a href="https://arxiv.org/abs/2304.10573">2304.10573</a></span><span class="lane-tag">likelihood-free</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>First learn \(Q(s,a)\), then use it to improve the diffusion policy. These methods differ in how they do that: gradients, updated targets, or candidate selection. None requires the denoising chain’s likelihood.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="offq"></div></dd>
+<dt>One update</dt><dd><pre><code>Q_φ ← TD on replay D
+Diffusion-QL: L = L_BC(θ) - α Q_φ(s,a_0(θ))  # backpropagate action gradient
+DIPO:         a′ = a + η ∇_a Q(s,a); diffusion BC on (s,a′)
+QSM:          match the policy score to a Q-gradient-based target
+IDQL:         sample N actions from a BC diffusion policy;
+              resample using implicit IQL weights</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[\text{Diffusion-QL:}\ \ \min_\theta\ \mathcal L_{\text{BC}}(\theta)-\alpha\,\mathbb E_{s}\big[Q_\phi(s,a_0(\theta;s))\big]\]</div></dd>
+<dt>Comparison</dt><dd>Compared with DPPO:<ol><li>No local likelihood-ratio objective is required.</li><li>Use \(Q(s,a)\) rather than only \(V(s)\). Diffusion-QL, DIPO, and QSM use action-value gradients in different ways; IDQL uses candidate weighting.</li><li>Replay/off-policy learning replaces purely on-policy collection.</li></ol></dd>
+<dt>Limitations</dt><dd>The critic needs to be accurate, which can be difficult for high-dimensional actions. On its harder tasks, DPPO reports better results than the off-policy baselines it tests. That comparison does not tell us which method wins under every algorithm and data setting.</dd>
+<dt>Variants</dt><dd>DACER（<a href="https://arxiv.org/abs/2405.15177">2405.15177</a>）、PA-RL（<a href="https://arxiv.org/abs/2412.06685">2412.06685</a>）。</dd>
+</dl>
+</article>
+</section>
+<section id="lane-out">
+<h2><span class="secnum">6</span>Outside the chain: residuals after \(x_0\)</h2>
+<p class="lane-intro">The generator column stays frozen and only the residual row is solid. The relevant density is the residual actor’s own distribution.</p>
+<article class="card" id="m-residual">
+<header class="card-head"><h3>Residual RL：ResiP / Policy Decorator</h3><span class="cite">Ankile et al. 2024 · <a href="https://arxiv.org/abs/2407.16677">2407.16677</a>；Yuan et al. 2024 · <a href="https://arxiv.org/abs/2412.13630">2412.13630</a></span><span class="lane-tag">Outside chain</span></header>
+<dl class="fields">
+<dt>Idea</dt><dd>Freeze the base diffusion policy and train a small residual \(\Delta\). Execute \(a^{\mathrm{base}}+\lambda\Delta\). The residual, not the diffusion output, is the RL action.</dd>
+<dt>Computation grid</dt><dd><div class="gridfig" data-m="residual"></div></dd>
+<dt>One update</dt><dd><pre><code>for t:
+    if replanning: a_base[t:t+32] = π_dp(s_t)
+        # cited ResiP setup: frozen, DDIM 4 steps, execute 8 actions per chunk
+    Δ_t ~ π_res(·|s_t,a_base[t])      # each primitive control step
+    execute a_base[t] + 0.1 Δ_t; obtain r_t
+A = GAE(r,V_φ)
+L = PPO_clip(π_res) + L_V            # ResiP
+# Policy Decorator: bounded Δ=α tanh(·), SAC
+# choose base+Δ with probability ε; otherwise base alone
+# progressively increase ε from 0 to 1</code></pre></dd>
+<dt>Objective</dt><dd><div class="eq">\[a_t=a_t^{\text{base}}+\lambda\,\Delta_t,\quad \Delta_t\sim\pi_\phi(\cdot\mid s_t,a_t^{\text{base}}),\quad \mathcal L=-\mathbb E\big[\min(\rho_tA_t,\operatorname{clip}(\rho_t,1\pm\epsilon)A_t)\big]\]</div></dd>
+<dt>Comparison</dt><dd>Compared with DSRL:<ol><li>Move the action from latent noise \(w\) to output correction \(\Delta\).</li><li>A correction can reach actions outside the base generator’s image, but its scale (0.1 in the cited ResiP setup) or bound \(\alpha\) limits displacement.</li><li>ResiP uses PPO; Policy Decorator uses SAC with progressive exploration.</li></ol></dd>
+<dt>Limitations</dt><dd>A small bounded residual mainly makes local corrections. The base generator stays unchanged; the improvement is in the residual network. We can also run the residual more frequently than we replan with the base policy.</dd>
+<dt>Variants</dt><dd>EXPO, the residual baseline in the OGPO paper.</dd>
+</dl>
+</article>
+</section>
+<section id="cross-domain">
+<h2><span class="secnum">7</span>Image / video versus robotics: what actually corresponds?</h2>
+<p>After going through the methods, I want to compare image/video generation and robotics more directly. The questions are the same: <strong>what do we generate, where do we get reward, which random variable do we compute the ratio on, and how do we assign credit across time?</strong> Here I compare the formulations, rather than rank scores from different benchmarks.</p>
+<div class="cross-worlds"><div><h3>Image / video</h3><p>During one generation, the condition \(c\) is fixed. The output \(x_0\) can be a whole image or video, which gets a score \(R(x_0,c)\) after generation. A video has a time axis, but generating more frames does not by itself add an environment MDP. For that, we need actions, new observations, and further decisions in between.</p></div><div><h3>Robotics</h3><p>The denoising chain generates an action or action chunk \(A_j\). We execute it and reach \(s_{j+1}\), which conditions the next chain. So the next generation depends on both the previous output and the environment. We need to distinguish three lengths: \(K\) generation steps, \(H\) predicted actions, and \(h\) executed actions.</p></div></div>
+<h3>7.1 One score-function identity, two return problems</h3>
+<p>Let us first write down the objective for generating and scoring one image or video. If the initial-noise distribution is fixed, only the conditional transitions contribute a gradient. For now, leave out the baseline, PPO clipping, and KL terms:</p>
+<div class="eq">\[p_\theta(x_{0:K}\mid c)=p(x_K)\prod_{k=1}^{K}\pi_\theta(x_{k-1}\mid x_k,c),\qquad J_{\mathrm{gen}}=\mathbb E[R(x_0,c)].\]
+\[\nabla_\theta J_{\mathrm{gen}}=\mathbb E\!\left[R(x_0,c)\sum_{k=1}^{K}\nabla_\theta\log\pi_\theta(x_{k-1}\mid x_k,c)\right].\]</div>
+<p>For a robot, write the final action distribution as \(\pi_\theta(A_j\mid s_j)\). The policy gradient uses the advantage of this decision for <strong>future environment return</strong>. We can expand the score into denoising-level terms in the implementation. DPPO uses a particular estimate and weighting, \(\gamma_{\mathrm{denoise}}^k A_j\). Simply replacing an image score \(R\) with the immediate environment reward \(r_j\) does not give us the same update.</p>
+<div class="eq">\[J_{\mathrm{robot}}=\mathbb E\!\left[\sum_{n\ge0}\gamma_{\mathrm{env}}^n r_n\right],\qquad \nabla_\theta J\;\propto\;\mathbb E_{s_j,A_j}\!\left[\nabla_\theta\log\pi_\theta(A_j\mid s_j)\,A^\pi(s_j,A_j)\right].\]</div>
+<p>The state expectation here uses the visitation distribution for the discounted objective. For generation, we often give all steps in a chain the final sample’s score. For control, we also need to estimate what this action does to future states. This is what the critic helps us with; it is not required just because the task involves a robot.</p>
+<h3>7.2 Action chunking: define the duration of an environment step</h3>
+<p>Suppose that at replanning step \(j\), we predict \(H\) actions but only execute the first \(h_j\le H\), without calling the generator again. Let \(n_j\) be the starting primitive control step. Set \(b_j=0\) at true termination and 1 otherwise. If \(\gamma\) is the discount per primitive control step, we get the following chunk reward and bootstrap:</p>
+<div class="eq">\[\bar r_j=\sum_{u=0}^{h_j-1}\gamma^u r_{n_j+u},\qquad \Gamma_j=\gamma^{h_j},\qquad \delta_j=\bar r_j+\Gamma_j b_j V(s_{j+1})-V(s_j).\]
+\[\hat A_j=\delta_j+\Gamma_j\lambda b_j\hat A_{j+1}.\]</div>
+<p>Here \(\lambda\) is defined per replanning decision. We could instead define the discount per chunk, but that would change the time scale. We also need to distinguish a time-limit truncation from true termination when deciding whether to bootstrap. The remaining \(H-h_j\) actions were never executed, so they contributed no direct environment reward to this chunk. We cannot count predicted actions as executed ones. These equations use one chunk-level convention; an implementation may choose another.</p>
+<h3>7.3 Why “same-prompt groups” do not become “same-batch groups”</h3>
+<p>Flow-GRPO / DanceGRPO compare samples generated under the same condition \(c\). In a robot batch, however, \(s_1,s_2,\ldots\) may come from different task stages and difficulty levels. If we normalize their returns together, we mix up the quality of the action with how good the starting state already was.</p>
+<div class="eq">\[\hat A_i^{\mathrm{gen}}=\frac{R(x_0^{(i)},c)-\bar R_c}{\operatorname{std}_c(R)+\epsilon},\qquad \hat A_i^{Q}(s)=Q(s,a_i)-\frac1N\sum_{m=1}^{N}Q(s,a_m).\]</div>
+<p>One option is to restore the same state and sample several future trajectories. Another is to generate several candidate actions at that state and use a critic to estimate their returns. The first needs resets or environment branching. The second depends on the critic, including its error on out-of-distribution actions; OGPO’s same-state chain comparison takes this approach. Also, subtracting a mean and dividing by a standard deviation are different choices. They give different update scales in the two equations above.</p>
+<h3>7.4 Which log probability is tractable?</h3>
+<p>We can calculate each Gaussian transition’s density, but this does not automatically give us the final-action marginal. With a saved latent trajectory, we can calculate a joint ratio. For the final-action density, we still have to integrate out the intermediate variables. <strong>Clipping each step, clipping the product over the chain, and doing PPO on the final-action marginal give three different objectives.</strong></p>
+<div class="eq">\[\pi_\theta(a^0\mid s)=\int p(a^K)\prod_{k=1}^{K}\pi_\theta(a^{k-1}\mid a^k,s)\,\mathrm da^{1:K},\qquad \rho_{\mathrm{chain}}=\exp\!\left(\sum_k\Delta\log\pi_k\right).\]
+\[\sum_k\min(\rho_k A,\operatorname{clip}(\rho_k)A)\;\ne\;\min\!\left((\prod_k\rho_k)A,\operatorname{clip}(\prod_k\rho_k)A\right).\]</div>
+<p>This is something to check in the code when reading DPPO, ReinFlow, OGPO, or GenPO. A fixed initial-noise prior cancels in the ratio. If we train the noise policy, as in Noise PPO / DSRL, we are optimizing a different object. FPO’s CFM-loss ratio is a surrogate; it is different from both exact density ratios above.</p>
+<h3>7.5 What should a comparison hold constant?</h3>
+<div class="tbl"><table><thead><tr><th>Dimension</th><th>Image / video</th><th>Robotics</th></tr></thead><tbody>
+<tr><td>Sampling budget</td><td>Prompts, samples G per prompt, resolution / frames, sampler steps K, reward calls</td><td>Environment interactions, resets, execution length h, candidate actions, denoising computation</td></tr>
+<tr><td>Optimization budget</td><td>Updated denoising steps, forward/backward passes, reference calls, memory, wall-clock time</td><td>The same model computation plus critic TD / GAE; report environment collection time separately</td></tr>
+<tr><td>Training / inference distributions</td><td>SDE training versus ODE inference, CFG, resolution, sampling steps</td><td>Removing exploration noise, action-chunk execution, feedback frequency, state distribution</td></tr>
+<tr><td>Outcomes and failures</td><td>Independent reward / human preferences, prompt generalization, diversity, reward hacking</td><td>Success, return, completion time, disturbance recovery, invalid actions, critic exploitation</td></tr>
+</tbody></table></div>
+<p>When a method is “more efficient,” I want to know what it saves: training FLOPs, memory, reward calls, or environment interactions. Running an image reward model once and resetting a physical robot after a failed trial have very different costs. These are the comparisons I would make using the table above; each method’s actual setup is given in its cited paper.</p>
+</section>
+<section id="compare">
+<h2><span class="secnum">8</span>Pairwise comparison</h2>
+<p>Select two methods to see their grids and details side by side. <strong>Differences are highlighted.</strong> The default is DDPO versus DPPO, showing what changes when we add the environment MDP.</p>
+<div class="cmp-controls">
+<label for="cmp-a">Method A <select id="cmp-a"></select></label>
+<label for="cmp-b">Method B <select id="cmp-b"></select></label>
+</div>
+<div class="cmp-grids">
+<div><h4 id="cmp-a-name">DDPO</h4><div class="gridfig" id="cmp-a-grid"></div></div>
+<div><h4 id="cmp-b-name">DPPO</h4><div class="gridfig" id="cmp-b-grid"></div></div>
+</div>
+<div class="tbl"><table id="cmp-table">
+<thead><tr><th>Dimension</th><th id="cmp-th-a">DDPO</th><th id="cmp-th-b">DPPO</th></tr></thead>
+<tbody></tbody>
+</table></div>
+<p class="cite">Highlighted rows show a difference between the two methods. The definitions are the same as in their sections above.</p>
+</section>
+<section id="table">
+<h2><span class="secnum">9</span>Overview table</h2>
+<p>“Likelihood” means an exact policy log probability on a denoising transition, latent noise, or residual action. “On/off” describes the data used for policy updates.</p>
+<div class="tbl wide-table"><table>
+<thead><tr><th>Method</th><th>Domain</th><th>Optimization target</th><th>likelihood</th><th>critic</th><th>on / off</th><th>Reward</th><th>Main limitation</th></tr></thead>
+<tbody>
+<tr class="group"><td colspan="8">Chain likelihood ratios (score function)</td></tr>
+<tr><td>DDPO</td><td>Image</td><td>Full chain (per-step ratio)</td><td class="y">Yes</td><td class="n">No</td><td>on</td><td>Black-box terminal scalar</td><td>High variance; overoptimization without regularization</td></tr>
+<tr><td>DPOK</td><td>Image</td><td>Full chain + per-step KL</td><td class="y">Yes</td><td>Optional \(V(x_k,c)\)</td><td>on</td><td>Learned preference reward</td><td>Limited scale; conservative KL bound</td></tr>
+<tr><td>Flow-GRPO</td><td>Image</td><td>Full chain (SDE; fewer training steps)</td><td class="y">Yes (SDE)</td><td class="n">No (within-group baseline)</td><td>on</td><td>GenEval / OCR / preference</td><td>SDE noise tuning; outcome-only credit</td></tr>
+<tr><td>DanceGRPO</td><td>Image / video</td><td>About 60% of timesteps</td><td class="y">Yes (SDE)</td><td class="n">No (within-group baseline)</td><td>on</td><td>Multiple rewards; summed advantages</td><td>Expensive; setup relies on shared noise and other choices</td></tr>
+<tr><td>MixGRPO</td><td>Image</td><td>Steps in a moving window</td><td class="y">Yes (SDE in window)</td><td class="n">No</td><td>on</td><td>Preference</td><td>Heuristic window schedule</td></tr>
+<tr><td>DPPO</td><td>Robotics</td><td>Last \(K^{\prime}\) steps (two-level MDP)</td><td class="y">Yes</td><td class="y">\(V(s_t)\)</td><td>on</td><td>Dense / sparse environment return</td><td>Sample efficiency; many hyperparameters</td></tr>
+<tr><td>ReinFlow</td><td>Robotics</td><td>Full chain + noise network</td><td class="y">Yes (injected noise)</td><td class="y">Yes</td><td>on</td><td>Environment return</td><td>Marginals can drift from the prior</td></tr>
+<tr><td>πRL</td><td>VLA</td><td>Full chain (Noise / SDE)</td><td class="y">Yes</td><td class="y">Yes</td><td>on</td><td>Task success</td><td>Rollout cost of large models</td></tr>
+<tr><td>GenPO</td><td>Robotics</td><td>Entire invertible diffusion model</td><td class="y">Yes (exact marginal)</td><td class="y">Yes</td><td>on</td><td>Environment return</td><td>Doubled action dimension; architectural constraints</td></tr>
+<tr><td>OGPO</td><td>Robotics</td><td>Full chain (product ratio)</td><td class="y">Yes</td><td class="y">\(Q\)（off-policy）</td><td>Mixed</td><td>\(Q\) as terminal reward</td><td>Critic exploitation; needs conservative updates</td></tr>
+<tr class="group"><td colspan="8">Chain pathwise / hybrid</td></tr>
+<tr><td>ReFL / DRaFT / AlignProp</td><td>Image</td><td>Full chain or truncated last K steps</td><td class="n">No</td><td class="n">No</td><td>On (generate, then update)</td><td>Differentiable reward</td><td>Requires reward gradients; memory; reward hacking</td></tr>
+<tr><td>NCDPO</td><td>Robotics</td><td>Full chain (BPTT) + output Gaussian</td><td>Output head</td><td class="y">Yes</td><td>on</td><td>Environment return</td><td>Memory grows with \(K\)</td></tr>
+<tr><td>Diffusion-QL / DIPO / QSM / DACER / IDQL / PA-RL</td><td>Robotics</td><td>Full chain / action selection</td><td class="n">No</td><td class="y">\(Q\)</td><td>off</td><td>Environment return</td><td>Depends on critic accuracy</td></tr>
+<tr class="group"><td colspan="8">Without chain likelihoods</td></tr>
+<tr><td>FPO</td><td>Robotics (also explored for images)</td><td>Whole model</td><td>No (CFM surrogate)</td><td class="y">Yes</td><td>on</td><td>Environment return</td><td>Biased ratio; instability reported with CFG</td></tr>
+<tr><td>DiffusionNFT</td><td>Image</td><td>Whole model (forward process)</td><td class="n">No</td><td class="n">No</td><td>online</td><td>Normalized to [0,1]</td><td>No explicit trust region</td></tr>
+<tr><td>Diffusion-DPO / D3PO / SPO</td><td>Image</td><td>Whole model / per-step</td><td>No (ELBO approximation)</td><td class="n">No</td><td>Off / iterative</td><td>Paired preferences</td><td>Requires preference data; offline distribution shift</td></tr>
+<tr class="group"><td colspan="8">Noise space / output residuals (frozen generator)</td></tr>
+<tr><td>Noise PPO</td><td>Image</td><td>Initial-noise distribution (single-step MDP)</td><td>Gaussian noise policy</td><td class="n">Unconfirmed in the original notes</td><td>on</td><td>Aesthetics / preference</td><td>Benefits can attenuate with more sampling steps</td></tr>
+<tr><td>DSRL</td><td>Robotics</td><td>Initial noise \(w\)</td><td>Noise policy</td><td class="y">\(Q^W\) / \(Q^A\)</td><td>off</td><td>Environment return</td><td>Limited by the frozen generator’s reachable outputs</td></tr>
+<tr><td>ResiP</td><td>Robotics</td><td>Output residual</td><td>Gaussian residual policy</td><td class="y">Yes</td><td>on</td><td>Environment return</td><td>Bounded local correction</td></tr>
+<tr><td>Policy Decorator</td><td>Robotics</td><td>Bounded output residual</td><td>Residual policy</td><td class="y">\(Q\)</td><td>off</td><td>Environment return</td><td>Bounded local correction</td></tr>
+</tbody></table></div>
+</section><section id="refs">
+<h2>References</h2>
+<p class="cite">Reference numbers, titles, and authors follow the original notes dated October 7, 2026; years refer to first arXiv submission. Numerical results and configurations belong to the cited papers or implementations and are not universal defaults.</p>
+<ol class="refs">
+<li>Black et al. Training Diffusion Models with Reinforcement Learning (DDPO). 2023. <a href="https://arxiv.org/abs/2305.13301">arXiv:2305.13301</a></li>
+<li>Fan et al. DPOK: Reinforcement Learning for Fine-tuning Text-to-Image Diffusion Models. 2023. <a href="https://arxiv.org/abs/2305.16381">arXiv:2305.16381</a></li>
+<li>Zhang et al. Large-scale Reinforcement Learning for Diffusion Models. 2024. <a href="https://arxiv.org/abs/2401.12244">arXiv:2401.12244</a></li>
+<li>Wallace et al. Diffusion Model Alignment Using Direct Preference Optimization. 2023. <a href="https://arxiv.org/abs/2311.12908">arXiv:2311.12908</a></li>
+<li>Yang et al. Using Human Feedback to Fine-tune Diffusion Models without Any Reward Model (D3PO). 2023. <a href="https://arxiv.org/abs/2311.13231">arXiv:2311.13231</a></li>
+<li>Liang et al. Aesthetic Post-Training Diffusion Models from Generic Preferences with Step-by-step Preference Optimization (SPO). 2024. <a href="https://arxiv.org/abs/2406.04314">arXiv:2406.04314</a></li>
+<li>Xu et al. ImageReward (ReFL). 2023. <a href="https://arxiv.org/abs/2304.05977">arXiv:2304.05977</a></li>
+<li>Clark et al. Directly Fine-Tuning Diffusion Models on Differentiable Rewards (DRaFT). 2023. <a href="https://arxiv.org/abs/2309.17400">arXiv:2309.17400</a></li>
+<li>Prabhudesai et al. Aligning Text-to-Image Diffusion Models with Reward Backpropagation (AlignProp). 2023. <a href="https://arxiv.org/abs/2310.03739">arXiv:2310.03739</a></li>
+<li>Liu et al. Flow-GRPO: Training Flow Matching Models via Online RL. 2025. <a href="https://arxiv.org/abs/2505.05470">arXiv:2505.05470</a></li>
+<li>Xue et al. DanceGRPO: Unleashing GRPO on Visual Generation. 2025. <a href="https://arxiv.org/abs/2505.07818">arXiv:2505.07818</a></li>
+<li>Li et al. MixGRPO: Unlocking Flow-based GRPO Efficiency with Mixed ODE-SDE. 2025. <a href="https://arxiv.org/abs/2507.21802">arXiv:2507.21802</a></li>
+<li>Zheng et al. DiffusionNFT: Online Diffusion Reinforcement with Forward Process. 2025. <a href="https://arxiv.org/abs/2509.16117">arXiv:2509.16117</a></li>
+<li>Miao et al. A Minimalist Method for Fine-tuning Text-to-Image Diffusion Models (Noise PPO). 2025. <a href="https://arxiv.org/abs/2506.12036">arXiv:2506.12036</a></li>
+<li>Eyring et al. ReNO: Reward-based Noise Optimization. 2024. <a href="https://arxiv.org/abs/2406.04312">arXiv:2406.04312</a></li>
+<li>Ren et al. Diffusion Policy Policy Optimization (DPPO). 2024. <a href="https://arxiv.org/abs/2409.00588">arXiv:2409.00588</a>, <a href="https://github.com/irom-princeton/dppo">code</a></li>
+<li>Yang et al. Fine-tuning Diffusion Policies with Backpropagation Through Diffusion Timesteps (NCDPO). 2025. <a href="https://arxiv.org/abs/2505.10482">arXiv:2505.10482</a></li>
+<li>Zhang et al. ReinFlow: Fine-tuning Flow Matching Policy with Online Reinforcement Learning. 2025. <a href="https://arxiv.org/abs/2505.22094">arXiv:2505.22094</a></li>
+<li>McAllister et al. Flow Matching Policy Gradients (FPO). 2025. <a href="https://arxiv.org/abs/2507.21053">arXiv:2507.21053</a></li>
+<li>Ding et al. GenPO: Generative Diffusion Models Meet On-Policy Reinforcement Learning. 2025. <a href="https://arxiv.org/abs/2505.18763">arXiv:2505.18763</a></li>
+<li>Chen et al. πRL: Online RL Fine-tuning for Flow-based Vision-Language-Action Models. 2025. <a href="https://arxiv.org/abs/2510.25889">arXiv:2510.25889</a></li>
+<li>Patil et al. OGPO: Sample Efficient Full-Finetuning of Generative Control Policies. 2026. <a href="https://arxiv.org/abs/2605.03065">arXiv:2605.03065</a></li>
+<li>Wagenmaker et al. Steering Your Diffusion Policy with Latent Space Reinforcement Learning (DSRL). 2025. <a href="https://arxiv.org/abs/2506.15799">arXiv:2506.15799</a></li>
+<li>Ankile et al. From Imitation to Refinement: Residual RL for Precise Assembly (ResiP). 2024. <a href="https://arxiv.org/abs/2407.16677">arXiv:2407.16677</a></li>
+<li>Yuan et al. Policy Decorator: Model-Agnostic Online Refinement for Large Policy Model. 2024. <a href="https://arxiv.org/abs/2412.13630">arXiv:2412.13630</a></li>
+<li>Wang et al. Diffusion-QL. 2022. <a href="https://arxiv.org/abs/2208.06193">arXiv:2208.06193</a>；Hansen-Estruch et al. IDQL. 2023. <a href="https://arxiv.org/abs/2304.10573">arXiv:2304.10573</a>；Yang et al. DIPO. 2023. <a href="https://arxiv.org/abs/2305.13122">arXiv:2305.13122</a>；Psenka et al. QSM. 2023. <a href="https://arxiv.org/abs/2312.11752">arXiv:2312.11752</a>；Wang et al. DACER. 2024. <a href="https://arxiv.org/abs/2405.15177">arXiv:2405.15177</a>；Mark et al. PA-RL. 2024. <a href="https://arxiv.org/abs/2412.06685">arXiv:2412.06685</a></li>
+<li>Schulman et al. PPO. 2017. <a href="https://arxiv.org/abs/1707.06347">arXiv:1707.06347</a>；Schulman et al. GAE. 2015. <a href="https://arxiv.org/abs/1506.02438">arXiv:1506.02438</a></li>
+<li>Shao et al. DeepSeekMath (GRPO). 2024. <a href="https://arxiv.org/abs/2402.03300">arXiv:2402.03300</a>；Ahmadian et al. RLOO. 2024. <a href="https://arxiv.org/abs/2402.14740">arXiv:2402.14740</a>；Hu et al. REINFORCE++. 2025. <a href="https://arxiv.org/abs/2501.03262">arXiv:2501.03262</a></li>
+<li>Han et al. ReinDiffuse. 2024. <a href="https://arxiv.org/abs/2410.07296">arXiv:2410.07296</a>；Yue et al. RLPF. 2025. <a href="https://arxiv.org/abs/2506.12769">arXiv:2506.12769</a>；PhysMoDPO. 2026. <a href="https://arxiv.org/abs/2603.13228">arXiv:2603.13228</a></li>
+</ol>
+</section><footer>Numerical results are reported by their respective papers and have not been reproduced here. Content labeled “uncertain,” “inference,” or placed in an interpretation box expresses judgment, not a paper’s established conclusion. The five denoising rows in each grid are schematic, not the actual sampling schedule.</footer>
+</div></div></div>

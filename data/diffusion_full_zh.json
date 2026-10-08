@@ -1,0 +1,1561 @@
+{
+  "ROWORDER": [
+    "noise",
+    "k5",
+    "k4",
+    "k3",
+    "k2",
+    "k1",
+    "out",
+    "res",
+    "env"
+  ],
+  "ROWLABEL": {
+    "noise": "x_K",
+    "k5": "k=K",
+    "k4": "K−1",
+    "k3": "⋯",
+    "k2": "2",
+    "k1": "1",
+    "out": "x₀ / aₜ",
+    "res": "残差 Δ",
+    "env": "环境 / r"
+  },
+  "ATTR_LABEL": {
+    "action": "RL action",
+    "likelihood": "likelihood 来源",
+    "advantage": "advantage 分配",
+    "critic": "critic",
+    "onoff": "on / off-policy",
+    "reward": "奖励要求",
+    "trainable": "可训练部分",
+    "sampler": "采样器要求",
+    "cost": "每次更新成本"
+  },
+  "M": {
+    "example": {
+      "name": "示例",
+      "cols": [
+        "t",
+        "t+1"
+      ],
+      "res": true,
+      "cells": {
+        "noise": "data",
+        "k5": "frozen",
+        "k4": "frozen",
+        "k3": "train",
+        "k2": "act",
+        "k1": "act",
+        "out": "data",
+        "res": "act",
+        "env": "data"
+      },
+      "w": {
+        "noise": "N(0,I)",
+        "k2": "γÂ",
+        "k1": "Â",
+        "out": "aₜ",
+        "res": "A",
+        "env": "环境"
+      },
+      "op": {
+        "k2": 0.7,
+        "k1": 1
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "env",
+          "text": "V(sₜ)"
+        }
+      ],
+      "gae": true,
+      "path": [
+        {
+          "from": "env",
+          "to": "k3",
+          "cols": [
+            1
+          ]
+        }
+      ],
+      "group": {
+        "from": "k5",
+        "to": "k1",
+        "label": "×G",
+        "cols": [
+          0
+        ]
+      },
+      "brackets": [
+        {
+          "from": "k2",
+          "to": "k1",
+          "text": "附加项"
+        }
+      ],
+      "notes": [
+        {
+          "row": "noise",
+          "col": 0,
+          "n": 1
+        },
+        {
+          "row": "k5",
+          "col": 0,
+          "n": 2
+        },
+        {
+          "row": "k3",
+          "col": 0,
+          "n": 3
+        },
+        {
+          "row": "k2",
+          "col": 0,
+          "n": 4
+        },
+        {
+          "row": "out",
+          "col": 0,
+          "n": 5
+        },
+        {
+          "row": "res",
+          "col": 0,
+          "n": 6
+        },
+        {
+          "row": "env",
+          "col": 0,
+          "n": 7
+        },
+        {
+          "side": "env",
+          "n": 8
+        },
+        {
+          "row": "k4",
+          "col": 1,
+          "dx": 44,
+          "n": 9
+        },
+        {
+          "row": "k1",
+          "col": 0,
+          "dx": -40,
+          "n": 10
+        }
+      ]
+    },
+    "ddpo": {
+      "name": "DDPO",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "奖励模型",
+      "cells": {
+        "k5": "act",
+        "k4": "act",
+        "k3": "act",
+        "k2": "act",
+        "k1": "act"
+      },
+      "w": {
+        "k5": "Â",
+        "k4": "Â",
+        "k3": "Â",
+        "k2": "Â",
+        "k1": "Â",
+        "noise": "N(0,I)",
+        "out": "x₀",
+        "env": "R(x₀,c)"
+      },
+      "stars": [
+        "env"
+      ],
+      "side": [
+        {
+          "row": "k3",
+          "text": "DDIM η=1"
+        },
+        {
+          "row": "env",
+          "text": "Â：按 prompt 统计"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "DDIM η=1 采样 50 步，存每步 log π"
+        ],
+        [
+          "打分",
+          "奖励模型给 r(x₀,c)，按 prompt 归一化"
+        ],
+        [
+          "Update",
+          "每步 ratio + clip，同一 Â",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "每个去噪转移 x_{k−1}（K 个）",
+        "likelihood": "逐步 Gaussian，需随机采样器",
+        "advantage": "同一 Â 广播到全部步；按 prompt 归一化",
+        "critic": "无",
+        "onoff": "on-policy",
+        "reward": "黑盒终端标量",
+        "trainable": "全部去噪步",
+        "sampler": "随机（DDIM η=1）",
+        "cost": "每样本 K 次前向采样 + K 次前向反传"
+      }
+    },
+    "dpok": {
+      "name": "DPOK",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "奖励模型",
+      "cells": {
+        "k5": "act",
+        "k4": "act",
+        "k3": "act",
+        "k2": "act",
+        "k1": "act"
+      },
+      "w": {
+        "k5": "A_k",
+        "k4": "A_k",
+        "k3": "A_k",
+        "k2": "A_k",
+        "k1": "A_k",
+        "noise": "N(0,I)",
+        "out": "x₀",
+        "env": "ImageReward"
+      },
+      "stars": [
+        "env"
+      ],
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "逐步 KL→θ_ref"
+        }
+      ],
+      "critic": [
+        {
+          "row": "k3",
+          "text": "V(x_k,c) 可选"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "随机采样器采整条链"
+        ],
+        [
+          "打分",
+          "ImageReward 给 r；可选 V(x_k,c) 作逐步 baseline"
+        ],
+        [
+          "Update",
+          "policy gradient + 闭式逐步 KL",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "每个去噪转移 x_{k−1}（K 个）",
+        "likelihood": "逐步 Gaussian，需随机采样器",
+        "advantage": "r − V(x_k,c)（可选），逐步不同",
+        "critic": "可选 V(x_k,c)（去噪状态上）",
+        "onoff": "on-policy",
+        "reward": "学到的偏好奖励（ImageReward）",
+        "trainable": "全部去噪步",
+        "sampler": "随机",
+        "cost": "同 DDPO，另加每步一次参考模型前向（KL）"
+      }
+    },
+    "flowgrpo": {
+      "name": "Flow-GRPO",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "奖励模型",
+      "cells": {
+        "k5": "act",
+        "k4": "act",
+        "k3": "act",
+        "k2": "act",
+        "k1": "act"
+      },
+      "w": {
+        "k5": "Â",
+        "k4": "Â",
+        "k3": "Â",
+        "k2": "Â",
+        "k1": "Â",
+        "noise": "N(0,I)",
+        "out": "x₀",
+        "env": "R(x₀,c)"
+      },
+      "stars": [
+        "env"
+      ],
+      "group": {
+        "from": "noise",
+        "to": "env",
+        "label": "×24"
+      },
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "逐步 KL"
+        }
+      ],
+      "side": [
+        {
+          "row": "k3",
+          "text": "SDE a=0.7"
+        },
+        {
+          "row": "k1",
+          "text": "训 10 / 推 40 步"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "同一 prompt 采 G=24 条 SDE 链（10 步），存 log π"
+        ],
+        [
+          "打分",
+          "终端奖励，组内归一化得 Â"
+        ],
+        [
+          "Update",
+          "全部步 ratio + clip + 闭式 KL",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "每个 SDE 去噪步",
+        "likelihood": "ODE→SDE 后的逐步 Gaussian",
+        "advantage": "组内归一化 Â（G=24），广播到全部步",
+        "critic": "无",
+        "onoff": "on-policy",
+        "reward": "终端：GenEval / OCR / PickScore",
+        "trainable": "全部训练步（T=10）",
+        "sampler": "训练 SDE 10 步，推理 ODE 40 步",
+        "cost": "每组 G×T 次前向 + G×T 次前向反传"
+      }
+    },
+    "dancegrpo": {
+      "name": "DanceGRPO",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "奖励模型",
+      "cells": {
+        "k5": "act",
+        "k4": "frozen",
+        "k3": "act",
+        "k2": "act",
+        "k1": "frozen"
+      },
+      "w": {
+        "noise": "组内共享",
+        "k5": "Â",
+        "k4": "—",
+        "k3": "Â",
+        "k2": "Â",
+        "k1": "—",
+        "out": "x₀",
+        "env": "Σ_m A^m"
+      },
+      "stars": [
+        "env"
+      ],
+      "group": {
+        "from": "k5",
+        "to": "env",
+        "label": "×12"
+      },
+      "side": [
+        {
+          "row": "noise",
+          "text": "共享初始噪声"
+        },
+        {
+          "row": "k3",
+          "text": "随机 60% 步"
+        },
+        {
+          "row": "k1",
+          "text": "无 KL"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "组内共享 x_K，采 G=12 条 SDE 链"
+        ],
+        [
+          "打分",
+          "多个奖励各自归一化后相加"
+        ],
+        [
+          "Update",
+          "只在随机 60% 的步上 ratio + clip",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "随机 60% 时间步的 SDE 转移",
+        "likelihood": "SDE 逐步 Gaussian（diffusion 与 flow 两种 SDE）",
+        "advantage": "多奖励各自组内归一化后相加；组内共享初始噪声",
+        "critic": "无",
+        "onoff": "on-policy",
+        "reward": "多个奖励模型（图像 / 视频）",
+        "trainable": "每轮随机 60% 时间步",
+        "sampler": "SDE（SD 50 步 / FLUX 25 步）",
+        "cost": "每组 G×T 次前向 + 0.6·G×T 次前向反传"
+      }
+    },
+    "mixgrpo": {
+      "name": "MixGRPO",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "奖励模型",
+      "cells": {
+        "k5": "frozen",
+        "k4": "act",
+        "k3": "act",
+        "k2": "frozen",
+        "k1": "frozen"
+      },
+      "w": {
+        "noise": "N(0,I)",
+        "k5": "ODE",
+        "k4": "Â",
+        "k3": "Â",
+        "k2": "ODE",
+        "k1": "ODE",
+        "out": "x₀",
+        "env": "R(x₀,c)"
+      },
+      "stars": [
+        "env"
+      ],
+      "group": {
+        "from": "noise",
+        "to": "env",
+        "label": "×12"
+      },
+      "brackets": [
+        {
+          "from": "k4",
+          "to": "k3",
+          "text": "滑窗 W：SDE+KL"
+        }
+      ],
+      "side": [
+        {
+          "row": "k1",
+          "text": "窗口随训练下移"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "窗外 ODE，窗内 SDE（w=4/25），只存窗内 log π"
+        ],
+        [
+          "打分",
+          "终端奖励，组内归一化"
+        ],
+        [
+          "Update",
+          "只在窗口步 ratio + clip + KL",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "滑窗 W 内的 SDE 转移（w=4/25）",
+        "likelihood": "仅窗口内的逐步 Gaussian",
+        "advantage": "组内归一化 Â，只给窗口步",
+        "critic": "无",
+        "onoff": "on-policy",
+        "reward": "偏好模型",
+        "trainable": "窗口内 w 步，窗口随训练下移",
+        "sampler": "窗外 ODE（Flash：DPM-Solver++），窗内 SDE",
+        "cost": "每组 G×T 次前向 + G×w 次前向反传"
+      }
+    },
+    "dppo": {
+      "name": "DPPO",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "cells": {
+        "k5": "frozen",
+        "k4": "frozen",
+        "k3": "act",
+        "k2": "act",
+        "k1": "act"
+      },
+      "w": {
+        "noise": "N(0,I)",
+        "k5": "θ",
+        "k4": "θ",
+        "k3": "γ²A",
+        "k2": "γA",
+        "k1": "A",
+        "out": "aₜ",
+        "env": "环境"
+      },
+      "op": {
+        "k3": 0.55,
+        "k2": 0.75,
+        "k1": 1
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "env",
+          "text": "V(sₜ)"
+        }
+      ],
+      "gae": true,
+      "brackets": [
+        {
+          "from": "k3",
+          "to": "k1",
+          "text": "最后 K′ 步 θ_ft"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "每个环境步跑一条随机链（σ≥0.1），执行 aₜ"
+        ],
+        [
+          "打分",
+          "环境回报；V(sₜ) + GAE 得 Aₜ"
+        ],
+        [
+          "Update",
+          "最后 K′ 步：Â=γ^k·Aₜ，逐步 ratio + clip",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "最后 K′ 个去噪转移（每个环境步）",
+        "likelihood": "逐步 Gaussian，σ 下界 0.1",
+        "advantage": "环境层 GAE 得 Aₜ，链内共享 × γ_denoise^k",
+        "critic": "V(sₜ)（只看环境状态）",
+        "onoff": "on-policy",
+        "reward": "环境回报（稠密或稀疏）",
+        "trainable": "最后 K′ 步（θ_ft）",
+        "sampler": "随机（DDPM，或 DDIM η=1）",
+        "cost": "每环境步 K 次前向；更新 K′ 次前向反传"
+      }
+    },
+    "reinflow": {
+      "name": "ReinFlow",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "cells": {
+        "k5": "act",
+        "k4": "act",
+        "k3": "act",
+        "k2": "act",
+        "k1": "act"
+      },
+      "w": {
+        "k5": "A",
+        "k4": "A",
+        "k3": "A",
+        "k2": "A",
+        "k1": "A",
+        "noise": "N(0,I)",
+        "out": "aₜ",
+        "env": "环境"
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "env",
+          "text": "V(sₜ)"
+        }
+      ],
+      "gae": true,
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "+σ_θ′ 可学习噪声"
+        }
+      ],
+      "side": [
+        {
+          "row": "out",
+          "text": "1–4 步 flow"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "每步 v_θ 加 σ_θ′ 噪声，存整链 log π"
+        ],
+        [
+          "打分",
+          "环境回报 + GAE"
+        ],
+        [
+          "Update",
+          "PPO + 熵正则；部署时丢弃 σ_θ′",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "每个带噪 flow 步（1–4 步）",
+        "likelihood": "可学习噪声 σ_θ′ ⇒ 整链精确 Gaussian",
+        "advantage": "环境层 GAE Aₜ",
+        "critic": "V(sₜ)",
+        "onoff": "on-policy",
+        "reward": "环境回报",
+        "trainable": "v_θ 全部步 + 噪声网络 σ_θ′",
+        "sampler": "注噪 flow（部署时去掉噪声）",
+        "cost": "每环境步 1–4 次前向；更新同量前向反传"
+      }
+    },
+    "ogpo": {
+      "name": "OGPO",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "cells": {
+        "k5": "act",
+        "k4": "act",
+        "k3": "act",
+        "k2": "act",
+        "k1": "act"
+      },
+      "w": {
+        "k5": "Â",
+        "k4": "Â",
+        "k3": "Â",
+        "k2": "Â",
+        "k1": "Â",
+        "noise": "N(0,I)",
+        "out": "a₀",
+        "env": "replay"
+      },
+      "stars": [
+        "out",
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "out",
+          "text": "Q(s,a₀)"
+        }
+      ],
+      "group": {
+        "from": "k5",
+        "to": "out",
+        "label": "×N"
+      },
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "∏ρ 整链"
+        }
+      ],
+      "side": [
+        {
+          "row": "env",
+          "text": "TD 学 Q"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "环境数据进 replay；off-policy TD 学 Q"
+        ],
+        [
+          "打分",
+          "在 replay 状态上重采 N 条链，Â=Q−均值"
+        ],
+        [
+          "Update",
+          "整链乘积 ratio + clip（可加成功 BC）",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "整条去噪链（一个 action）",
+        "likelihood": "整链 ∏ 逐步 Gaussian ratio",
+        "advantage": "Q(s,a₀) − 同状态 N 条链的 Q 均值，整链一个标量",
+        "critic": "Q(s,a)（off-policy TD，多 critic）",
+        "onoff": "混合：critic off-policy，链内 PPO",
+        "reward": "Q 作链的终端奖励",
+        "trainable": "全部去噪步",
+        "sampler": "随机（需要 log π）",
+        "cost": "每状态重采 N 条链；不需要额外环境步"
+      }
+    },
+    "noiseppo": {
+      "name": "Noise PPO",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "奖励模型",
+      "cells": {
+        "noise": "act"
+      },
+      "w": {
+        "k5": "",
+        "k4": "",
+        "k3": "",
+        "k2": "",
+        "k1": "",
+        "noise": "Â",
+        "out": "x₀",
+        "env": "加权奖励"
+      },
+      "stars": [
+        "env"
+      ],
+      "side": [
+        {
+          "row": "noise",
+          "text": "KL→N(0,I)"
+        },
+        {
+          "row": "k3",
+          "text": "冻结，LCM 4 步"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "从 π_θ(x_K|c) 采噪声，冻结模型生成"
+        ],
+        [
+          "打分",
+          "美学 / PickScore / HPSv2 加权"
+        ],
+        [
+          "Update",
+          "单步 PPO + KL 到 N(0,I) + 熵",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "初始噪声 x_K（单步）",
+        "likelihood": "噪声策略的 Gaussian",
+        "advantage": "单步 PPO advantage（baseline 形式不确定）",
+        "critic": "不确定",
+        "onoff": "on-policy",
+        "reward": "美学 / PickScore / HPSv2",
+        "trainable": "只有噪声策略（扩散冻结）",
+        "sampler": "不变（LCM 4 步、SDXL-Turbo）",
+        "cost": "每样本 1 次正常生成，无扩散反传"
+      }
+    },
+    "dsrl": {
+      "name": "DSRL",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "cells": {
+        "noise": "act"
+      },
+      "w": {
+        "k5": "",
+        "k4": "",
+        "k3": "DDIM",
+        "k2": "",
+        "k1": "",
+        "noise": "w",
+        "out": "aₜ",
+        "env": "环境"
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "noise",
+          "text": "Q^W(s,w)"
+        },
+        {
+          "row": "out",
+          "text": "Q^A(s,a)（NA）"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "π^W 选 w∈[−b,b]^d，冻结 DDIM 生成 aₜ"
+        ],
+        [
+          "打分",
+          "环境回报进 replay；TD 学 Q^A / Q^W"
+        ],
+        [
+          "Update",
+          "SAC：actor 最大化 Q^W",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "每环境步的初始噪声 w ∈ [−b,b]^d",
+        "likelihood": "噪声策略的（只用于 SAC 熵项）",
+        "advantage": "无（actor 直接最大化 Q^W）",
+        "critic": "Q^W(s,w)；NA 另有 Q^A(s,a)",
+        "onoff": "off-policy",
+        "reward": "环境回报",
+        "trainable": "只有噪声策略 + critic",
+        "sampler": "不变（DDIM σ=0）",
+        "cost": "每环境步 1 次生成；无扩散反传"
+      }
+    },
+    "ddpo_pref": {
+      "name": "Diffusion-DPO",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "偏好数据",
+      "cells": {
+        "k5": "train",
+        "k4": "train",
+        "k3": "train",
+        "k2": "train",
+        "k1": "train"
+      },
+      "w": {
+        "k5": "",
+        "k4": "",
+        "k3": "随机 k",
+        "k2": "",
+        "k1": "",
+        "noise": "ε",
+        "out": "x₀ʷ / x₀ˡ",
+        "env": "偏好对"
+      },
+      "stars": [
+        "env"
+      ],
+      "group": {
+        "from": "k5",
+        "to": "out",
+        "label": "w / l"
+      },
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "ELBO 差 vs ε_ref"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "无：离线偏好对 (x₀ʷ, x₀ˡ)"
+        ],
+        [
+          "打分",
+          "人类偏好标签"
+        ],
+        [
+          "Update",
+          "前向加噪到随机 k，DPO logistic 损失",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "无（离线）",
+        "likelihood": "不需要（去噪损失差近似）",
+        "advantage": "无；偏好对的 logistic 损失",
+        "critic": "无",
+        "onoff": "offline",
+        "reward": "成对偏好",
+        "trainable": "全部（每次随机一个 k）",
+        "sampler": "不需要采样",
+        "cost": "每对 4 次前向（θ 与 ref）+ 2 次反传"
+      }
+    },
+    "nft": {
+      "name": "DiffusionNFT",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "奖励模型",
+      "cells": {
+        "k5": "train",
+        "k4": "train",
+        "k3": "train",
+        "k2": "train",
+        "k1": "train"
+      },
+      "w": {
+        "k5": "",
+        "k4": "",
+        "k3": "前向 x_t",
+        "k2": "",
+        "k1": "",
+        "noise": "N(0,I)",
+        "out": "x₀",
+        "env": "r∈[0,1]"
+      },
+      "stars": [
+        "env"
+      ],
+      "group": {
+        "from": "noise",
+        "to": "env",
+        "label": "×24"
+      },
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "v⁺ / v⁻ 回归"
+        }
+      ],
+      "side": [
+        {
+          "row": "out",
+          "text": "任意 solver"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "任意采样器（如二阶 ODE），无 CFG"
+        ],
+        [
+          "打分",
+          "奖励组内归一化截断到 r∈[0,1]"
+        ],
+        [
+          "Update",
+          "前向加噪 x_t，正负隐式策略加权回归；θ_old EMA",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "无 RL action（加权回归）",
+        "likelihood": "不需要",
+        "advantage": "r∈[0,1]（组内归一化后截断）作权重",
+        "critic": "无",
+        "onoff": "online（θ_old 用 EMA）",
+        "reward": "终端奖励",
+        "trainable": "全部（前向加噪的随机 t）",
+        "sampler": "任意（ODE、高阶），CFG-free",
+        "cost": "每样本 1 次生成 + 少量 t 的前向反传"
+      }
+    },
+    "fpo": {
+      "name": "FPO",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "cells": {
+        "k5": "train",
+        "k4": "train",
+        "k3": "train",
+        "k2": "train",
+        "k1": "train",
+        "out": "act"
+      },
+      "w": {
+        "k5": "",
+        "k4": "",
+        "k3": "CFM",
+        "k2": "",
+        "k1": "",
+        "noise": "N(0,I)",
+        "out": "A",
+        "env": "环境"
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "env",
+          "text": "V(sₜ)"
+        }
+      ],
+      "gae": true,
+      "brackets": [
+        {
+          "from": "k5",
+          "to": "k1",
+          "text": "CFM 差 → ρ̂"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "任意采样器生成 aₜ，存 N_mc 对 (τ, ε)"
+        ],
+        [
+          "打分",
+          "环境回报 + GAE"
+        ],
+        [
+          "Update",
+          "ρ̂ = exp(−平均 CFM 损失差)，PPO clip",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "整个最终动作 aₜ",
+        "likelihood": "不需要；用 CFM 损失差构造 ρ̂",
+        "advantage": "环境层 GAE Aₜ",
+        "critic": "V(sₜ)",
+        "onoff": "on-policy",
+        "reward": "环境回报",
+        "trainable": "全部（N_mc 个 (τ, ε)）",
+        "sampler": "任意（可确定性）",
+        "cost": "每环境步 1 次生成；更新 N_mc 次前向反传"
+      }
+    },
+    "pathwise": {
+      "name": "ReFL / DRaFT / AlignProp",
+      "cols": [
+        "c"
+      ],
+      "envLabel": "奖励模型",
+      "cells": {
+        "k5": "frozen",
+        "k4": "frozen",
+        "k3": "train",
+        "k2": "train",
+        "k1": "train"
+      },
+      "w": {
+        "noise": "N(0,I)",
+        "k5": "no_grad",
+        "k4": "no_grad",
+        "out": "x₀",
+        "env": "r 可微"
+      },
+      "stars": [
+        "env"
+      ],
+      "path": [
+        {
+          "from": "env",
+          "to": "k3"
+        }
+      ],
+      "side": [
+        {
+          "row": "k4",
+          "text": "截断点 k_stop"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "无梯度去噪到 k_stop，再带梯度到 x₀"
+        ],
+        [
+          "打分",
+          "可微奖励 r(x₀)"
+        ],
+        [
+          "Update",
+          "∇_θ r 沿链反传（截断）",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "无（不是 RL）",
+        "likelihood": "不需要",
+        "advantage": "无；∇r 直接反传",
+        "critic": "无",
+        "onoff": "on（生成即训）",
+        "reward": "可微奖励",
+        "trainable": "截断后的最后几步",
+        "sampler": "任意可微采样器",
+        "cost": "显存随反传步数增长"
+      }
+    },
+    "offq": {
+      "name": "Off-policy Q 对照",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "cells": {
+        "k5": "train",
+        "k4": "train",
+        "k3": "train",
+        "k2": "train",
+        "k1": "train"
+      },
+      "w": {
+        "k5": "",
+        "k4": "",
+        "k3": "",
+        "k2": "",
+        "k1": "",
+        "noise": "N(0,I)",
+        "out": "aₜ",
+        "env": "replay"
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "out",
+          "text": "Q(s,a)"
+        }
+      ],
+      "path": [
+        {
+          "from": "out",
+          "to": "k5"
+        }
+      ],
+      "side": [
+        {
+          "row": "k3",
+          "text": "BC + Q 项"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "replay 中的任意数据"
+        ],
+        [
+          "打分",
+          "TD 学 Q(s,a)"
+        ],
+        [
+          "Update",
+          "Diffusion-QL：∇_a Q 沿链反传；DIPO / QSM / IDQL 各有变化",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "整个 aₜ（off-policy）",
+        "likelihood": "不需要",
+        "advantage": "无；用 Q 或 ∇_a Q",
+        "critic": "Q(s,a)",
+        "onoff": "off-policy",
+        "reward": "环境回报",
+        "trainable": "全部（BC + Q 项）",
+        "sampler": "任意",
+        "cost": "Diffusion-QL 需要沿链反传"
+      }
+    },
+    "residual": {
+      "name": "Residual RL",
+      "cols": [
+        "t",
+        "t+1",
+        "t+2"
+      ],
+      "res": true,
+      "cells": {
+        "noise": [
+          "data",
+          "reuse",
+          "reuse"
+        ],
+        "k5": [
+          "frozen",
+          "reuse",
+          "reuse"
+        ],
+        "k4": [
+          "frozen",
+          "reuse",
+          "reuse"
+        ],
+        "k3": [
+          "frozen",
+          "reuse",
+          "reuse"
+        ],
+        "k2": [
+          "frozen",
+          "reuse",
+          "reuse"
+        ],
+        "k1": [
+          "frozen",
+          "reuse",
+          "reuse"
+        ],
+        "out": [
+          "data",
+          "reuse",
+          "reuse"
+        ],
+        "res": "act"
+      },
+      "w": {
+        "noise": [
+          "N(0,I)",
+          "复用",
+          "复用"
+        ],
+        "out": [
+          "a^base",
+          "复用",
+          "复用"
+        ],
+        "res": "A",
+        "env": "环境"
+      },
+      "stars": [
+        "env"
+      ],
+      "critic": [
+        {
+          "row": "env",
+          "text": "V(s) / Q"
+        }
+      ],
+      "gae": true,
+      "side": [
+        {
+          "row": "res",
+          "text": "×0.1 或 ±α"
+        }
+      ],
+      "flow": [
+        [
+          "Rollout",
+          "每块调用一次冻结 base；每控制步采残差 Δ"
+        ],
+        [
+          "打分",
+          "环境回报 + GAE（ResiP）/ TD（PD）"
+        ],
+        [
+          "Update",
+          "PPO（ResiP）或 SAC（PD）只更新残差",
+          1
+        ]
+      ],
+      "attrs": {
+        "action": "输出残差 Δ（每控制步）",
+        "likelihood": "残差 Gaussian",
+        "advantage": "GAE（ResiP）/ 由 Q 给出（PD）",
+        "critic": "V(s)（ResiP）或 Q（PD）",
+        "onoff": "on（ResiP）/ off（PD）",
+        "reward": "环境回报",
+        "trainable": "只有残差网络",
+        "sampler": "不变",
+        "cost": "小 MLP；base 每块一次前向"
+      }
+    }
+  },
+  "G": {
+    "W": 940,
+    "H": 672,
+    "lanes": [
+      [
+        14,
+        100,
+        "噪声空间"
+      ],
+      [
+        108,
+        418,
+        "链内 · likelihood ratio"
+      ],
+      [
+        426,
+        570,
+        "likelihood-free / 回归"
+      ],
+      [
+        578,
+        662,
+        "链外 / 输出"
+      ]
+    ],
+    "nodes": {
+      "noiseppo": [
+        340,
+        58,
+        [
+          "Noise PPO"
+        ]
+      ],
+      "dsrl": [
+        590,
+        58,
+        [
+          "DSRL"
+        ]
+      ],
+      "dpok": [
+        340,
+        150,
+        [
+          "DPOK"
+        ]
+      ],
+      "ddpo": [
+        100,
+        230,
+        [
+          "DDPO"
+        ]
+      ],
+      "flowgrpo": [
+        340,
+        230,
+        [
+          "Flow-GRPO"
+        ]
+      ],
+      "dancegrpo": [
+        590,
+        230,
+        [
+          "DanceGRPO"
+        ]
+      ],
+      "mixgrpo": [
+        840,
+        230,
+        [
+          "MixGRPO"
+        ]
+      ],
+      "dppo": [
+        340,
+        320,
+        [
+          "DPPO"
+        ]
+      ],
+      "reinflow": [
+        590,
+        320,
+        [
+          "ReinFlow"
+        ]
+      ],
+      "ogpo": [
+        840,
+        385,
+        [
+          "OGPO"
+        ]
+      ],
+      "ddpo_pref": [
+        100,
+        470,
+        [
+          "Diffusion-DPO"
+        ]
+      ],
+      "fpo": [
+        340,
+        470,
+        [
+          "FPO"
+        ]
+      ],
+      "nft": [
+        590,
+        470,
+        [
+          "DiffusionNFT"
+        ]
+      ],
+      "pathwise": [
+        840,
+        470,
+        [
+          "ReFL · DRaFT",
+          "AlignProp"
+        ]
+      ],
+      "offq": [
+        840,
+        540,
+        [
+          "Off-policy Q",
+          "DIPO · QSM …"
+        ]
+      ],
+      "residual": [
+        340,
+        620,
+        [
+          "ResiP /",
+          "Policy Decorator"
+        ]
+      ]
+    },
+    "href": {
+      "noiseppo": "m-noiseppo",
+      "dsrl": "m-dsrl",
+      "dpok": "m-dpok",
+      "ddpo": "m-ddpo",
+      "flowgrpo": "m-flowgrpo",
+      "dancegrpo": "m-dancegrpo",
+      "mixgrpo": "m-mixgrpo",
+      "dppo": "m-dppo",
+      "reinflow": "m-reinflow",
+      "ogpo": "m-ogpo",
+      "ddpo_pref": "m-ddpo-pref",
+      "fpo": "m-fpo",
+      "nft": "m-nft",
+      "pathwise": "m-pathwise",
+      "offq": "m-offq",
+      "residual": "m-residual"
+    },
+    "edges": [
+      [
+        "ddpo",
+        "noiseppo",
+        [
+          "只把 x_K",
+          "当 action"
+        ],
+        0.45
+      ],
+      [
+        "ddpo",
+        "dpok",
+        [
+          "+ 逐步 KL"
+        ],
+        0.5
+      ],
+      [
+        "ddpo",
+        "flowgrpo",
+        [
+          "flow + SDE",
+          "组内 Â"
+        ],
+        0.5
+      ],
+      [
+        "ddpo",
+        "dppo",
+        [
+          "嵌入环境 MDP",
+          "V(sₜ) · 最后 K′ 步"
+        ],
+        0.5
+      ],
+      [
+        "ddpo",
+        "ddpo_pref",
+        [
+          "离线偏好对",
+          "ELBO 代替 log π"
+        ],
+        0.5
+      ],
+      [
+        "flowgrpo",
+        "dancegrpo",
+        [
+          "共享噪声",
+          "随机 60% 步"
+        ],
+        0.5
+      ],
+      [
+        "dancegrpo",
+        "mixgrpo",
+        [
+          "SDE 滑窗",
+          "窗外 ODE"
+        ],
+        0.5
+      ],
+      [
+        "dppo",
+        "reinflow",
+        [
+          "flow 模型",
+          "可学习噪声"
+        ],
+        0.5
+      ],
+      [
+        "dppo",
+        "ogpo",
+        [
+          "整链乘积 ratio",
+          "off-policy Q"
+        ],
+        0.7
+      ],
+      [
+        "dppo",
+        "fpo",
+        [
+          "CFM 损失差",
+          "代替 ratio"
+        ],
+        0.5
+      ],
+      [
+        "flowgrpo",
+        "nft",
+        [
+          "正负样本 · 前向过程",
+          "无 log π"
+        ],
+        0.76
+      ],
+      [
+        "noiseppo",
+        "dsrl",
+        [
+          "单步 PPO ↔",
+          "off-policy SAC"
+        ],
+        0.5,
+        true
+      ]
+    ]
+  },
+  "lang": "zh"
+}
