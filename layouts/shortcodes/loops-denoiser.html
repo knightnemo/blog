@@ -1,0 +1,10 @@
+{{- $lang := .Page.Params.guideLang | default "zh" -}}
+{{- $zh := eq $lang "zh" -}}
+<link rel="stylesheet" href="{{ "assets/loops-denoiser/guide.css" | relURL }}">
+<nav class="ld-language" aria-label="Article language">
+  <a href="{{ ref .Page "/posts/loops-inside-the-denoiser" }}" lang="en" hreflang="en" {{ if not $zh }}aria-current="page"{{ end }}>English</a>
+  <span aria-hidden="true">/</span>
+  <a href="{{ ref .Page "/posts/loops-inside-the-denoiser-zh" }}" lang="zh-CN" hreflang="zh-CN" {{ if $zh }}aria-current="page"{{ end }}>中文</a>
+</nav>
+{{ partial (printf "loops-denoiser/%s.html" $lang) . }}
+<script defer src="{{ "assets/loops-denoiser/guide.js" | relURL }}"></script>

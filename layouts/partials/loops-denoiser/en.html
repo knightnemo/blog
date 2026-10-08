@@ -1,0 +1,605 @@
+<div class="ld-guide" lang="en">
+<div class="wrap">
+<p class="ai-note">Note: This post was written with the help of AI.</p>
+<!-- ================= HERO ================= -->
+<header class="hero">
+<div>
+<div class="eyebrow">Looped Transformers · Image and video generation · Reading notes</div>
+<h2>Loops within each denoising step</h2>
+<p class="lede">I have been reading a few papers on Looped Transformers for generation and wanted to compare them here. Diffusion and flow models start from noise and generate an image step by step. These papers repeat the same Transformer blocks K times within each network call, increasing computation depth without adding parameters. The three 2026 papers outperform larger dense models in their respective experiments. Another Google paper carries hidden states across denoising steps, which makes a useful comparison. I also look at their connections to recurrent depth in language models and to DEQ.</p>
+<div class="papers">
+<a class="chip" href="https://www.alphaxiv.org/abs/2604.09168" rel="noopener" target="_blank"><i style="background:var(--elt)"></i>ELT · Google DeepMind · 2026.04</a>
+<a class="chip" href="https://www.alphaxiv.org/abs/2609.40305" rel="noopener" target="_blank"><i style="background:var(--ldit)"></i>Looped-DiT · 2026.09</a>
+<a class="chip" href="https://www.alphaxiv.org/abs/2610.05538" rel="noopener" target="_blank"><i style="background:var(--lift)"></i>LiFT · 2026.10</a>
+<a class="chip" href="https://www.alphaxiv.org/abs/2609.01449" rel="noopener" target="_blank"><i style="background:var(--dc)"></i>Diffusion as Curriculum · Google · 2026.09</a>
+<a class="chip" href="#background"><i style="background:var(--accent)"></i>Background: Huginn, LoopVL and DEQ</a>
+</div>
+</div>
+<div aria-label="Sampling steps and within-step loops" class="clock">
+<div class="clock-top">
+<div>
+<canvas aria-label="Schematic transition from noise to image" height="256" id="xt" width="256"></canvas>
+</div>
+<svg aria-label="Outer dial: sampling steps; inner dial: within-step loops" id="dial" role="img" viewbox="0 0 240 240"></svg>
+</div>
+<div class="ctrl">
+<label for="kSlider">Loops K</label><input id="kSlider" max="8" min="1" step="1" type="range" value="4"/><output id="kOut">4</output>
+<label for="tSlider">Steps T</label><input id="tSlider" max="3" min="0" step="1" type="range" value="1"/><output id="tOut">25</output>
+</div>
+<div class="readout">
+<div><b id="rPer">32</b><span>Blocks per network call<br/>6 + 5×K + 6</span></div>
+<div><b id="rTot">800</b><span>Blocks over the full sample<br/>T × blocks per call</span></div>
+<div><b>17</b><span>Unique parameter blocks<br/>Independent of K</span></div>
+</div>
+<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+<p class="cap">The outer dial tracks sampler time t, from noise to image; each tick is one network call. The inner dial tracks repetitions of the shared blocks within that call. The [6, 5, 6] split comes from Looped-DiT. The image is a schematic, not a model output.</p>
+<button class="btn" id="playBtn" type="button">Pause</button>
+</div>
+</div>
+</header>
+<div class="col">
+<p class="pull">Sampling steps determine how finely we follow the flow; loops determine how accurately we estimate the flow at each step. The two computation budgets can be adjusted separately.</p>
+<p class="eyebrow" style="margin-top:10px">Adapted from the LiFT introduction: "Steps follow the flow more closely; loops estimate it more accurately."</p>
+</div>
+<!-- ================= §1 ================= -->
+<section id="skeleton">
+<div class="sec-head"><span class="no">§1</span><h2>Basic structure: Prelude → Core × K → Coda</h2></div>
+<div class="sec-body">
+<div class="prose">
+<p>The three papers use nearly the same structure. Split a DiT into three parts: the prelude <span class="mono">P</span> runs once and encodes the noisy input into a hidden state; the core <span class="mono">R</span> shares weights across K repetitions; and the coda <span class="mono">D</span> reads out a prediction, either velocity v or a clean image x̂<sub>0</sub>. All of this happens <strong>within one denoising call</strong>, before the sampler advances to the next t.</p>
+<p>Parameter count and executed depth can then be counted separately: there are L<sub>P</sub> + L<sub>R</sub> + L<sub>D</sub> unique blocks, but L<sub>P</sub> + K·L<sub>R</sub> + L<sub>D</sub> block executions. Looped Transformers already used this idea in language models, including Universal Transformers and Geiping et al.'s recurrent depth; here it becomes the inner loop of a diffusion model. The names prelude, core and coda come from Geiping et al.'s Huginn. LiFT explicitly adopts this decomposition (see §8).</p>
+</div>
+<div class="fig skel">
+<div class="fig-title">Inside one network call</div>
+<div class="fig-sub">Outside: T sampler steps. Inside: K repetitions of the shared core. Intermediate readouts, shown as dashed lines, are computed only during training.</div>
+<div class="chart"><svg aria-label="Prelude, shared core repeated K times, and coda" role="img" viewbox="0 0 900 250">
+<defs>
+<marker id="ar" markerheight="7" markerwidth="7" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink-3)"></path></marker>
+<marker id="ara" markerheight="7" markerwidth="7" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"></path></marker>
+</defs>
+<!-- input -->
+<text class="lab" x="20" y="98">x_t, t, conditioning</text>
+<line marker-end="url(#ar)" stroke-width="1.5" style="stroke:var(--ink-3)" x1="20" x2="110" y1="112" y2="112"></line>
+<!-- prelude -->
+<rect height="64" rx="10" style="fill:var(--sunk);stroke:var(--rule)" width="130" x="116" y="80"></rect>
+<text class="lab" style="font-size:14px;font-weight:500" text-anchor="middle" x="181" y="108">Prelude P</text>
+<text text-anchor="middle" x="181" y="128">Run once</text>
+<line marker-end="url(#ar)" stroke-width="1.5" style="stroke:var(--ink-3)" x1="246" x2="320" y1="112" y2="112"></line>
+<text class="muted" text-anchor="middle" x="283" y="102">h₀</text>
+<!-- core -->
+<rect height="84" rx="12" stroke-width="1.5" style="fill:color-mix(in srgb, var(--accent) 12%, var(--panel));stroke:var(--accent)" width="230" x="326" y="70"></rect>
+<text class="lab" style="font-size:15px;font-weight:500" text-anchor="middle" x="441" y="104">Core R (shared weights)</text>
+<text text-anchor="middle" x="441" y="126">h_k = R(h_{k−1}),  k = 1…K</text>
+<path d="M 500 70 C 520 20, 362 20, 382 70" fill="none" marker-end="url(#ara)" stroke-width="2" style="stroke:var(--accent)"></path>
+<text style="fill:var(--accent);font-size:13px" text-anchor="middle" x="441" y="30">× K</text>
+<line marker-end="url(#ar)" stroke-width="1.5" style="stroke:var(--ink-3)" x1="556" x2="630" y1="112" y2="112"></line>
+<text class="muted" text-anchor="middle" x="593" y="102">h_K</text>
+<!-- coda -->
+<rect height="64" rx="10" style="fill:var(--sunk);stroke:var(--rule)" width="130" x="636" y="80"></rect>
+<text class="lab" style="font-size:14px;font-weight:500" text-anchor="middle" x="701" y="108">Coda D</text>
+<text text-anchor="middle" x="701" y="128">Read out prediction</text>
+<line marker-end="url(#ar)" stroke-width="1.5" style="stroke:var(--ink-3)" x1="766" x2="840" y1="112" y2="112"></line>
+<text class="lab" text-anchor="middle" x="806" y="98">v̂ or x̂₀</text>
+<!-- training-only readouts -->
+<path d="M 390 154 L 390 210 L 690 210 L 690 150" fill="none" stroke-dasharray="4 4" stroke-width="1.2" style="stroke:var(--ink-3)"></path>
+<path d="M 441 154 L 441 210" fill="none" stroke-dasharray="4 4" stroke-width="1.2" style="stroke:var(--ink-3)"></path>
+<path d="M 492 154 L 492 210" fill="none" stroke-dasharray="4 4" stroke-width="1.2" style="stroke:var(--ink-3)"></path>
+<text class="muted" text-anchor="middle" x="540" y="232">Training only: h₁ … h_{K−1} pass through the shared Coda for supervision; omitted at inference</text>
+</svg></div>
+<div class="tbl"><table>
+<thead><tr><th></th><th>Prelude</th><th>Core × K</th><th>Coda</th><th>Additional details</th></tr></thead>
+<tbody>
+<tr><td><span style="color:var(--elt)">●</span> ELT</td><td>embedding</td><td>N layers repeated L times, e.g. 8N × 4L</td><td>Shared head</td><td>Tested with both MaskGIT and DiT</td></tr>
+<tr><td><span style="color:var(--ldit)">●</span> Looped-DiT</td><td>6 MMDiT blocks</td><td>5 blocks × 4 loops</td><td>6 blocks</td><td>17 unique blocks, 32 executions; XSA attention in the loop</td></tr>
+<tr><td><span style="color:var(--lift)">●</span> LiFT</td><td>4 DiT blocks</td><td>R blocks × K loops</td><td>Prediction head only</td><td>RMSNorm then h₀ reinjection each loop; the core also receives a depth-coordinate s embedding</td></tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</section>
+<!-- ================= §2 ================= -->
+<section id="naive">
+<div class="sec-head"><span class="no">§2</span><h2>What happens with final-loop supervision only</h2></div>
+<div class="sec-body">
+<div class="prose">
+<p>The simplest approach supervises only the last loop. All three papers start here and observe a similar failure: the model learns a fixed computation of exactly K<sub>train</sub> loops, rather than an improvement operator that can be applied repeatedly. Fewer loops produce incomplete images; extra loops can damage an already usable output.</p>
+</div>
+<div class="trio">
+<div class="sym">
+<div class="who"><i style="background:var(--elt)"></i>ELT observation</div>
+<div class="big">Images only at L = 8</div>
+<p>A vanilla looped DiT trained with 8 loops on ImageNet produces coherent images only when inference also uses exactly 8 loops. At 2, 4, 6 or 10 loops, quality degrades severely. Intermediate states are not near the solution space.</p>
+</div>
+<div class="sym">
+<div class="who"><i style="background:var(--ldit)"></i>Looped-DiT observation</div>
+<div class="big">R² 0.865 → 0.562</div>
+<p>In MMDiT, performance saturates and then declines when inference uses more loops than training. A ridge-regression probe predicts image tokens' 2D positions from their hidden states: R² drops from 0.865 after the first loop to 0.562 after the eighth. Repeated attention updates wash out local information.</p>
+</div>
+<div class="sym">
+<div class="who"><i style="background:var(--lift)"></i>LiFT observation</div>
+<div class="big">Little gain from extrapolation</div>
+<p>Existing intermediate supervision makes outputs usable at multiple depths, but performance soon deteriorates beyond training depth. ImageNet FID rises as soon as that depth is exceeded; video performance peaks at 1.5 times training depth. In a separate LoopDiT experiment, looping did not beat a dense model at equal compute.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= §3 explorer ================= -->
+<section id="targets">
+<div class="sec-head"><span class="no">§3</span><h2>How to supervise intermediate loops</h2></div>
+<div class="sec-body">
+<div class="prose">
+<p>The structures are similar; I think the main difference is <strong>how the loss treats intermediate loops</strong>. The diagram places each readout u<sub>k</sub> in prediction space, with arrows showing its supervision target. Select a scheme to compare them.</p>
+</div>
+<div class="fig">
+<div aria-label="Supervision scheme" class="tabs" role="tablist">
+<button aria-selected="false" class="tab" data-s="naive" role="tab" type="button"><i style="background:var(--dense)"></i>Naive looping</button>
+<button aria-selected="true" class="tab" data-s="elt" role="tab" type="button"><i style="background:var(--elt)"></i>ELT · Self-distillation</button>
+<button aria-selected="false" class="tab" data-s="ldit" role="tab" type="button"><i style="background:var(--ldit)"></i>Looped-DiT · Deep supervision</button>
+<button aria-selected="false" class="tab" data-s="lift" role="tab" type="button"><i style="background:var(--lift)"></i>LiFT · Trajectory targets</button>
+</div>
+<div class="explorer">
+<div class="ex-plot"><svg aria-label="Loop readouts and supervision targets in prediction space" id="exSvg" role="img" viewbox="0 0 640 380"></svg></div>
+<div class="ex-side" id="exSide"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= §4 ELT ================= -->
+<section class="elt" id="elt">
+<div class="paper-head">
+<div>
+<div class="tag"><i style="background:var(--elt)"></i>April 2026 · ECCV 2026 · Earliest of the three</div>
+<h2>ELT: Elastic Looped Transformers</h2>
+<p class="meta">Goyal, Agrawal, Anil, Jain, Paul, Kusupati · Google DeepMind<br/>Class-conditional ImageNet 256 generation with MaskGIT and DiT, plus UCF-101 video generation</p>
+</div>
+<div class="links">
+<a class="chip" href="https://www.alphaxiv.org/abs/2604.09168" rel="noopener" target="_blank">alphaXiv 2604.09168 ↗</a>
+</div>
+</div>
+<p class="thesis">ELT uses the deepest path as a teacher for shallower exits. The same model can then choose its loop count according to the inference budget or exit early.</p>
+<div class="two">
+<div class="box">
+<h3>Method: Intra-Loop Self Distillation</h3>
+<ul>
+<li>Each training step samples a student exit L<sub>int</sub> ~ U(L<sub>min</sub>, L<sub>max</sub>). The student path is a prefix of the teacher path, so the added training cost is small.</li>
+<li>The student learns from both ground truth and the teacher's stop-gradient output. The weight λ decreases linearly from 1 to 0: ground truth dominates early, and the teacher dominates later.</li>
+<li>Discrete tokens use cross-entropy; diffusion uses sigmoid-weighted MSE. The method applies to both generators.</li>
+<li>The aim is Any-Time inference: use the same weights and choose the loop count for the device's budget.</li>
+</ul>
+</div>
+<div class="box">
+<h3>Parameter sharing and throughput</h3>
+<ul>
+<li>If the shared parameters fit on chip, L repetitions can increase arithmetic intensity by up to L times, avoiding repeated HBM–SRAM transfers.</li>
+<li>On TPU v6e, throughput is 2.9×, 3.3× and 3.5× the baseline at L, XL and H scales. The B-scale baseline already fits on chip, so there is no speedup (1.0×).</li>
+<li>The DiT variants also converge faster: 16N×2L by 2× and 8N×4L by 1.4×, at the same inference compute as a 32-layer DiT.</li>
+</ul>
+</div>
+</div>
+<div class="fig">
+<div class="fig-title">Trading parameters for loops at depth D = 32</div>
+<div class="fig-sub">ImageNet 256 · DiT · Lower FID is better. Unique parameter counts appear to the right of each bar.</div>
+<div class="chart" id="eltChart"></div>
+<div class="legend"><span><i class="dot" style="background:var(--dense)"></i>dense DiT</span><span><i class="dot" style="background:var(--elt)"></i>ELT (N unique layers × L loops)</span></div>
+<p class="fig-note">With half the parameters (1.1B versus 2.1B), 16N×2L beats the 32-layer dense model; 8N×4L also wins with roughly one quarter. Repeating a single layer 32 times lacks capacity (FID 10.30), so each loop still needs enough blocks. Data: ELT Table 2.</p>
+</div>
+<div class="nums">
+<div class="num"><b>FID 2.0</b><span>ELT-XL (7N×4L, 111M) matches MaskGIT-XL (446M), with 4× fewer parameters</span></div>
+<div class="num"><b>FVD 72.8</b><span>UCF-101 video: 76M-parameter ELT scores 72.8 versus MAGVIT's 76; more loops and steps reach 60.8</span></div>
+<div class="num"><b>L = 6</b><span>Video: trained with L<sub>max</sub> = 4, best FVD at 6 inference loops (69.20), showing modest extrapolation</span></div>
+</div>
+</section>
+<!-- ================= §5 Looped-DiT ================= -->
+<section class="ldit" id="ldit">
+<div class="paper-head">
+<div>
+<div class="tag"><i style="background:var(--ldit)"></i>September 30, 2026 · First systematic text-to-image study</div>
+<h2>Looped-DiT: Looped Diffusion Transformer</h2>
+<p class="meta">Chng, Chen et al. · SenseTime Research, Tsinghua LeapLab and NTU · Corresponding author: Gao Huang<br/>Pixel-space MMDiT based on MiniT2I, 512×512 text-to-image · <a href="https://github.com/OpenSenseNova/Looped-DiT" rel="noopener" target="_blank">Code</a></p>
+</div>
+<div class="links">
+<a class="chip" href="https://www.alphaxiv.org/abs/2609.40305" rel="noopener" target="_blank">alphaXiv 2609.40305 ↗</a>
+</div>
+</div>
+<p class="thesis">Text-to-image generation sometimes requires inferring unstated content, satisfying several constraints and correcting earlier errors. Looped-DiT attempts these computations through loops in hidden space, without generating a textual chain of thought.</p>
+<div class="two">
+<div class="box">
+<h3>Deep Supervision</h3>
+<ul>
+<li>Hidden states from loops 1, 2 and 3 also pass through the shared 6-block post-loop segment, using a flow-matching loss against the same clean image x<sub>0</sub>.</li>
+<li>Two weighting schemes are compared: exponential (1/8, 1/4, 1/2, 1) and final+mean (1/3, 1/3, 1/3, 1). The latter performs better.</li>
+<li>Extra computation is needed only during training, with no added inference parameters or compute. Training FLOPs are about 1.54× those of a baseline matched for inference compute.</li>
+</ul>
+</div>
+<div class="box">
+<h3>Self-Modulating Attention</h3>
+<ul>
+<li>Softmax controls which tokens supply information, but not how much is written back. Repeated updates with the same blocks can erase local token information.</li>
+<li>Gated Attention multiplies each head by a sigmoid gate conditioned on the current token.</li>
+<li>XSA (Exclusive Self Attention) projects out the output component along the token's own value direction: <span class="mono">z = (I − v̂v̂ᵀ) Σ α v</span>. It adds no parameters, performs best, and is used only in the looped segment.</li>
+<li>XSA adds +1.6 points to the looped model, versus −0.1 to a non-looped baseline with equal parameters and +0.7 to one with equal compute. It mainly addresses a problem introduced by looping.</li>
+</ul>
+</div>
+</div>
+<div class="fig">
+<div class="fig-title">Average score versus parameter count</div>
+<div class="fig-sub">Mean score across six benchmarks (GenEval, DPG, PRISM, CoRe, Spatial and TIIF-Short) versus parameters on a log axis. Hover over a point for details.</div>
+<div class="chart" id="ldChart"></div>
+<div class="legend"><span><i class="dot" style="background:var(--ldit)"></i>Looped-DiT B/16</span><span><i class="dot" style="background:var(--dense)"></i>Models without chain of thought</span><span><i class="dot" style="background:transparent;border:2px solid var(--dense)"></i>Models with chain-of-thought reasoning</span></div>
+<p class="fig-note">The non-looped MiniT2I-B/16 with the same basic structure scores 66.4; looping raises this to 71.5. InternVL-U (1.7B) scores 69.0. The authors report 6.5× fewer parameters, 4.9× less inference compute and 3.2× lower latency. Data: Looped-DiT Table 1.</p>
+</div>
+<div class="fig">
+<div class="fig-title">Matching parameters, inference compute and training compute</div>
+<div class="fig-sub">B/32, mean over four reasoning-related benchmarks. Each row identifies the matched comparison condition.</div>
+<div class="tbl"><table>
+<thead><tr><th>Model</th><th>Matched condition</th><th class="n">Parameters</th><th class="n">Effective depth</th><th class="n">Inference GFLOPs</th><th class="n">Mean score</th></tr></thead>
+<tbody>
+<tr><td>MiniT2I B/32</td><td>Parameters</td><td class="n">260M</td><td class="n">17</td><td class="n">146</td><td class="n">55.2</td></tr>
+<tr><td>Deeper MiniT2I</td><td>Inference compute</td><td class="n">473M</td><td class="n">32</td><td class="n">267</td><td class="n">57.7</td></tr>
+<tr><td>Wider MiniT2I</td><td>Inference compute</td><td class="n">489M</td><td class="n">17</td><td class="n">268</td><td class="n">58.6</td></tr>
+<tr><td>Deeper + Deep Supervision</td><td>Training compute</td><td class="n">473M</td><td class="n">32</td><td class="n">267</td><td class="n">58.1</td></tr>
+<tr class="hl"><td><strong>Looped-DiT B/32</strong></td><td>—</td><td class="n">260M</td><td class="n">32</td><td class="n">267</td><td class="n"><strong>59.1</strong></td></tr>
+</tbody>
+</table></div>
+<p class="fig-note">The looped model leads under all three matching conditions and has the fewest parameters. Data: Looped-DiT Table 2.</p>
+</div>
+<div class="two">
+<div class="box">
+<h3>More loops or more steps at the same budget</h3>
+<ul>
+<li>At the same inference budget, adding loops improves scores more than adding denoising steps, consistently over the 25–50-step range.</li>
+<li>There are two comparisons: disabling loops in the same checkpoint, and a model trained without loops using the same architecture.</li>
+<li>A lightweight gating network chooses the number of loops per image. At the same average loop count, adaptive exits outperform a fixed count, and the budget can be adjusted without retraining.</li>
+</ul>
+</div>
+<div class="box">
+<h3>Loops and textual CoT are complementary</h3>
+<ul>
+<li>Loops help more on tasks requiring simultaneous relational, spatial and procedural constraints. Rewriting prompts with CoT adds little on these tasks.</li>
+<li>CoT helps more on tasks requiring inference of unstated content from examples and rules.</li>
+<li>Combining both gives the best score. Qualitatively, later loops add missing objects, move objects to satisfy spatial constraints, correct text and remove extra objects.</li>
+</ul>
+</div>
+</div>
+</section>
+<!-- ================= §6 LiFT ================= -->
+<section class="lift" id="lift">
+<div class="paper-head">
+<div>
+<div class="tag"><i style="background:var(--lift)"></i>October 4, 2026 · Most recent of the three</div>
+<h2>LiFT: Loop Flow Transformers</h2>
+<p class="meta">Derakhshani, Curvo, Burghouts, van de Meent, Snoek · University of Amsterdam VISLab / AMLab and TNO<br/>Class-conditional ImageNet 256 in SD-VAE latent space, without CFG · Subtitle: Loop in Depth, Flow in Time</p>
+</div>
+<div class="links">
+<a class="chip" href="https://www.alphaxiv.org/abs/2610.05538" rel="noopener" target="_blank">alphaXiv 2610.05538 ↗</a>
+</div>
+</div>
+<p class="thesis">LiFT gives each loop a different target. Draw a straight line from the model's initial estimate to ground truth; loop k predicts the corresponding point on that line. Depth is represented by a continuous coordinate. In the experiments, models trained with 2 loops still benefit from increasing inference to 16 loops.</p>
+<div class="two">
+<div class="box">
+<h3>Method: trajectory supervision</h3>
+<div class="formula">b = sg(u₀)  <span class="c">// initial prelude estimate, stop-gradient</span><br/>ū<sub>s</sub> = (1 − s)·b + s·u★  <span class="c">// s ∈ [0, 1]</span><br/>L = 1/K Σ<sub>k</sub> ‖u<sub>k</sub> − ū<sub>s<sub>k</sub></sub>‖² + λ‖u₀ − u★‖²</div>
+<ul>
+<li>Training samples K<sub>train</sub> − 1 coordinates per example and sorts them, with the endpoint fixed at s = 1. The final loop therefore always learns the standard flow-matching target.</li>
+<li>Inference uses a uniform grid s<sub>k</sub> = k / K<sub>inf</sub>. The loop count determines how finely the path is discretized, much as integration steps discretize generation time.</li>
+<li>In the ablation, fixed-grid training gives FID 75.26 and 86.95 at 16 and 32 loops, while random-coordinate training gives 67.71 and 68.38.</li>
+</ul>
+</div>
+<div class="box">
+<h3>Extrapolation, equal-compute comparisons and limits</h3>
+<ul>
+<li>Extrapolation: the earlier two papers mainly make outputs useful within training depth; LiFT makes extra loops beyond training depth continue to help.</li>
+<li>Equal compute: comparisons use the same TFLOPs as dense DiT, rather than only the same parameter count.</li>
+<li>Limits: at B/2 scale, dense models are stronger at every budget. At training depth, every LiFT loses to the dense model of the same scale. The advantage comes from reallocating inference compute to loops.</li>
+<li>The paper also cites an iso-depth scaling result: one shared recurrence contributes roughly as much as half an independent block.</li>
+</ul>
+</div>
+</div>
+<div class="fig">
+<div class="fig-title">Trained with 2 loops, evaluated with more</div>
+<div class="fig-sub">FID versus inference loop count K<sub>inf</sub> on a log axis, with 50 integration steps. Hollow circles mark training depth; horizontal lines show dense references at 50 steps.</div>
+<div class="chart" id="liftLine"></div>
+<div class="legend"><span><i style="background:var(--lift)"></i>LiFT L/2 R10 (270M, trained with K = 2)</span><span><i style="background:var(--accent)"></i>LiFT XL/2 R12 (390M, trained with K = 2)</span><span><i style="background:var(--dense)"></i>Dense references (50 steps)</span></div>
+<p class="fig-note">At 3 loops, L/2 R10 already beats dense XL/2 (14.64 versus 15.54), using slightly less inference compute (11.43 versus 11.86 TFLOPs) and about 60% fewer parameters. Both curves flatten around 8–16 loops and rise slightly at 32. Data: LiFT Table 5.</p>
+</div>
+<div class="fig" id="heatFig">
+<div class="fig-title">Allocate the budget to steps or loops</div>
+<div class="fig-sub">FID for LiFT L/2 R10 on a grid of T integration steps and K inference loops. Adjust the budget to find the best measured setting within it.</div>
+<div class="heat-wrap">
+<div class="heat chart" id="heat"></div>
+<div class="budget">
+<div class="ctrl" style="grid-template-columns:auto minmax(0,1fr)">
+<label for="budget">Inference budget</label><input id="budget" max="1000" min="0" step="1" type="range" value="500"/>
+</div>
+<div class="row"><span>Budget limit</span><b id="bVal">8.07 TFLOPs</b></div>
+<div class="row"><span>Best LiFT setting</span><b id="bLift">—</b></div>
+<div class="row"><span>Best dense L/2 setting</span><b id="bDense">—</b></div>
+<p class="verdict" id="bVerdict"></p>
+</div>
+</div>
+<p class="fig-note">Darker cells indicate lower FID. The black outline marks training (50 steps, 2 loops). Dense L/2 has comparable training compute to this LiFT checkpoint and about 41% more parameters. One efficient setting is 25 steps × 4 loops: FID 13.16 at 7.40 TFLOPs. Dense L/2 reaches 16.94 at 50 steps and 8.07 TFLOPs. Data: LiFT Tables 6 and 7.</p>
+</div>
+<div class="nums">
+<div class="num"><b>17.07 → 9.31</b><span>XL/2 R12: 2 training loops, 16 inference loops, without retraining</span></div>
+<div class="num"><b>−3.34 FID</b><span>L/2 R10 (8 loops) versus dense XL/2 (250 steps): 10.95 versus 14.30</span></div>
+<div class="num"><b>−60% / −52%</b><span>Parameters and inference FLOPs for the same comparison; training compute is also 32% lower</span></div>
+</div>
+</section>
+<!-- ================= §7 Diffusion as Curriculum ================= -->
+<section class="dc" id="dc">
+<div class="paper-head">
+<div>
+<div class="tag"><i style="background:var(--dc)"></i>September 1, 2026 · Comparison: recurrence across steps</div>
+<h2>Diffusion as a Training Curriculum for Timestep-Free Iterative Reasoning</h2>
+<p class="meta">Drozdova, Sirbu, Miotti, Obryk, Etcheverry, Niklasson, Richards · Google Paradigms of Intelligence, University of Geneva and McGill / Mila<br/>Sudoku-Extreme and Maze-Unique / Maze-Hard reasoning tasks, rather than image generation</p>
+</div>
+<div class="links">
+<a class="chip" href="https://www.alphaxiv.org/abs/2609.01449" rel="noopener" target="_blank">alphaXiv 2609.01449 ↗</a>
+</div>
+</div>
+<p class="thesis">The first three papers loop within one denoising call and restart at the next step. This paper carries the hidden state to the next step and removes timestep conditioning. At inference, gradual denoising is unnecessary; diffusion mainly provides the training curriculum.</p>
+<div class="fig xstep">
+<div class="fig-title">Two ways to connect the computation</div>
+<div class="fig-sub">Top: within-step loops pass only noisy samples between steps. Bottom: across-step memory carries a clean hidden state h, while samples are re-noised at every step.</div>
+<div class="chart"><svg aria-label="Within-step loops versus across-step memory" role="img" viewbox="0 0 900 330">
+<defs>
+<marker id="ar2" markerheight="7" markerwidth="7" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink-3)"></path></marker>
+<marker id="ar3" markerheight="7" markerwidth="7" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dc)"></path></marker>
+</defs>
+<text class="lab" style="font-size:13px;font-weight:500" x="20" y="22">Within-step loops · ELT / Looped-DiT / LiFT</text>
+<rect height="74" rx="10" style="fill:var(--sunk);stroke:var(--rule)" width="200" x="40" y="40"></rect>
+<rect height="74" rx="10" style="fill:var(--sunk);stroke:var(--rule)" width="200" x="350" y="40"></rect>
+<rect height="74" rx="10" style="fill:var(--sunk);stroke:var(--rule)" width="200" x="660" y="40"></rect>
+<text class="lab" text-anchor="middle" x="140" y="72">P → R×K → D</text>
+<text class="lab" text-anchor="middle" x="450" y="72">P → R×K → D</text>
+<text class="lab" text-anchor="middle" x="760" y="72">P → R×K → D</text>
+<text class="muted" text-anchor="middle" x="140" y="94">Restart h from h₀</text>
+<text class="muted" text-anchor="middle" x="450" y="94">Restart h from h₀</text>
+<text class="muted" text-anchor="middle" x="760" y="94">Restart h from h₀</text>
+<line marker-end="url(#ar2)" stroke-width="1.5" style="stroke:var(--ink-3)" x1="240" x2="346" y1="77" y2="77"></line>
+<line marker-end="url(#ar2)" stroke-width="1.5" style="stroke:var(--ink-3)" x1="550" x2="656" y1="77" y2="77"></line>
+<text class="muted" text-anchor="middle" x="295" y="68">x_t</text>
+<text class="muted" text-anchor="middle" x="605" y="68">x_t</text>
+<text class="muted" text-anchor="middle" x="140" y="134">Step k</text><text class="muted" text-anchor="middle" x="450" y="134">Step k+1</text><text class="muted" text-anchor="middle" x="760" y="134">Step k+2</text>
+<text class="lab" style="font-size:13px;font-weight:500" x="20" y="178">Across-step memory · Drozdova et al. (no timestep input)</text>
+<rect height="74" rx="10" style="fill:color-mix(in srgb, var(--dc) 12%, var(--panel));stroke:var(--dc)" width="200" x="40" y="196"></rect>
+<rect height="74" rx="10" style="fill:color-mix(in srgb, var(--dc) 12%, var(--panel));stroke:var(--dc)" width="200" x="350" y="196"></rect>
+<rect height="74" rx="10" style="fill:color-mix(in srgb, var(--dc) 12%, var(--panel));stroke:var(--dc)" width="200" x="660" y="196"></rect>
+<text class="lab" text-anchor="middle" x="140" y="228">E(x_k) + h_k → B×8</text>
+<text class="lab" text-anchor="middle" x="450" y="228">E(x_k) + h_k → B×8</text>
+<text class="lab" text-anchor="middle" x="760" y="228">E(x_k) + h_k → B×8</text>
+<text class="muted" text-anchor="middle" x="140" y="250">Read out ŷ_k and h_{k+1}</text>
+<text class="muted" text-anchor="middle" x="450" y="250">Read out ŷ_k and h_{k+1}</text>
+<text class="muted" text-anchor="middle" x="760" y="250">Read out ŷ_k and h_{k+1}</text>
+<line marker-end="url(#ar3)" stroke-width="3" style="stroke:var(--dc)" x1="240" x2="346" y1="250" y2="250"></line>
+<line marker-end="url(#ar3)" stroke-width="3" style="stroke:var(--dc)" x1="550" x2="656" y1="250" y2="250"></line>
+<text class="lab" text-anchor="middle" x="295" y="268">h (clean)</text>
+<text class="lab" text-anchor="middle" x="605" y="268">h (clean)</text>
+<line marker-end="url(#ar2)" stroke-dasharray="4 4" stroke-width="1.2" style="stroke:var(--ink-3)" x1="240" x2="346" y1="212" y2="212"></line>
+<line marker-end="url(#ar2)" stroke-dasharray="4 4" stroke-width="1.2" style="stroke:var(--ink-3)" x1="550" x2="656" y1="212" y2="212"></line>
+<text class="muted" text-anchor="middle" x="295" y="204">Re-noise ŷ</text>
+<text class="muted" text-anchor="middle" x="605" y="204">Re-noise ŷ</text>
+<text class="muted" text-anchor="middle" x="450" y="304">x_{k+1} = Pin(a(t)·ŷ_k + b(t)·ε, clues): known cells are fixed, others re-noised; maximum noise can be maintained</text>
+</svg></div>
+</div>
+<div class="two">
+<div class="box">
+<h3>Method</h3>
+<ul>
+<li>The denoiser is itself recurrent: Sudoku uses 1 Transformer block with row, column and box masks, repeated J = 8 times; mazes use a 3×3 convolution block repeated 8 times.</li>
+<li>Each step has two LayerNorm outputs: one is projected into a denoising prediction ŷ, and the other becomes the hidden state h for the next step. There is no direct loss on h.</li>
+<li>The network receives neither a timestep nor an iteration index, so the same update can be applied for any number of steps.</li>
+<li>Training samples trajectory length K ~ U[20, 160]. Each step's input is re-noised from ground truth, and backpropagation is truncated to 4 steps. The hidden state h is the only channel that carries earlier information forward without corruption.</li>
+</ul>
+</div>
+<div class="box">
+<h3>Findings</h3>
+<ul>
+<li>Accuracy improves monotonically up to 10,000 steps, far beyond the 160 training steps and 4-step backpropagation window.</li>
+<li>Keeping inference noise at its maximum gives the best result (99.90%). Removing noise drops accuracy to 49.39%. Noise acts as exploration: a single trajectory can escape an incorrect solution and eventually settle.</li>
+<li>Removing h slows convergence and lowers the ceiling. Adding or removing timestep conditioning makes little difference.</li>
+<li>An ordered annealing schedule during training matters: fixed noise or independently sampled noise levels at each step substantially reduce accuracy.</li>
+</ul>
+</div>
+</div>
+<div class="fig">
+<div class="fig-title">Diffusion as a training curriculum</div>
+<div class="fig-sub">Sudoku-Extreme full-solution rate (%). The upper group changes training, with annealed-noise inference at K = 10,000. The lower group keeps the model fixed and changes only inference noise.</div>
+<div class="chart" id="dcChart"></div>
+<div class="legend"><span><i class="dot" style="background:var(--dc)"></i>Paper's chosen settings</span><span><i class="dot" style="background:var(--dense)"></i>Control settings</span></div>
+<p class="fig-note">The upper group shows means over three seeds, with standard-deviation error bars (Appendix Table 2). The lower group comes from Section 3. The two annealing values (99.54 and 99.56) come from different experiments.</p>
+</div>
+<div class="nums">
+<div class="num"><b>99.90%</b><span>Sudoku-Extreme, 10,000 steps, maximum inference noise</span></div>
+<div class="num"><b>98.93%</b><span>Maze-Unique, 100 steps; only 40.87% at 5 steps</span></div>
+<div class="num"><b>82.50 → 29.38</b><span>Solution rate after shuffling h across cells at step 200, showing that h stores spatially structured progress</span></div>
+</div>
+<div class="box" style="margin-top:26px">
+<h3>Relation to within-step loops</h3>
+<ul>
+<li>Here diffusion provides a curriculum and recurrence provides computation. The first three papers make diffusion models recurrent; this paper uses diffusion to train a recurrent solver.</li>
+<li>It uses a different handoff between states. LiFT explicitly reinitializes the loop state at every integration step, while RIN and this paper carry hidden states across steps. The text-to-image and video papers discussed here use the first approach.</li>
+<li>Transfer to generation needs care. These reasoning tasks have unique solutions. On multi-solution Sudoku, the authors find that 57.93% of trajectories move to another solution after finding one. Image generation also admits many solutions, so keeping maximum noise at inference may not transfer well.</li>
+</ul>
+</div>
+</section>
+<!-- ================= §8 background ================= -->
+<section id="background">
+<div class="sec-head"><span class="no">§8</span><h2>Background: Huginn and DEQ</h2></div>
+<div class="sec-body">
+<div class="prose">
+<p>There are two sources for these architectures. Language-model <strong>recurrent depth</strong> unrolls shared blocks a finite number of times, samples depth during training and backpropagates through only the final loops. <strong>DEQ (Deep Equilibrium Models)</strong> instead solves the fixed point z* = f(z*, x), corresponding to a shared-weight loop run to convergence at infinite depth. Both study how to separate computation depth from parameter count.</p>
+<p>Grouping the papers by how they unroll recurrence helps identify which can benefit from more loops at inference.</p>
+</div>
+<div class="fig spectrum">
+<div class="fig-title">Three ways to unroll recurrence</div>
+<div class="fig-sub">From left to right, training imposes fewer restrictions on loop count. The middle group can use more loops than seen during training and continue to improve.</div>
+<div class="chart"><svg aria-label="Fixed unrolling, random unrolling with truncated backpropagation, and fixed-point solving" role="img" viewbox="0 0 900 290">
+<rect height="222" rx="10" style="fill:var(--sunk)" width="270" x="40" y="18"></rect>
+<rect height="222" rx="10" style="fill:color-mix(in srgb, var(--lift) 10%, var(--panel))" width="270" x="320" y="18"></rect>
+<rect height="222" rx="10" style="fill:var(--sunk)" width="270" x="600" y="18"></rect>
+<circle cx="58" cy="58" r="5" style="fill:var(--ldit)"></circle><text class="lab" style="font-size:12.5px;font-weight:500" x="70" y="62">Looped-DiT</text><text class="muted" x="70" y="79">Train 4; deep supervision to 8</text><circle cx="58" cy="116" r="5" style="fill:var(--elt)"></circle><text class="lab" style="font-size:12.5px;font-weight:500" x="70" y="120">ELT</text><text class="muted" x="70" y="137">Train L_max; early exits</text><circle cx="58" cy="174" r="5" style="fill:var(--accent)"></circle><text class="lab" style="font-size:12.5px;font-weight:500" x="70" y="178">LoopVL</text><text class="muted" x="70" y="195">Extra loops degrade performance</text><circle cx="338" cy="58" r="5" style="fill:var(--accent)"></circle><text class="lab" style="font-size:12.5px;font-weight:500" x="350" y="62">Huginn</text><text class="muted" x="350" y="79">Random r; backprop last 8 loops</text><circle cx="338" cy="116" r="5" style="fill:var(--lift)"></circle><text class="lab" style="font-size:12.5px;font-weight:500" x="350" y="120">LiFT</text><text class="muted" x="350" y="137">Random depth s; 2 → 16 loops</text><circle cx="338" cy="174" r="5" style="fill:var(--dc)"></circle><text class="lab" style="font-size:12.5px;font-weight:500" x="350" y="178">Drozdova et al.</text><text class="muted" x="350" y="195">No timestep; 160 → 10,000 steps</text><circle cx="618" cy="52" r="5" style="fill:var(--accent)"></circle><text class="lab" style="font-size:12.5px;font-weight:500" x="630" y="56">DEQ</text><text class="muted" x="630" y="73">Broyden root-finding; O(1) memory</text><circle cx="618" cy="96" r="5" style="fill:var(--accent)"></circle><text class="lab" style="font-size:12.5px;font-weight:500" x="630" y="100">DEQ-Flow</text><text class="muted" x="630" y="117">Reuse fixed points across frames</text><circle cx="618" cy="140" r="5" style="fill:var(--accent)"></circle><text class="lab" style="font-size:12.5px;font-weight:500" x="630" y="144">FPDM</text><text class="muted" x="630" y="161">Reuse fixed points across timesteps</text><circle cx="618" cy="184" r="5" style="fill:var(--accent)"></circle><text class="lab" style="font-size:12.5px;font-weight:500" x="630" y="188">GET</text><text class="muted" x="630" y="205">Fixed-point one-call generator</text>
+<line marker-end="url(#ar)" stroke-width="1.5" style="stroke:var(--ink-3)" x1="40" x2="866" y1="258" y2="258"></line>
+<text class="lab" text-anchor="middle" x="175" y="280">Fixed K unrolling</text>
+<text class="lab" text-anchor="middle" x="455" y="280">Random K + truncated backprop</text>
+<text class="lab" text-anchor="middle" x="735" y="280">Solve fixed point (K → ∞)</text>
+</svg></div>
+<p class="fig-note">Huginn's Remark 3.1 reports a relevant negative result: conditioning the core R<sub>i</sub> on an absolute step index breaks path independence and prevents extrapolation. LiFT uses a continuous depth coordinate normalized to [0, 1], while Drozdova et al. remove timestep inputs altogether. Both avoid this problem.</p>
+</div>
+<div class="cards">
+<div class="box">
+<h3>Huginn: Recurrent Depth</h3>
+<p class="meta">arXiv 2502.05171 · February 2025 · ELLIS Tübingen / MPI-IS, University of Maryland and LLNL</p>
+<ul>
+<li>The layout is (2, 4, 2): 2 prelude layers, 4 core layers and 2 coda layers, giving 132 executed layers at r = 32. Each loop concatenates prelude output e with the current state and passes them through an adapter. The initial state is random noise.</li>
+<li>Training samples r from a log-normal Poisson distribution with mean 32, and backpropagates through only the last 8 loops. Activation memory does not depend on r.</li>
+<li>3.5B parameters and 800B training tokens. Inference is evaluated up to r = 64, with GSM8K CoT at 34.80 versus OLMo-7B's 6.07. The authors describe the compute as equivalent to a 50B-parameter model.</li>
+<li>Inference can exit adaptively per token when adjacent-loop KL falls below 5×10⁻⁴, and can share the KV cache.</li>
+</ul>
+<p class="rel">LiFT and Looped-DiT's prelude–core–coda layout, along with random-depth training for inference extrapolation, trace back to this work.</p>
+</div>
+<div class="box">
+<h3>LoopVL: Recurrent Visual Intelligence</h3>
+<p class="meta">arXiv 2609.38426 · September 29, 2026 · Shanghai Jiao Tong, MPI-IS, Monash, Renmin, Baidu and others</p>
+<ul>
+<li>Two 16-layer stacks: a fast L and a slow H. Module-Loop repeats L with fixed high-level conditioning; Model-Loop repeats the entire L→H cycle. The default [L×3→H]×2 executes 128 layers using 32 unique layers.</li>
+<li>About 1B parameters, trained from scratch: 75B text-pretraining tokens, 49B multimodal tokens, 16.8B SFT tokens, then GRPO.</li>
+<li>At matched tokens (0.14T), MMStar is 63.47 versus 55.33 for the non-looped baseline of the same size. Attention Gini rises from 0.405 to 0.858 at the boundary between Model-Loop cycles, which the authors call a Visual Aha Moment.</li>
+<li>It does not extrapolate: increasing cycles from the training count of 2 to 4 drops MMStar to 24.00.</li>
+</ul>
+<p class="rel">This is visual understanding rather than generation. Training uses a fixed loop count without random depth; extra loops make it worse, providing a comparison with random-depth methods such as Huginn and LiFT.</p>
+</div>
+<div class="box">
+<h3>DEQ: Deep Equilibrium Models</h3>
+<p class="meta">arXiv 1909.01377 · NeurIPS 2019 · CMU、Bosch AI、Intel Labs</p>
+<ul>
+<li>Solve z* = f<sub>θ</sub>(z*; x) directly, equivalent to an infinitely deep shared-weight network with x injected at every layer. Broyden's method finds the root.</li>
+<li>Backpropagation uses the implicit function theorem. Activation memory is comparable to one layer and independent of depth; the abstract reports savings of up to 88%.</li>
+<li>On WikiText-103, DEQ-Transformer has perplexity 24.2 at 2.7GB memory, versus Transformer-XL's 24.3 at 8.5GB. The cost is 2.82× slower training and 1.76× slower inference.</li>
+</ul>
+<p class="rel">This is the limiting case of recurrence. If each loop approaches the same fixed point, more loops solve it more accurately.</p>
+</div>
+<div class="box">
+<h3>DEQ-Flow: fixed points in optical flow</h3>
+<p class="meta">arXiv 2204.08442 · April 2022 · CMU, Peking University and Bosch AI</p>
+<ul>
+<li>Rewrite RAFT's iterative ConvGRU update as a fixed-point problem, solved with Anderson or Broyden until residual falls below 10⁻³. Phantom gradients make training nearly 2× faster.</li>
+<li>Sparse fixed-point correction losses on selected intermediate solutions address DEQ training instability.</li>
+<li>Each frame is initialized from the previous frame's fixed point. Inference is about 1.6× faster on Sintel, with 4–6× lower training memory.</li>
+<li>KITTI-15 (C+T) F1-all: 16.3 for DEQ-RAFT-B versus 17.4 for RAFT at the same size.</li>
+</ul>
+<p class="rel">One early example of reusing iterative states across video frames, with a structure directly relevant to frame-by-frame autoregressive world models.</p>
+</div>
+<div class="box">
+<h3>FPDM: Fixed Point Diffusion Models</h3>
+<p class="meta">arXiv 2401.08741 · January 2024 · University of Oxford</p>
+<ul>
+<li>Starting from DiT, keep two explicit blocks at the ends and replace the middle with a timestep-conditioned implicit fixed-point layer that receives input injection.</li>
+<li>Training first iterates n ~ U[0, N] times without gradients, then m ~ U[1, 12] times with gradients.</li>
+<li>Sampling distributes the iteration budget across timesteps, with each timestep warm-started from the previous fixed point.</li>
+<li>85M parameters versus 674M for DiT-XL/2; training memory is 10.2GB versus 25.2GB.</li>
+</ul>
+<p class="rel">A DEQ version of within-step loops. The outer loop is sampling, the inner loop solves a fixed point, and the solution is reused across outer steps. This lies between the designs of LiFT and Drozdova et al.</p>
+</div>
+<div class="box">
+<h3>GET: a DEQ student for one-call generation</h3>
+<p class="meta">arXiv 2401.08639 · NeurIPS 2023 · CMU、Bosch AI</p>
+<ul>
+<li>Generative Equilibrium Transformer: an injection Transformer processes noise and class, an equilibrium Transformer solves a fixed point, and a decoder produces an image in one network call.</li>
+<li>Offline distillation uses one million noise–image pairs generated by EDM. The main experiment unrolls 6 iterations with direct backpropagation; gradient checkpointing can also give O(1) activation memory.</li>
+<li>One network call on CIFAR-10: unconditional FID 6.91 versus PD-EDM's 8.34, and class-conditional FID 6.25. GET-Mini (19.2M) has FID 10.72 versus ViT's 11.49 at 85.2M.</li>
+</ul>
+<p class="rel">ELT's discussion suggests adjusting one-call model quality through loop count. GET already did this in 2023 using fixed-point iterations.</p>
+</div>
+</div>
+<div class="fig">
+<div class="fig-title">FPDM and DiT at the same number of block calls</div>
+<div class="fig-sub">ImageNet 256, DDIM sampling; lower FID is better. FPDM has 85M parameters versus DiT-XL/2's 674M.</div>
+<div class="tbl"><table>
+<thead><tr><th>Total block calls</th><th class="n">FPDM</th><th class="n">DiT-XL/2</th></tr></thead>
+<tbody>
+<tr><td>140</td><td class="n"><strong>33.9</strong></td><td class="n">110.0</td></tr>
+<tr><td>280</td><td class="n"><strong>22.4</strong></td><td class="n">35.2</td></tr>
+<tr><td>560</td><td class="n">19.6</td><td class="n"><strong>16.5</strong></td></tr>
+</tbody>
+</table></div>
+<p class="fig-note">At tight budgets, the smaller fixed-point model leads by a large margin; with more compute, the larger dense model overtakes it. At 560 calls with DDPM, FPDM still leads: 26.1 versus 37.9. This resembles the capacity limits seen in LiFT B/2 and ELT with 1 layer repeated 32 times. Data: FPDM Table 1.</p>
+</div>
+<div class="box" style="margin-top:26px">
+<h3>Reusing iterative states in the outer loop</h3>
+<ul>
+<li>DEQ-Flow: reuse optical-flow fixed points across video frames.</li>
+<li>FPDM: reuse fixed points across diffusion timesteps.</li>
+<li>Huginn: continuous CoT initializes the next token from the previous token's final state.</li>
+<li>Drozdova et al.: carry hidden states across denoising steps and re-noise samples at each step.</li>
+</ul>
+<p class="rel">ELT, Looped-DiT and LiFT instead restart recurrence at every denoising step. These four reuse strategies offer possible designs for frame-by-frame video world models.</p>
+</div>
+</div>
+</section>
+<!-- ================= §7 compare ================= -->
+<section id="compare">
+<div class="sec-head"><span class="no">§9</span><h2>Comparing the four papers</h2></div>
+<div class="sec-body">
+<div class="tbl cmp"><table>
+<thead><tr><th></th><th><i style="background:var(--elt)"></i>ELT</th><th><i style="background:var(--ldit)"></i>Looped-DiT</th><th><i style="background:var(--lift)"></i>LiFT</th><th><i style="background:var(--dc)"></i>Diffusion as Curriculum</th></tr></thead>
+<tbody>
+<tr><td>Task</td><td>Class-conditional images and UCF-101 video</td><td>Open-ended text-to-image</td><td>Class-conditional images</td><td>Sudoku and mazes with unique solutions</td></tr>
+<tr><td>Generator</td><td>MaskGIT-style masked generation; DDPM-style DiT</td><td>Pixel-space MMDiT, flow matching</td><td>Latent-space DiT, flow matching</td><td>Continuous VP diffusion; recurrent Transformer or convolution block</td></tr>
+<tr><td>Intermediate targets</td><td>Ground truth plus deepest loop (stop-gradient)</td><td>Same x₀ at every loop</td><td>Different points ū<sub>s</sub> on a straight path</td><td>No separate supervision within 8 inner loops; supervise ŷ at each step, with no loss on h</td></tr>
+<tr><td>Architecture changes</td><td>Minimal</td><td>XSA or gated attention in the core</td><td>h₀ reinjection and depth-coordinate embedding</td><td>Hidden states across steps; no timestep conditioning</td></tr>
+<tr><td>Main capability</td><td>Any-Time exits and throughput</td><td>Parameter efficiency, implicit visual reasoning and adaptive loops</td><td>Extrapolation beyond training depth; gains at equal compute</td><td>Anytime solving; noise-driven exploration within one trajectory</td></tr>
+<tr><td>Beyond training depth</td><td>Modest video extrapolation (4 → 6)</td><td>Stable up to 8 loops with deep supervision</td><td>Continued improvement from 2 → 16 loops</td><td>Training up to 160 steps; improvement continues to 10,000</td></tr>
+<tr><td>Representative result</td><td>4× fewer parameters at matched FID 2.0</td><td>0.26B scores 71.5 versus 69.0 at 1.7B</td><td>FID lower by 3.34 with 60% fewer parameters</td><td>Sudoku-Extreme 99.90%</td></tr>
+</tbody>
+</table></div>
+<div class="prose" style="margin-top:24px">
+<p>The intermediate targets compare as follows. <strong>Looped-DiT</strong> asks every loop to predict the final answer, making early loops useful through a simple objective. <strong>ELT</strong> asks shallow exits to match deeper ones, whose outputs are more reachable than ground truth and have lower variance. <strong>LiFT</strong> assigns each loop a fraction of the correction, giving loops different roles. Its extrapolation follows this design: more loops discretize the same path more finely.</p>
+<p>The fourth paper focuses on <strong>what is passed between steps</strong>. The first three pass noisy samples; it also passes a clean hidden state with no direct supervision. It shows the largest extrapolation factor in the table (160 → 10,000 steps), but has only been validated on unique-solution reasoning tasks.</p>
+<p class="dim">Looped-DiT explicitly distinguishes itself from ELT in related work: ELT uses self-distillation, while Looped-DiT directly supervises the same target at every exit without a teacher configuration. LiFT groups ELT and DeepFlow as methods that train intermediate predictions toward the complete output, which it aims to improve upon.</p>
+</div>
+</div>
+</section>
+<!-- ================= §8 lineage ================= -->
+<section id="lineage">
+<div class="sec-head"><span class="no">§10</span><h2>Timeline of related work</h2></div>
+<div class="sec-body">
+<div class="prose"><p>Recurrent depth has a long history in language models. In generation, iteration within a denoising call and carrying states across calls should be considered separately.</p></div>
+<div class="tl">
+<div class="tl-item"><span class="y">2018</span><div><h3>Universal Transformers</h3><p>Dehghani et al. (Google) repeatedly apply a Transformer layer, separating parameters from depth. ALBERT later shared parameters across layers.</p></div></div>
+<div class="tl-item key" style="--c:var(--accent)"><span class="y">2019</span><div><h3>DEQ · Deep Equilibrium Models</h3><p>Bai, Kolter and Koltun solve the fixed point of a shared-weight network and backpropagate with the implicit function theorem. Memory is independent of depth: the limit of recurrence run to convergence.</p></div></div>
+<div class="tl-item"><span class="y">2022.04</span><div><h3>DEQ-Flow</h3><p>Rewrite RAFT's iterative optical flow as fixed-point solving, and reuse fixed points across video frames.</p></div></div>
+<div class="tl-item"><span class="y">2022</span><div><h3>RIN · Recurrent Interface Networks</h3><p>Jabri, Fleet and Chen (Google) carry and reuse latent states across denoising steps. LiFT distinguishes this across-step recurrence from within-step loops. Drozdova et al.'s 2026 Google paper also uses the across-step approach.</p></div></div>
+<div class="tl-item"><span class="y">2023–25</span><div><h3>Theory and reasoning in Looped Transformers</h3><p>Giannou et al. show that looped Transformers can serve as programmable computers; Saunshi et al. connect looping with latent reasoning; Mixture-of-Recursions chooses recursion depth adaptively per token.</p></div></div>
+<div class="tl-item"><span class="y">2023–24</span><div><h3>GET · FPDM</h3><p>DEQ enters generation: GET (2023) uses a fixed point for a one-call distilled student; FPDM (2024) replaces DiT's middle layers with a timestep-conditioned fixed-point layer.</p></div></div>
+<div class="tl-item key" style="--c:var(--accent)"><span class="y">2025.02</span><div><h3>Huginn · Recurrent Depth</h3><p>Geiping et al. use prelude–core–coda, random training depth and truncated backpropagation. Their 3.5B model continues to improve up to 64 inference loops. LiFT and Looped-DiT later adopt this layout.</p></div></div>
+<div class="tl-item"><span class="y">2023–25</span><div><h3>Related designs in generation</h3><p>DeepFlow uses intermediate-layer supervision and velocity alignment in flow models; DiT-Air studies layer sharing in DiT.</p></div></div>
+<div class="tl-item key" style="--c:var(--elt)"><span class="y">2026.04</span><div><h3>ELT · Google DeepMind</h3><p>The first systematic study of looping for image and video generation, introducing ILSD and Any-Time inference for both masked generation and diffusion.</p></div></div>
+<div class="tl-item"><span class="y">2026</span><div><h3>LoopDiT (technical blog) · XSA</h3><p>Wenhao Chai's LoopDiT trains a recurrent DiT-B/4 with MeanFlow. It does not beat dense models at equal compute, and extra steps help more than extra loops. Shuangfei Zhai's Exclusive Self Attention is later used in Looped-DiT's core.</p></div></div>
+<div class="tl-item key" style="--c:var(--dc)"><span class="y">2026.09.01</span><div><h3>Diffusion as a Training Curriculum · Google</h3><p>A recurrent denoiser with hidden states across steps and no timestep conditioning becomes an anytime solver for Sudoku and mazes. Diffusion provides the training curriculum; inference need not gradually denoise.</p></div></div>
+<div class="tl-item"><span class="y">2026.09.29</span><div><h3>LoopVL</h3><p>A 1B vision-language model trained from scratch with loops substantially beats a non-looped baseline at matched tokens. Training uses a fixed loop count; extra loops reduce performance.</p></div></div>
+<div class="tl-item key" style="--c:var(--ldit)"><span class="y">2026.09.30</span><div><h3>Looped-DiT</h3><p>Loops for open-ended text-to-image. The paper diagnoses washed-out spatial information, addresses it with deep supervision and self-modulating attention, and provides qualitative evidence of implicit visual reasoning.</p></div></div>
+<div class="tl-item key" style="--c:var(--lift)"><span class="y">2026.10</span><div><h3>LiFT</h3><p>Trajectory targets at continuous depth coordinates replace final-answer targets at every loop. Extra inference loops continue to help, beating larger dense DiTs at equal compute.</p></div></div>
+</div>
+</div>
+</section>
+<!-- ================= §9 open ================= -->
+<section id="open">
+<div class="sec-head"><span class="no">§11</span><h2>Open questions</h2></div>
+<div class="sec-body">
+<div class="open">
+<div class="box"><h3>Does it hold at larger scales?</h3><p>Looped-DiT uses 260M parameters at 512 resolution. LiFT uses ImageNet 256 without CFG, and loses to dense models at B/2 scale. In ELT, width remains the main scaling dimension; loops add inference computation. Billion-parameter latent text-to-image models have not yet been studied in this setting.</p></div>
+<div class="box"><h3>Video experiments are still limited</h3><p>Only ELT among the three tests video, on the data-limited UCF-101 setting, where the authors suggest looping also reduces overfitting. LiFT lists budget-aware video generation as future work. Allocating loops by frame or difficulty may matter more for long videos.</p></div>
+<div class="box"><h3>How should loops be allocated across steps?</h3><p>Current models use the same loop count at every denoising step. ELT suggests spending compute where it is most needed; Looped-DiT's gate already chooses loops per image. LiFT finds that the best (T, K) depends on budget: 16 loops × 10 steps is both worse and more expensive than 4 loops × 25 steps.</p></div>
+<div class="box"><h3>Can within-step loops and across-step memory be combined?</h3><p>These text-to-image and video models reinitialize recurrence at each denoising step. Drozdova et al. show that an unsupervised hidden state carried across steps can accumulate substantial computation with backpropagation truncated to just 4 steps. Video generation naturally has states between frames and may be a suitable place to try this. DEQ-Flow's across-frame fixed points and FPDM's across-timestep reuse already save substantial compute.</p></div>
+<div class="box"><h3>What should inference noise do?</h3><p>For unique-solution reasoning, maximum noise works best, acting as search within one trajectory. Generation needs diverse but stable samples, while trajectories in multi-solution tasks can drift between solutions. How to jointly design noise schedules and loop counts remains unanswered.</p></div>
+<div class="box"><h3>Combining loops with one-call generation</h3><p>ELT notes that for one-call models such as consistency or drifting models, loop count would be the only adjustable quality parameter. Looped-DiT and LiFT position looping as another axis alongside few-step distillation; their combined effect still needs experiments.</p></div>
+</div>
+</div>
+</section>
+<footer>
+<span>Sources: ELT (arXiv 2604.09168v3), Huginn (2502.05171), LoopVL (2609.38426), DEQ (1909.01377), DEQ-Flow (2204.08442), FPDM (2401.08741), GET (2401.08639), Looped-DiT (arXiv 2609.40305v1), LiFT (arXiv 2610.05538v1), and Diffusion as a Training Curriculum (arXiv 2609.01449v1). All reported numbers come from the papers and appendix tables. The opening animation is schematic.</span>
+<span>Compiled in October 2026.</span>
+</footer>
+</div>
+</div>
