@@ -5,6 +5,9 @@ draft: false
 ShowToc: false
 math: true
 guideLang: zh
+_build:
+  list: never
+  render: always
 tags: ["reinforcement-learning", "robotics", "sim-to-real", "massively-parallel", "paper-reading"]
 summary: "Reading notes on Mega-Scale RL: batches, multiple policies, reset distributions and off-policy methods."
 ---

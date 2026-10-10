@@ -5,6 +5,9 @@ draft: false
 ShowToc: false
 math: true
 guideLang: zh
+_build:
+  list: never
+  render: always
 tags: ["reinforcement-learning", "diffusion", "flow-matching", "robotics", "video-generation", "paper-reading"]
 summary: "My reading notes on diffusion / flow post-training, comparing the approaches used in image/video generation and robotics."
 description: "从图像、视频生成，到闭环机器人控制。"
