@@ -13,7 +13,7 @@
     const headings = loops
       ? loops.querySelectorAll('section[id] h2')
       : layout.querySelectorAll('.post-content > h2[id], .post-content > h3[id]');
-    const names = {rudin:'Rudin et al.',andrychowicz:'Andrychowicz et al.','parallel-collection':'Parallel collection','staggered-resets':'Staggered resets',dexpbt:'DexPBT',sapg:'SAPG',epo:'EPO',omnireset:'OmniReset',sgs:'SGS',dextrah:'DextrAH',pql:'PQL',pqn:'PQN',fasttd3:'FastTD3',fastsac:'FastSAC',flashsac:'FlashSAC'};
+    const names = {rudin:'rsl-rl',andrychowicz:'What Matters in On-Policy RL?','parallel-collection':'Parallel collection','staggered-resets':'Staggered resets',dexpbt:'DexPBT',sapg:'SAPG',epo:'EPO',omnireset:'OmniReset',sgs:'SGS',dextrah:'DextrAH',pql:'PQL',pqn:'PQN',fasttd3:'FastTD3',fastsac:'FastSAC',flashsac:'FlashSAC'};
     let sublist;
     headings.forEach(heading => {
       const target = loops ? heading.closest('section[id]') : heading;
