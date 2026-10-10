@@ -1,5 +1,14 @@
 {{- define "main" }}
 
+{{- if .Params.guideLang }}
+<div class="research-layout" data-language="{{ .Params.guideLang }}">
+  <aside class="research-sidebar" hidden>
+    <details class="research-directory">
+      <summary>{{ if eq .Params.guideLang "zh" }}目录{{ else }}Contents{{ end }}</summary>
+      <nav aria-label="{{ if eq .Params.guideLang "zh" }}文章目录{{ else }}Article contents{{ end }}"></nav>
+    </details>
+  </aside>
+{{- end }}
 <article class="post-single">
   <header class="post-header">
     {{ partial "breadcrumbs.html" . }}
@@ -69,5 +78,10 @@
   {{- partial "comments.html" . }}
   {{- end }}
 </article>
+{{- if .Params.guideLang }}
+</div>
+<link rel="stylesheet" href="{{ "assets/research-layout.css" | relURL }}">
+<script defer src="{{ "assets/research-layout.js" | relURL }}"></script>
+{{- end }}
 
 {{- end }}{{/* end main */}}

@@ -6,7 +6,7 @@ ShowToc: false
 math: true
 guideLang: zh
 tags: ["reinforcement-learning", "robotics", "sim-to-real", "massively-parallel", "paper-reading"]
-summary: "Mega-Scale RL 的论文笔记：batch、多策略、reset 分布，以及 off-policy。"
+summary: "Reading notes on Mega-Scale RL: batches, multiple policies, reset distributions and off-policy methods."
 ---
 
 {{< mega-header >}}

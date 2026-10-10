@@ -1,0 +1,37 @@
+/* Shared reading column for the bilingual research articles. */
+body:has(.research-layout) .main{max-width:1008px;overflow-x:clip}
+.research-layout{max-width:720px;margin-inline:auto}
+.research-layout .post-single{min-width:0}
+body:has(.research-layout) .post-header{max-width:none;margin:0 0 24px}
+.research-layout :is(.dr-language,.ld-language,.mega-language){margin:0 0 24px;max-width:none}
+.research-layout .dr-full>#scope{margin-left:0}
+.research-layout .dr-full .shell{display:block}
+.research-layout .dr-full .toc,.research-layout .mega-contents{display:none}
+.research-layout :is(.dr-full,.ld-guide,.post-content){font-size:18px;line-height:1.8}
+.research-layout .dr-full h2{font-size:28px}
+.research-layout .dr-full h3{font-size:23px}
+.research-layout .research-sidebar{min-width:0;margin-bottom:28px}
+.research-layout .research-directory{border-block:1px solid var(--border);padding:12px 0}
+.research-directory summary{font-size:14px;color:var(--secondary);cursor:pointer}
+.research-directory nav{padding-top:12px}
+.research-directory ol{list-style:none;margin:0;padding:0}
+.research-directory ol ol{padding-left:12px}
+.research-directory a{display:block;padding:5px 10px;border-left:1px solid transparent;color:var(--secondary);font-size:13px;line-height:1.6;text-decoration:none;box-shadow:none;overflow-wrap:anywhere}
+.research-directory a:hover,.research-directory a[aria-current]{color:var(--primary);border-left-color:var(--secondary);background:var(--code-bg)}
+.research-directory ol ol a{font-size:12px}
+.research-directory nav{max-height:60vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--tertiary) transparent}
+.research-directory nav::-webkit-scrollbar{width:4px}
+.research-directory nav::-webkit-scrollbar-thumb{background:var(--tertiary);border:0;border-radius:4px}
+.research-directory nav::-webkit-scrollbar-track{background:transparent}
+@media(min-width:1100px){
+  .research-layout{display:grid;grid-template-columns:200px minmax(0,720px);gap:40px;max-width:none}
+  .research-layout .research-sidebar{margin:0}
+  .research-directory{position:sticky;top:24px}
+  .research-layout .research-directory{border:0;padding:0}
+  .research-directory summary{list-style:none;pointer-events:none;padding:0 10px 10px}
+  .research-directory summary::-webkit-details-marker{display:none}
+  .research-directory nav{max-height:calc(100vh - 90px);padding-top:0}
+}
+@media(max-width:860px){
+  .research-layout :is(.dr-full,.ld-guide,.post-content){font-size:17px}
+}
