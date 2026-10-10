@@ -1,0 +1,23 @@
+{{- $zh := eq .Page.Params.guideLang "zh" -}}
+<link rel="stylesheet" href="{{ "assets/mega-scale-rl/article.css" | relURL }}">
+<nav class="mega-language" aria-label="Article language">
+  <a href="{{ ref .Page "/posts/mega-scale-rl" }}" lang="en" hreflang="en" {{ if not $zh }}aria-current="page"{{ end }}>English</a>
+  <span aria-hidden="true">/</span>
+  <a href="{{ ref .Page "/posts/mega-scale-rl-zh" }}" lang="zh-CN" hreflang="zh-CN" {{ if $zh }}aria-current="page"{{ end }}>中文</a>
+</nav>
+<blockquote class="mega-epigraph" lang="{{ if $zh }}zh-CN{{ else }}en{{ end }}">
+{{ if $zh }}
+  <p>他山之石，可以攻玉。</p>
+  <cite>— <a href="https://ctext.org/book-of-poetry/he-ming/zhs">《诗经·小雅·鹤鸣》</a></cite>
+{{ else }}
+  <p>As iron sharpens iron,<br><span>so one person sharpens another.</span></p>
+  <cite>— <a href="https://www.biblegateway.com/passage/?search=Proverbs%2027%3A17&amp;version=NIV">Proverbs 27:17, New International Version</a></cite>
+{{ end }}
+</blockquote>
+<p class="mega-ai-note">{{ if $zh }}说明：这篇 blog 在 AI 的辅助下完成。{{ else }}Note: This post was written with the help of AI.{{ end }}</p>
+<nav class="mega-contents" aria-label="{{ if $zh }}文章目录{{ else }}Article contents{{ end }}">
+  <a href="#batch">{{ if $zh }}1. Batch{{ else }}1. Batches{{ end }}</a>
+  <a href="#fleet">2. Fleet</a>
+  <a href="#reset">3. Reset</a>
+  <a href="#off-policy">4. Off-policy</a>
+</nav>

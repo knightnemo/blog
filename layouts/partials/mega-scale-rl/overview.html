@@ -1,0 +1,32 @@
+{{- $zh := eq .Page.Params.guideLang "zh" -}}
+<div class="mega-overview">
+<h2>{{ if $zh }}四类方法{{ else }}Four groups of methods{{ end }}</h2>
+<div class="mega-map">
+<table>
+<thead><tr><th>{{ if $zh }}方向{{ else }}Direction{{ end }}</th><th>{{ if $zh }}做法{{ else }}Approach{{ end }}</th><th>{{ if $zh }}相关工作{{ else }}Related work{{ end }}</th></tr></thead>
+<tbody>
+<tr><th><a href="#batch">{{ if $zh }}把 PPO 的 batch 用对{{ else }}Get PPO's batch right{{ end }}</a></th><td>{{ if $zh }}batch = 环境数 × 每环境步数。还要看重置是否同步，以及 minibatch 和学习率是否随环境数调整。改动最便宜，也最常做错。{{ else }}Batch = environment count × steps per environment. Also check whether resets are synchronized, and whether minibatches and learning rates change with environment count. These are the cheapest changes, and the ones most often done wrong.{{ end }}</td><td>Rudin · Andrychowicz · DD-PPO · Mayor · Staggered Resets · Hilton · Beukman</td></tr>
+<tr><th><a href="#fleet">{{ if $zh }}多策略：用种群换多样性{{ else }}Multiple policies: diversity through a population{{ end }}</a></th><td>{{ if $zh }}一张卡上同时训练几个到几十个策略，互相借数据，或者定期淘汰差的、变异好的。买的是探索的多样性，代价是更多算力和代码复杂度。{{ else }}Train several to dozens of policies on one GPU. Let them borrow data, or periodically discard poor ones and mutate good ones. This buys exploration diversity at the cost of more compute and more complex code.{{ end }}</td><td>DexPBT · SAPG · EPO</td></tr>
+<tr><th><a href="#reset">{{ if $zh }}改起点：重置分布与课程{{ else }}Change the starting point: resets and curricula{{ end }}</a></th><td>{{ if $zh }}让难的状态直接出现在 batch 里：从生成的抓取态、演示的中间态或接近目标的状态开始回合，再按成功率挑起点。对长程接触任务效果最大。{{ else }}Put difficult states directly into the batch: start episodes from generated grasp states, intermediate demonstration states or states near the goal, then choose starting points by success rate. This helps most on long-horizon contact tasks.{{ end }}</td><td>OmniReset · SGS · DemoStart · RFCL · DextrAH-G/RGB · CSRL</td></tr>
+<tr><th><a href="#off-policy">{{ if $zh }}off-policy 在海量并行下复活{{ else }}Off-policy returns with massive parallelism{{ end }}</a></th><td>{{ if $zh }}用回放池重复利用数据，配上大 batch、分布式 critic 和归一化，让 SAC/TD3 在几千个环境下比 PPO 更快。{{ else }}Reuse data through replay buffers, with large batches, distributed critics and normalization, making SAC/TD3 faster than PPO with thousands of environments.{{ end }}</td><td>PQL · PQN · FastTD3 · FastSAC · FlashSAC/WarpSAC · REPPO</td></tr>
+</tbody>
+</table>
+</div>
+<div class="mega-timeline" aria-label="{{ if $zh }}相关工作的时间线{{ else }}Timeline of related work{{ end }}">
+<h3>{{ if $zh }}相关工作的时间线{{ else }}Timeline of related work{{ end }}</h3>
+<div class="mega-timeline-legend" aria-label="{{ if $zh }}方法分类{{ else }}Method categories{{ end }}">
+<span class="batch">Batch</span><span class="fleet">Fleet</span><span class="reset">Reset</span><span class="off">Off-policy</span>
+</div>
+<ol class="mega-years">
+<li><time>2020</time><div class="mega-year-papers"><span class="batch">DD-PPO</span></div></li>
+<li><time>2021</time><div class="mega-year-papers"><a class="batch" href="#rudin">Rudin (legged_gym)</a><a class="batch" href="#andrychowicz">Andrychowicz</a></div></li>
+<li><time>2022</time><div class="mega-year-papers"><span class="batch">Hilton (PPO-EWMA)</span></div></li>
+<li><time>2023</time><div class="mega-year-papers"><a class="fleet" href="#dexpbt">DexPBT</a><a class="off" href="#pql">PQL</a></div></li>
+<li><time>2024</time><div class="mega-year-papers"><a class="fleet" href="#sapg">SAPG</a><span class="reset">RFCL</span><a class="reset" href="#dextrah">DextrAH-G / RGB</a></div></li>
+<li><time>2025</time><div class="mega-year-papers"><span class="batch">Mayor</span><a class="batch" href="#staggered-resets">Staggered Resets</a><a class="fleet" href="#epo">EPO</a><span class="reset">DemoStart</span><a class="off" href="#pqn">PQN</a><a class="off" href="#fasttd3">FastTD3</a><a class="off" href="#fastsac">FastSAC</a></div></li>
+<li><time>2026</time><div class="mega-year-papers"><span class="batch">Beukman (1M envs)</span><a class="reset" href="#omnireset">OmniReset</a><span class="reset">CSRL</span><a class="reset" href="#sgs">SGS</a><a class="off" href="#flashsac">FlashSAC / WarpSAC</a><span class="off">REPPO</span></div></li>
+</ol>
+<p class="mega-timeline-note">{{ if $zh }}年份按会议年份，没有会议的按 arXiv 年份。{{ else }}Years follow conference dates, or arXiv dates when there is no conference.{{ end }}</p>
+</div>
+<p class="mega-overview-source"><a href="{{ "assets/mega-scale-rl/overview-original.png" | relURL }}" target="_blank" rel="noopener">{{ if $zh }}原总览图{{ else }}Original overview (Chinese){{ end }}</a> · <a href="https://claude.ai/artifact/MmJyFixpwCVk7vAh6myrG5">Claude report</a></p>
+</div>

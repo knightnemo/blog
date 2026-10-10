@@ -1,0 +1,5 @@
+{{- if .Get "inline" -}}
+<span class="mega-inline">\({{ .Inner | htmlEscape | safeHTML }}\)</span>
+{{- else -}}
+<div class="mega-equation">\[{{ .Inner | htmlEscape | safeHTML }}\]</div>
+{{- end -}}

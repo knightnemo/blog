@@ -1,0 +1,9 @@
+{{- $path := printf "assets/mega-scale-rl/%s" (.Get "src") -}}
+{{- $config := imageConfig (printf "static/%s" $path) -}}
+{{- $caption := .Get "caption" -}}
+<figure class="mega-figure">
+  <a href="{{ $path | relURL }}" target="_blank" rel="noopener" aria-label="{{ $caption }}">
+    <img src="{{ $path | relURL }}" width="{{ $config.Width }}" height="{{ $config.Height }}" loading="lazy" decoding="async" alt="{{ $caption }}">
+  </a>
+  <figcaption>{{ $caption }} · <a href="https://arxiv.org/abs/{{ .Get "paper" }}">arXiv:{{ .Get "paper" }}</a></figcaption>
+</figure>
