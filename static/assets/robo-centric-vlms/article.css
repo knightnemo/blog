@@ -1,0 +1,29 @@
+/* The research shell owns width and navigation; this file styles article content. */
+body:has(.robo-language) .post-title>.entry-hint{display:none}
+.robo-language{display:flex;gap:12px;align-items:center;margin:0 0 24px;font-size:14px;color:var(--secondary)}
+.post-content .robo-language a{color:var(--secondary);box-shadow:none;padding-block:4px;border-bottom:1px solid transparent}
+.post-content .robo-language a[aria-current]{color:var(--primary);border-bottom-color:var(--primary)}
+body:has(.robo-language) .robo-ai-note{font-size:14px;color:var(--secondary);margin-bottom:24px}
+body:has(.robo-language) .post-content :is(h2,h3){font-family:inherit;font-weight:600;letter-spacing:0;line-height:1.4;scroll-margin-top:24px}
+body:has(.robo-language) .post-content>h2{font-size:28px;margin:52px 0 24px;padding-top:26px;border-top:1px solid var(--border)}
+body:has(.robo-language) .post-content>h3{font-size:23px;margin:36px 0 20px}
+body:has(.robo-language) .post-content>blockquote{padding:18px 22px;margin:26px 0 32px;border:1px solid var(--border);border-left:3px solid #688fa9;border-radius:4px;background:color-mix(in srgb,var(--primary) 4%,var(--theme));font-style:normal}
+body:has(.robo-language) .post-content>blockquote>p:first-child{font-size:14px;color:var(--secondary);margin-bottom:10px}
+body:has(.robo-language) .post-content>blockquote>:last-child{margin-bottom:0}
+body:has(.robo-language) :is(.robo-figure,.robo-hero){margin:30px 0}
+body:has(.robo-language) :is(.robo-figure,.robo-hero) img{width:100%;height:auto;margin:0;border-radius:3px}
+body:has(.robo-language) :is(.robo-figure,.robo-hero) figcaption{font-size:13px;line-height:1.65;font-weight:400;color:var(--secondary);margin:10px 0 0;text-align:left}
+.robo-figure>a{box-shadow:none!important}
+body:has(.robo-language) .post-content table{display:block;width:100%;overflow-x:auto;font-size:15px;line-height:1.7;scrollbar-width:thin;scrollbar-color:var(--tertiary) transparent}
+body:has(.robo-language) .post-content :is(td,th){vertical-align:top;min-width:130px;padding:12px}
+body:has(.robo-language) .post-content th{font-weight:600}
+body:has(.robo-language) .post-content table::-webkit-scrollbar{height:5px}
+body:has(.robo-language) .post-content table::-webkit-scrollbar-thumb{background:var(--tertiary);border:0;border-radius:3px}
+body:has(.robo-language) .post-content table::-webkit-scrollbar-track{background:transparent}
+@media(max-width:640px){body:has(.robo-language) .post-content>h2{font-size:25px}body:has(.robo-language) .post-content>blockquote{padding:16px}}
+
+body:has(.robo-language) .post-content table:has(th:nth-child(5)) :is(td,th){min-width:175px}
+body:has(.robo-language) .post-content table:has(th:nth-child(3):last-child) :is(td,th):nth-child(3){min-width:340px}
+
+.robo-equation{margin:24px 0;overflow-x:auto;overflow-y:hidden;padding:8px 0;font-size:0.95em}
+.robo-equation .katex-display{margin:0}

@@ -1,0 +1,7 @@
+{{- $zh := eq .Page.Params.guideLang "zh" -}}
+<link rel="stylesheet" href="{{ "assets/robo-centric-vlms/article.css" | relURL }}">
+<nav class="robo-language" aria-label="Article language">
+<a href="{{ ref .Page "/posts/robo-centric-vlms" }}" lang="en" hreflang="en" {{ if not $zh }}aria-current="page"{{ end }}>English</a><span aria-hidden="true">/</span><a href="{{ ref .Page "/posts/robo-centric-vlms-zh" }}" lang="zh-CN" hreflang="zh-CN" {{ if $zh }}aria-current="page"{{ end }}>中文</a>
+</nav>
+<p class="robo-ai-note">{{ if $zh }}说明：这篇 blog 在 AI 的辅助下完成。{{ else }}Note: This post was written with the help of AI.{{ end }}</p>
+<figure class="robo-hero"><img src="{{ "assets/robo-centric-vlms/how-to-train-your-dragon.jpg" | relURL }}" alt="Hiccup reaching out to Toothless in How to Train Your Dragon" width="1920" height="847"><figcaption><em>How to Train Your Dragon</em> (2010). © DreamWorks Animation. <a href="https://wexarts.org/film-video/how-train-your-dragon">{{ if $zh }}图片来源{{ else }}Image source{{ end }}</a>.</figcaption></figure>

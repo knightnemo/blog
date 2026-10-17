@@ -1,0 +1,5 @@
+{{- $id := int (.Get "id") -}}
+{{- $ext := "png" -}}
+{{- if and (lt $id 4) (eq .Page.Params.guideLang "en") }}{{ $ext = "svg" }}{{ end -}}
+{{- $src := printf "assets/robo-centric-vlms/i-%d.%s" $id $ext | relURL -}}
+<figure class="robo-figure"><a href="{{ $src }}" target="_blank" rel="noopener" title="{{ if eq .Page.Params.guideLang "zh" }}打开完整图片{{ else }}Open full-size figure{{ end }}"><picture>{{ if eq $ext "svg" }}<source media="(max-width: 600px)" srcset="{{ printf "assets/robo-centric-vlms/i-%d-mobile.svg" $id | relURL }}">{{ end }}<img{{ if eq $ext "png" }}{{ $size := imageConfig (printf "static/assets/robo-centric-vlms/i-%d.png" $id) }} width="{{ $size.Width }}" height="{{ $size.Height }}"{{ end }} src="{{ $src }}" alt="{{ .Get "caption" }}" loading="lazy"></picture></a><figcaption>{{ .Get "caption" }}{{ with .Get "source" }} <a href="{{ . }}">{{ if eq $.Page.Params.guideLang "zh" }}论文{{ else }}Paper{{ end }}</a>.{{ end }}</figcaption></figure>
