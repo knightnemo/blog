@@ -12,9 +12,11 @@
     const loops = layout.querySelector('.ld-guide');
     const headings = loops
       ? loops.querySelectorAll('section[id] h2')
-      : layout.querySelectorAll('.post-content > h2[id], .post-content > h3[id]');
+      : layout.querySelectorAll(layout.querySelector('.dex-language')
+        ? '.post-content > :is(h2,h3,h4,h5)[id]'
+        : '.post-content > :is(h2,h3)[id]');
     const names = {rudin:'rsl-rl',andrychowicz:'What Matters in On-Policy RL?','parallel-collection':'Parallel collection','staggered-resets':'Staggered resets',dexpbt:'DexPBT',sapg:'SAPG',epo:'EPO',omnireset:'OmniReset',sgs:'SGS',dextrah:'DextrAH',pql:'PQL',pqn:'PQN',fasttd3:'FastTD3',fastsac:'FastSAC',flashsac:'FlashSAC'};
-    let sublist;
+    const parents = [{level: 1, list}];
     headings.forEach(heading => {
       const target = loops ? heading.closest('section[id]') : heading;
       const item = document.createElement('li');
@@ -22,12 +24,12 @@
       link.href = '#' + target.id;
       link.textContent = names[target.id] || heading.textContent.replace(/#\s*$/, '').trim();
       item.append(link);
-      if (heading.tagName === 'H3' && sublist) sublist.append(item);
-      else {
-        list.append(item);
-        sublist = document.createElement('ol');
-        item.append(sublist);
-      }
+      const level = loops ? 2 : Number(heading.tagName.slice(1));
+      while (parents.length > 1 && parents[parents.length - 1].level >= level) parents.pop();
+      parents[parents.length - 1].list.append(item);
+      const children = document.createElement('ol');
+      item.append(children);
+      parents.push({level, list: children});
     });
     nav.append(list);
   }

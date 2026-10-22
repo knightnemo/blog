@@ -1,0 +1,6 @@
+{{- $path := printf "assets/dexterous-rl/%s" (.Get "src") -}}
+{{- $size := imageConfig (printf "static/%s" $path) -}}
+<figure class="robo-figure dex-figure{{ if .Get "narrow" }} dex-figure-narrow{{ end }}"{{ if lt $size.Width 1000 }} style="max-width:{{ $size.Width }}px"{{ end }}>
+<a href="{{ $path | relURL }}" target="_blank" rel="noopener" title="{{ if eq .Page.Params.guideLang "zh" }}打开完整图片{{ else }}Open full-size figure{{ end }}"><img src="{{ $path | relURL }}" alt="{{ .Get "caption" }}" width="{{ $size.Width }}" height="{{ $size.Height }}" loading="lazy" decoding="async"></a>
+<figcaption>{{ .Get "caption" }} <a href="https://arxiv.org/abs/{{ .Get "paper" }}">{{ if eq .Page.Params.guideLang "zh" }}图片来源{{ else }}Source{{ end }}</a>.</figcaption>
+</figure>

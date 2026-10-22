@@ -1,0 +1,7 @@
+{{- $zh := eq .Page.Params.guideLang "zh" -}}
+<link rel="stylesheet" href="{{ "assets/robo-centric-vlms/article.css" | relURL }}">
+<link rel="stylesheet" href="{{ "assets/dexterous-rl/article.css" | relURL }}">
+<nav class="robo-language dex-language" aria-label="Article language">
+<a href="{{ ref .Page "/posts/dexterous-rl" }}" lang="en" hreflang="en" {{ if not $zh }}aria-current="page"{{ end }}>English</a><span aria-hidden="true">/</span><a href="{{ ref .Page "/posts/dexterous-rl-zh" }}" lang="zh-CN" hreflang="zh-CN" {{ if $zh }}aria-current="page"{{ end }}>中文</a>
+</nav>
+<p class="robo-ai-note">{{ if $zh }}说明：这篇 blog 在 AI 的辅助下完成。{{ else }}Note: This post was written with the help of AI.{{ end }}</p>

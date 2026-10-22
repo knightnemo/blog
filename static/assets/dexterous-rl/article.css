@@ -1,0 +1,10 @@
+/* Keep the same typography, reading width and navigation as the other research notes. */
+body:has(.dex-language) .dex-figure{margin-inline:auto}
+body:has(.dex-language) .post-content>:is(h4,h5){font-family:inherit;font-size:20px;font-weight:600;line-height:1.5;margin:32px 0 16px;scroll-margin-top:24px}
+body:has(.dex-language) .post-content>:is(h3,h4,h5)+p:has(>a[href^="https://arxiv.org/abs/"]){font-size:15px;line-height:1.75;color:var(--secondary)}
+body:has(.dex-language) .post-content table{font-size:14px}
+body:has(.dex-language) .post-content>h2#ref~ul{font-size:15px;line-height:1.75}
+body:has(.dex-language) .post-content>h2#ref~ul li{margin-bottom:14px}
+body:has(.dex-language) .dex-figure-narrow{width:min(100%,560px)}
+
+body:has(.dex-language) .post-content>h5{font-size:18px;margin-top:28px}

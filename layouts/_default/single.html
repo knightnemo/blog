@@ -81,7 +81,7 @@
 {{- if .Params.guideLang }}
 </div>
 <link rel="stylesheet" href="{{ "assets/research-layout.css" | relURL }}">
-<script defer src="{{ "assets/research-layout.js" | relURL }}"></script>
+<script defer src="{{ "assets/research-layout.js" | relURL }}?v={{ readFile "static/assets/research-layout.js" | md5 }}"></script>
 {{- end }}
 
 {{- end }}{{/* end main */}}
